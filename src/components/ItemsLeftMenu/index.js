@@ -11,9 +11,11 @@ import LayersIcon from '@material-ui/icons/Layers';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import { Link } from 'react-router-dom';
 
+import '../../global/global.css';
+
 export const mainListItems = (
   <div>
-    <Link to="/dashboard">
+    <Link to="/dashboard" className="link">
       <ListItem button>
         <ListItemIcon>
           <DashboardIcon />
