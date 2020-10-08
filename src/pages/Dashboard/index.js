@@ -1,5 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import Button from '@material-ui/core/Button';
+import { Context } from '../../Context/AuthContext';
 
 export default function Dashboard() {
-  return <h1>Dashboard</h1>
+  const { handleLogout } = useContext(Context);
+  return (
+    <Button
+      type="submit"
+      variant="contained"
+      color="primary"
+      onClick={handleLogout}
+    >Sair</Button>
+  );
 }
