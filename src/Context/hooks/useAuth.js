@@ -21,17 +21,18 @@ export default function useAuth() {
   async function handleLogin(e, username, password) {
     e.preventDefault();
 
-    const { data: access_token } = await api.post('/users/login', { username, password });
+    const { data } = await api.post('/users/login', { username, password });
 
-    localStorage.setItem('token', JSON.stringify(access_token));
-    api.defaults.headers.Authorization = `Bearer ${access_token}`;
+    localStorage.setItem('token', JSON.stringify(data.access_token));
+    localStorage.setItem('user', JSON.stringify(data.user));
+    api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
     setAuthenticated(true);
     history.push('/dashboard');
   }
 
   function handleLogout() {
     setAuthenticated(false);
-    localStorage.removeItem('token');
+    localStorage.clear();
     api.defaults.headers.Authorization = undefined;
     history.push('/login');
   }
