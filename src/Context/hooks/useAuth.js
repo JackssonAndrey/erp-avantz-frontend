@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Cookie from 'js-cookie';
 
 import api from '../../services/api';
 import history from '../../services/history';
@@ -25,7 +26,9 @@ export default function useAuth() {
 
     localStorage.setItem('token', JSON.stringify(data.access_token));
     localStorage.setItem('user', JSON.stringify(data.user));
-    api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
+    api.defaults.headers.Authorization = `Token ${data.access_token}`;
+    api.defaults.withCredentials = true;
+
     setAuthenticated(true);
     history.push('/dashboard');
   }
@@ -34,6 +37,7 @@ export default function useAuth() {
     setAuthenticated(false);
     localStorage.clear();
     api.defaults.headers.Authorization = undefined;
+
     history.push('/login');
   }
 

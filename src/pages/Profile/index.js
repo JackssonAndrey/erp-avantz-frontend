@@ -91,9 +91,47 @@ export default function Profile() {
     return dateFormated.toLocaleString();
   }
 
-  // function handleEdit() {
-  //   api.put('');
-  // }
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  async function handleEdit(e) {
+    e.preventDefault();
+    let { id: userId } = localStorage.getItem('user');
+    let csrftoken = getCookie('csrftoken');
+
+    try {
+      const response = await api.post('/users/edit',
+        {
+          userId,
+          firstName,
+          lastName,
+          email
+        },
+        {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        }
+      );
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className={classes.root}>
@@ -170,9 +208,9 @@ export default function Profile() {
               xs={12}
             >
               <form
-                method="post"
                 autoComplete="off"
                 noValidate
+                onSubmit={(e) => handleEdit(e)}
               >
                 <Card>
                   <CardHeader
@@ -257,6 +295,7 @@ export default function Profile() {
                     <Button
                       color="primary"
                       variant="contained"
+                      type="submit"
                       startIcon={<SaveIcon />}
                     >
                       Salvar alterações
