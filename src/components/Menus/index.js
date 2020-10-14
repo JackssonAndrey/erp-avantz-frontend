@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -17,6 +17,13 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Fade from '@material-ui/core/Fade';
+import { Button } from '@material-ui/core';
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 import { mainListItems, secondaryListItems } from '../ItemsLeftMenu';
 import { Context } from '../../Context/AuthContext';
@@ -101,17 +108,25 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
+  modal: {
+    display: 'flex',
+    padding: theme.spacing(1),
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 }));
 
 
 export default function Menus(props) {
-  const [open, setOpen] = React.useState(true);
+  const classes = useStyles();
+  const [open, setOpen] = useState(true);
+  const [openModal, setOpenModal] = useState(false);
+  const { handleLogout } = useContext(Context);
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const handleDrawerClick = () => {
     open ? setOpen(false) : setOpen(true)
   }
-  const { handleLogout } = useContext(Context);
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
   const openMenu = Boolean(anchorEl);
 
   const handleClick = (event) => {
@@ -122,7 +137,9 @@ export default function Menus(props) {
     setAnchorEl(null);
   };
 
-  const classes = useStyles();
+  const handleToggleModal = () => {
+    openModal ? setOpenModal(false) : setOpenModal(true)
+  };
 
   return (
     <>
@@ -162,11 +179,15 @@ export default function Menus(props) {
                 Perfil
               </MenuItem>
             </Link>
-            {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
-            <MenuItem onClick={handleLogout}>
-              {/* <LogoutIcon fontSize="small" /> */}
+            <Link to="/settings" className="link">
+              <MenuItem onClick={handleClose}>
+                Configurações
+              </MenuItem>
+            </Link>
+            <MenuItem onClick={handleToggleModal}>
               Logout
             </MenuItem>
+
           </Menu>
         </Toolbar>
       </AppBar>
@@ -187,6 +208,29 @@ export default function Menus(props) {
         <Divider />
         <List>{secondaryListItems}</List>
       </Drawer>
+      <Dialog
+        open={openModal}
+        onClose={handleToggleModal}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Sair do sistema"}</DialogTitle>
+        <Divider />
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Você realmente deseja sair do sistema?
+          </DialogContentText>
+        </DialogContent>
+        <Divider />
+        <DialogActions>
+          <Button onClick={handleToggleModal} color="secondary">
+            Cancelar
+          </Button>
+          <Button onClick={handleLogout} color="primary" autoFocus>
+            Sair
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

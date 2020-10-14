@@ -11,6 +11,10 @@ import SaveIcon from '@material-ui/icons/Save';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import { Card, CardContent, Typography, CardActions, CardHeader } from '@material-ui/core';
+import { toast, ToastContainer } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
+
 
 import api from '../../services/api';
 
@@ -65,14 +69,12 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [institution, setInstituition] = useState('');
   const [dateJoined, setDateJoined] = useState('');
-  const [userData, setUserData] = useState({});
 
 
   useEffect(() => {
     async function getUser() {
       try {
         const { data } = await api.get('/users/profile');
-        setUserData(data.user);
         setFirstName(data.user.first_name);
         setLastName(data.user.last_name);
         setEmail(data.user.email);
@@ -85,11 +87,6 @@ export default function Profile() {
     }
     getUser();
   }, []);
-
-  function formatDate(date) {
-    let dateFormated = Date.parse(date);
-    return dateFormated.toLocaleString();
-  }
 
   function getCookie(name) {
     let cookieValue = null;
@@ -109,8 +106,11 @@ export default function Profile() {
 
   async function handleEdit(e) {
     e.preventDefault();
-    let { id: userId } = localStorage.getItem('user');
+    let user = JSON.parse(localStorage.getItem('user'));
+    let userId = user.id;
     let csrftoken = getCookie('csrftoken');
+
+    console.log(csrftoken);
 
     try {
       const response = await api.post('/users/edit',
@@ -129,14 +129,16 @@ export default function Profile() {
 
       console.log(response);
     } catch (error) {
+      toast.error('Não foi possível editar seus dados.');
       console.log(error);
     }
   }
 
   return (
     <div className={classes.root}>
+      <ToastContainer />
       <CssBaseline />
-      <Menus title="Profile" />
+      <Menus title="Perfil" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
