@@ -30,6 +30,7 @@ export default function useAuth() {
       setAuthenticated(true);
       history.push('/dashboard');
     } catch (error) {
+      console.log('Ooops! Houve um error.', error.message || error);
       return;
     }
   }

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import clsx from 'clsx';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Box from '@material-ui/core/Box';
@@ -11,6 +12,8 @@ import SaveIcon from '@material-ui/icons/Save';
 import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import { Card, CardContent, Typography, CardActions, CardHeader } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { green } from '@material-ui/core/colors';
 import { toast, ToastContainer } from 'react-toastify';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,6 +25,7 @@ import ImagePerfil from '../../assets/images/admin.png';
 
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
+import { Context } from '../../Context/AuthContext';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -58,11 +62,29 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: 'flex',
     alignItems: 'center'
-  }
+  },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgress: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 export default function Profile() {
   const classes = useStyles();
+  const { handleLogout } = useContext(Context);
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -70,6 +92,9 @@ export default function Profile() {
   const [institution, setInstituition] = useState('');
   const [dateJoined, setDateJoined] = useState('');
 
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+  });
 
   useEffect(() => {
     async function getUser() {
@@ -82,10 +107,20 @@ export default function Profile() {
         setDateJoined(data.user.date_joined);
         setUsername(data.user.username);
       } catch (error) {
-        console.log(error);
+        toast.error(`Não foi possível carregar seus dados, faça login novamente! ${error.message || error}`);
+        // setTimeout(() => {
+        //   handleLogout();
+        // }, 5000);
+        console.log(error.message || error);
       }
     }
     getUser();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
   }, []);
 
   function getCookie(name) {
@@ -104,16 +139,25 @@ export default function Profile() {
     return cookieValue;
   }
 
+  const handleButtonClickProgress = () => {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
+
   async function handleEdit(e) {
     e.preventDefault();
     let user = JSON.parse(localStorage.getItem('user'));
     let userId = user.id;
     let csrftoken = getCookie('csrftoken');
 
-    console.log(csrftoken);
-
     try {
-      const response = await api.post('/users/edit',
+      await api.post('/users/edit',
         {
           userId,
           firstName,
@@ -126,11 +170,16 @@ export default function Profile() {
           }
         }
       );
-
-      console.log(response);
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Seus dados foram atualizados!');
+      }, 2000);
     } catch (error) {
-      toast.error('Não foi possível editar seus dados.');
-      console.log(error);
+      toast.error('Token expirado, faça login novamente!');
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(error.message);
     }
   }
 
@@ -298,9 +347,12 @@ export default function Profile() {
                       color="primary"
                       variant="contained"
                       type="submit"
+                      className={buttonClassname}
+                      disabled={loading}
                       startIcon={<SaveIcon />}
                     >
                       Salvar alterações
+                    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                     </Button>
                   </Box>
                 </Card>

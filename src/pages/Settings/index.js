@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import clsx from 'clsx';
 import { toast, ToastContainer } from 'react-toastify';
 import CssBaseline from '@material-ui/core/CssBaseline';
-
+import SaveIcon from '@material-ui/icons/Save';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { green } from '@material-ui/core/colors';
 import {
   Box,
   Button,
@@ -11,7 +14,6 @@ import {
   Divider,
   TextField,
   Container,
-  Grid,
   makeStyles
 } from '@material-ui/core';
 
@@ -19,6 +21,7 @@ import api from '../../services/api';
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
 import getCookie from '../../utils/functions';
+import { Context } from '../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -57,13 +60,67 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: 'flex',
     alignItems: 'center'
-  }
+  },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgress: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 export default function Settings() {
   const classes = useStyles();
+  const { handleLogout } = useContext(Context);
+  const timer = useRef();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+  });
+
+  useEffect(() => {
+    async function getUser() {
+      try {
+        await api.get('/users/profile');
+      } catch (error) {
+        toast.error(`Token expirado, faça login novamente! ${error.message || error}`);
+        setTimeout(() => {
+          handleLogout();
+        }, 5000);
+        console.log(error.message || error);
+      }
+    }
+    getUser();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleButtonClickProgress = () => {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -84,9 +141,12 @@ export default function Settings() {
     }
 
     if (status === 200) {
-      setNewPassword('');
-      setOldPassword('');
-      toast.success('Senha alterada com sucesso!');
+      handleButtonClickProgress();
+      setTimeout(() => {
+        setNewPassword('');
+        setOldPassword('');
+        toast.success('Senha alterada com sucesso!');
+      }, 2000);
     }
 
     console.log(data, status);
@@ -143,8 +203,12 @@ export default function Settings() {
                   type="submit"
                   color="primary"
                   variant="contained"
+                  className={buttonClassname}
+                  disabled={loading}
+                  startIcon={<SaveIcon />}
                 >
-                  Atualizar
+                  Salvar alterações
+                  {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </Button>
               </Box>
             </Card>
