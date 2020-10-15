@@ -26,6 +26,7 @@ import ImagePerfil from '../../assets/images/admin.png';
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
 import { Context } from '../../Context/AuthContext';
+import getCookie from '../../utils/functions';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -124,22 +125,6 @@ export default function Profile() {
     };
   }, []);
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
-
   const handleButtonClickProgress = () => {
     if (!loading) {
       setSuccess(false);
@@ -155,7 +140,7 @@ export default function Profile() {
     e.preventDefault();
     let user = JSON.parse(localStorage.getItem('user'));
     let userId = user.id;
-    let csrftoken = getCookie('csrftoken');
+    const csrfToken = getCookie('csrftoken');
 
     try {
       await api.post('/users/edit',
@@ -167,7 +152,7 @@ export default function Profile() {
         },
         {
           headers: {
-            'X-CSRFToken': csrftoken
+            'X-CSRFToken': csrfToken
           }
         }
       );
