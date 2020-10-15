@@ -6,6 +6,7 @@ import history from '../../services/history';
 export default function useAuth() {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState({ 'error': '' });
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -30,7 +31,9 @@ export default function useAuth() {
       setAuthenticated(true);
       history.push('/dashboard');
     } catch (error) {
+      const { data } = error.response;
       console.log('Ooops! Houve um error.', error.message || error);
+      setErrors({ 'error': data.detail });
       return;
     }
   }
@@ -43,5 +46,5 @@ export default function useAuth() {
     history.push('/login');
   }
 
-  return { authenticated, loading, handleLogin, handleLogout };
+  return { authenticated, loading, handleLogin, handleLogout, errors };
 }
