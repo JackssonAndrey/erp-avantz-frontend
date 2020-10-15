@@ -95,11 +95,11 @@ export default function Settings() {
       try {
         await api.get('/users/profile');
       } catch (error) {
-        toast.error(`Token expirado, faça login novamente! ${error.message || error}`);
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
         setTimeout(() => {
           handleLogout();
         }, 5000);
-        console.log(error.message || error);
       }
     }
     getUser();
@@ -127,29 +127,29 @@ export default function Settings() {
 
     const csrfToken = getCookie('csrftoken');
 
-    const { data, status } = await api.put('/users/change_password/', {
-      old_password: oldPassword,
-      new_password: newPassword
-    }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    });
+    try {
+      await api.put('/users/change_password/', {
+        old_password: oldPassword,
+        new_password: newPassword
+      }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
 
-    if (status !== 200) {
-      toast.error('Não foi possível alterar a senha, tente novamente!');
-    }
-
-    if (status === 200) {
       handleButtonClickProgress();
       setTimeout(() => {
         setNewPassword('');
         setOldPassword('');
         toast.success('Senha alterada com sucesso!');
       }, 2000);
+    } catch (error) {
+      const { data, status } = error.response;
+      toast.error(`${data.detail}`);
+      if (status === 403) {
+        handleLogout();
+      }
     }
-
-    console.log(data, status);
   }
 
   return (

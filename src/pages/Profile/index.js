@@ -107,11 +107,12 @@ export default function Profile() {
         setDateJoined(data.user.date_joined);
         setUsername(data.user.username);
       } catch (error) {
-        toast.error(`Não foi possível carregar seus dados, faça login novamente! ${error.message || error}`);
-        // setTimeout(() => {
-        //   handleLogout();
-        // }, 5000);
-        console.log(error.message || error);
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
+        setTimeout(() => {
+          handleLogout();
+        }, 5000);
+        console.log(data.detail);
       }
     }
     getUser();
@@ -175,11 +176,11 @@ export default function Profile() {
         toast.success('Seus dados foram atualizados!');
       }, 2000);
     } catch (error) {
-      toast.error('Token expirado, faça login novamente!');
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
       setTimeout(() => {
         handleLogout();
       }, 5000);
-      console.log(error.message);
     }
   }
 
