@@ -16,22 +16,10 @@ import Container from '@material-ui/core/Container';
 import { toast, ToastContainer } from 'react-toastify';
 
 import { Context } from '../../Context/AuthContext';
+import Copyright from '../../components/Copyright';
 
 import 'react-toastify/dist/ReactToastify.css';
 import '../../global/global.css';
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <LinkMaterial color="inherit" href="#">
-        Avantz
-      </LinkMaterial>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const useStyles = makeStyles((theme) => ({
   paper: {

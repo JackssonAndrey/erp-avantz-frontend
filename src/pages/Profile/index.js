@@ -16,17 +16,15 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { green } from '@material-ui/core/colors';
 import { toast, ToastContainer } from 'react-toastify';
 
-import 'react-toastify/dist/ReactToastify.css';
-
-
 import api from '../../services/api';
 
 import ImagePerfil from '../../assets/images/admin.png';
-
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
 import { Context } from '../../Context/AuthContext';
 import getCookie from '../../utils/functions';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
   root: {

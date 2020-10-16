@@ -11,7 +11,6 @@ import {
   Box,
   Typography,
   Container,
-  Link as LinkMaterial,
   makeStyles
 } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
@@ -19,11 +18,11 @@ import { grey, green } from '@material-ui/core/colors';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import api from '../../services/api';
-import getCookie from '../../utils/functions';
 import Copyright from '../../components/Copyright';
 
 import 'react-toastify/dist/ReactToastify.css';
 import '../../global/global.css';
+
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -63,10 +62,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function ForgotPassword() {
+function ResetPassword() {
   const classes = useStyles();
   const timer = useRef();
-  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [token, setToken] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -74,19 +74,14 @@ function ForgotPassword() {
     [classes.buttonSuccess]: success,
   });
 
-  const handleSendMail = async (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
 
     try {
-      await api.post('/users/password_reset/', { email }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
+      await api.post('/users/password_reset/confirm/', { token, password });
       handleButtonClickProgress();
       setTimeout(() => {
-        toast.success('E-mail enviado, verifique sua caixa de entrada!');
+        toast.success('Senha alterada, faça login agora!');
       }, 2000);
     } catch (error) {
       const { data } = error.response;
@@ -122,24 +117,36 @@ function ForgotPassword() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Recuperar senha
+          Crie uma nova senha
         </Typography>
         <Typography component="h3" className={classes.subtitle}>
-          Enviaremos um token de recuperação para você, verifique seu e-mail.
+          Crie uma senha segura e de fácil memorização. Guarde-a bem e não compartilhe com ninguém.
         </Typography>
-        <form className={classes.form} onSubmit={(e) => handleSendMail(e)} noValidate>
+        <form className={classes.form} onSubmit={(e) => handleChangePassword(e)} noValidate>
           <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="email"
-            label="Digite seu endereço de e-mail"
-            name="email"
-            autoComplete="email"
+            id="token"
+            label="Digite o token que foi enviado para o seu e-mail"
+            name="token"
+            autoComplete="token"
             autoFocus
-            value={email}
-            onChange={(e) => { setEmail(e.target.value) }}
+            value={token}
+            onChange={(e) => { setToken(e.target.value) }}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="password"
+            label="Digite uma nova senha"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
           <Button
             type="submit"
@@ -156,7 +163,7 @@ function ForgotPassword() {
           <Grid container>
             <Grid item xs>
               <Link to="/login" className="link-underlined">
-                Já tem uma conta? Faça login.
+                Faça login.
               </Link>
             </Grid>
           </Grid>
@@ -169,4 +176,4 @@ function ForgotPassword() {
   );
 }
 
-export default ForgotPassword;
+export default ResetPassword;
