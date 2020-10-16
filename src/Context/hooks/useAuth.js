@@ -29,6 +29,7 @@ export default function useAuth() {
       api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
       api.defaults.withCredentials = true;
       setAuthenticated(true);
+      setErrors({ 'error': '' });
       history.push('/dashboard');
     } catch (error) {
       const { data } = error.response;
