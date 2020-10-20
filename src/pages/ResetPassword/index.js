@@ -87,7 +87,7 @@ function ResetPassword() {
       const { data } = error.response;
       data.email.map(error => {
         toast.error(`${error}`);
-      })
+      });
     }
   }
 

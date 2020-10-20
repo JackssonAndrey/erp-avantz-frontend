@@ -76,6 +76,9 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  cardActions: {
+    justifyContent: 'center'
+  },
 }));
 
 export default function Profile() {
@@ -90,6 +93,8 @@ export default function Profile() {
   const [email, setEmail] = useState('');
   const [institution, setInstituition] = useState('');
   const [dateJoined, setDateJoined] = useState('');
+  const [imagePerfil, setImagePerfil] = useState('');
+  const [image, setImage] = useState();
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -122,6 +127,59 @@ export default function Profile() {
       clearTimeout(timer.current);
     };
   }, []);
+
+  useEffect(() => {
+    async function getImageUser() {
+      try {
+        const { data } = await api.get('/imagem/list');
+        setImagePerfil(data.imagem);
+      } catch (error) {
+        const { data } = error.response;
+        toast.error(`Não foi possível carregar a imagem de perfil, ${data.detail}`);
+        console.log(data.detail);
+      }
+    }
+    getImageUser();
+  }, []);
+
+  async function handleChangeImagePerfil(e) {
+    e.preventDefault();
+    const csrfToken = getCookie('csrftoken');
+    let { id, instit_id } = JSON.parse(localStorage.getItem('user'));
+    const formData = new FormData();
+    formData.append('imagem', image);
+    formData.append('user', id);
+    formData.append('instit', instit_id);
+    console.log(image);
+
+    if (image === '' || image === {} || image === undefined) {
+      toast.error('Selecione uma imagem.');
+      return;
+    }
+
+    try {
+      await api.post('/imagem/upload',
+        {
+          imagem: image,
+          user: id,
+          instit: instit_id
+        },
+        {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        }
+      );
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Imagem de perfil alterada com sucesso!');
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`Não foi possível atualizar a imagem de perfil`);
+      console.log(data.detail);
+    }
+  }
 
   const handleButtonClickProgress = () => {
     if (!loading) {
@@ -193,7 +251,7 @@ export default function Profile() {
                     display="flex"
                     flexDirection="column"
                   >
-                    <Avatar alt="Remy Sharp" src={ImagePerfil} className={classes.large} />
+                    <Avatar alt="Remy Sharp" src={imagePerfil} className={classes.large} />
 
                     <Typography
                       color="textPrimary"
@@ -214,24 +272,56 @@ export default function Profile() {
                   </Box>
                 </CardContent>
                 <Divider />
-                <CardActions>
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                  >
-                    <input
-                      accept="image/*"
-                      className={classes.input}
-                      id="contained-button-file"
-                      type="file"
-                    />
-                    <label htmlFor="contained-button-file">
-                      <Button fullWidth variant="text" color="primary" component="span" startIcon={<CloudUploadIcon />}>
-                        Alterar imagem
-                    </Button>
-                    </label>
-                  </Box>
-
+                <CardActions className={classes.cardActions}>
+                  <form
+                    autoComplete="off"
+                    noValidate
+                    onSubmit={(e) => handleChangeImagePerfil(e)}>
+                    <Grid
+                      container
+                      spacing={3}
+                      direction="row"
+                      justify="center"
+                      alignItems="center"
+                    >
+                      <Grid
+                        item
+                        sm={6}
+                        md={6}
+                        xs={6}
+                      >
+                        <input
+                          accept="image/*"
+                          className={classes.input}
+                          id="contained-button-file"
+                          type="file"
+                          onChange={(e) => setImage(e.target.files[0])}
+                        />
+                        <label htmlFor="contained-button-file">
+                          <Button fullWidth variant="text" color="primary" component="span" startIcon={<CloudUploadIcon />}>
+                            Selecionar
+                            </Button>
+                        </label>
+                      </Grid>
+                      <Grid
+                        item
+                        sm={6}
+                        md={6}
+                        xs={6}
+                      >
+                        <Button
+                          fullWidth
+                          type="submit"
+                          color="primary"
+                          variant="contained"
+                          startIcon={<SaveIcon />}
+                        >
+                          Salvar
+                          {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </form>
                 </CardActions>
               </Card>
             </Grid>
