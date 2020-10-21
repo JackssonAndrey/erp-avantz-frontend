@@ -87,6 +87,8 @@ export default function Profile() {
   const timer = useRef();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [loadingImageUpload, setLoadingImageUpload] = useState(false);
+  const [successImageUpload, setSuccessImageUpload] = useState(false);
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -98,6 +100,10 @@ export default function Profile() {
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
+  });
+
+  const buttonClassNameImageUpload = clsx({
+    [classes.buttonSuccess]: successImageUpload,
   });
 
   useEffect(() => {
@@ -128,29 +134,29 @@ export default function Profile() {
     };
   }, []);
 
-  useEffect(() => {
-    async function getImageUser() {
-      try {
-        const { data } = await api.get('/imagem/list');
-        setImagePerfil(data.imagem);
-      } catch (error) {
-        const { data } = error.response;
-        toast.error(`Não foi possível carregar a imagem de perfil, ${data.detail}`);
-        console.log(data.detail);
-      }
+  async function getImageUser() {
+    try {
+      const { data } = await api.get('/imagem/list');
+      setImagePerfil(data.imagem);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`Não foi possível carregar a imagem de perfil, ${data.detail}`);
+      // console.log(data.detail);
     }
+  }
+
+  useEffect(() => {
     getImageUser();
   }, []);
 
   async function handleChangeImagePerfil(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
-    let { id, instit_id } = JSON.parse(localStorage.getItem('user'));
+    const { id, instit_id } = JSON.parse(localStorage.getItem('user'));
     const formData = new FormData();
     formData.append('imagem', image);
     formData.append('user', id);
     formData.append('instit', instit_id);
-    console.log(image);
 
     if (image === '' || image === {} || image === undefined) {
       toast.error('Selecione uma imagem.');
@@ -158,26 +164,25 @@ export default function Profile() {
     }
 
     try {
-      await api.post('/imagem/upload',
-        {
-          imagem: image,
-          user: id,
-          instit: instit_id
-        },
+      await api.post('/imagem/upload', formData,
         {
           headers: {
             'X-CSRFToken': csrfToken
-          }
+          },
+          // onUploadProgress: progressEvent => {
+          //   console.log(`Upload progress: ${Math.round(progressEvent.loaded / progressEvent.total * 100)} %`);
+          // }
         }
       );
-      handleButtonClickProgress();
+      handleProgressImageUpload();
       setTimeout(() => {
         toast.success('Imagem de perfil alterada com sucesso!');
       }, 2000);
+      getImageUser();
     } catch (error) {
       const { data } = error.response;
       toast.error(`Não foi possível atualizar a imagem de perfil`);
-      console.log(data.detail);
+      // console.log(data.detail);
     }
   }
 
@@ -188,6 +193,17 @@ export default function Profile() {
       timer.current = window.setTimeout(() => {
         setSuccess(true);
         setLoading(false);
+      }, 2000);
+    }
+  };
+
+  const handleProgressImageUpload = () => {
+    if (!loadingImageUpload) {
+      setSuccessImageUpload(false);
+      setLoadingImageUpload(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessImageUpload(true);
+        setLoadingImageUpload(false);
       }, 2000);
     }
   };
@@ -314,10 +330,12 @@ export default function Profile() {
                           type="submit"
                           color="primary"
                           variant="contained"
+                          className={buttonClassNameImageUpload}
+                          disabled={loadingImageUpload}
                           startIcon={<SaveIcon />}
                         >
                           Salvar
-                          {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                          {loadingImageUpload && <CircularProgress size={24} className={classes.buttonProgress} />}
                         </Button>
                       </Grid>
                     </Grid>
