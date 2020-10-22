@@ -18,7 +18,6 @@ import { toast, ToastContainer } from 'react-toastify';
 
 import api from '../../services/api';
 
-import ImagePerfil from '../../assets/images/admin.png';
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
 import { Context } from '../../Context/AuthContext';
@@ -180,7 +179,7 @@ export default function Profile() {
       }, 2000);
       getImageUser();
     } catch (error) {
-      const { data } = error.response;
+      // const { data } = error.response;
       toast.error(`Não foi possível atualizar a imagem de perfil`);
       // console.log(data.detail);
     }

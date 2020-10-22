@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -25,7 +25,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-import { mainListItems, secondaryListItems } from '../ItemsLeftMenu';
+import MainListItems from '../ItemsLeftMenu';
 import { Context } from '../../Context/AuthContext';
 
 import '../../global/global.css';
@@ -123,6 +123,7 @@ export default function Menus(props) {
   const [openModal, setOpenModal] = useState(false);
   const { handleLogout } = useContext(Context);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [accessUser, setAccessUser] = useState('');
 
   const handleDrawerClick = () => {
     open ? setOpen(false) : setOpen(true)
@@ -140,6 +141,11 @@ export default function Menus(props) {
   const handleToggleModal = () => {
     openModal ? setOpenModal(false) : setOpenModal(true)
   };
+
+  useEffect(() => {
+    const { acess } = JSON.parse(localStorage.getItem('user'));
+    setAccessUser(acess);
+  }, []);
 
   return (
     <>
@@ -204,9 +210,11 @@ export default function Menus(props) {
           </IconButton>
         </div>
         <Divider />
-        <List>{mainListItems}</List>
+        <List>
+          <MainListItems access={accessUser} />
+        </List>
         <Divider />
-        <List>{secondaryListItems}</List>
+        {/* <List>{secondaryListItems}</List> */}
       </Drawer>
       <Dialog
         open={openModal}
