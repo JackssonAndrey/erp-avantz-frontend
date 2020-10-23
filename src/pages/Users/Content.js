@@ -27,6 +27,7 @@ import api from '../../services/api';
 import getCookie from '../../utils/functions';
 import { Context } from '../../Context/AuthContext';
 import { toast } from 'react-toastify';
+import history from '../../services/history';
 
 
 function descendingComparator(a, b, orderBy) {
@@ -210,6 +211,10 @@ export default function EnhancedTable() {
     setPage(0);
   };
 
+  function handleDetailsUser(id) {
+    history.push(`/users/detail/${id}`);
+  }
+
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
 
   return (
@@ -257,7 +262,7 @@ export default function EnhancedTable() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Detalhes">
-                          <IconButton onClick={() => { }} aria-label="Detalhes">
+                          <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
                             <DetailIcon size={8} style={{ color: orange[200] }} />
                           </IconButton>
                         </Tooltip>
