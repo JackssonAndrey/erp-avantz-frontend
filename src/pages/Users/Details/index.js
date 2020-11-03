@@ -76,26 +76,33 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Users(props) {
   const classes = useStyles();
-  // const [idUser, setIdUser] = useState(props.match.params.id);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [access, setAccess] = useState('');
+  const [dateJoined, setDateJoined] = useState('');
+  const [email, setEmail] = useState('');
+  const [group, setGroup] = useState('');
+  const idUser = props.match.params.id;
+  const csrfToken = getCookie('csrftoken');
 
   useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-    const idUser = props.match.params.id;
-    async function getUserData() {
-      try {
-        const { user } = await api.get('/users/details', { idUser }, {
-          headers: {
-            'X-CSRFToken': csrfToken
-          }
-        });
-        console.log(user);
-      } catch (error) {
-        const { data } = error.response;
-        console.log(data);
+    api.get(`/users/users/${idUser}`, {
+      headers: {
+        'X-CSRFToken': csrfToken
       }
-    }
-    getUserData();
-  }, []);
+    }).then(response => {
+      setFirstName(response.data.first_name);
+      setLastName(response.data.last_name);
+      setUsername(response.data.username);
+      setAccess(response.data.acess);
+      setDateJoined(response.data.date_joined);
+      setEmail(response.data.email);
+      setGroup(response.data.idgrp_id)
+    }).catch(reject => {
+      console.log(reject);
+    });
+  }, [idUser]);
 
   return (
     <div className={classes.root}>
@@ -153,9 +160,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="Primeiro nome"
                     name="firstName"
                     variant="outlined"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
                   />
                 </Grid>
 
@@ -167,9 +177,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="Segundo nome"
                     name="lastName"
                     variant="outlined"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
                   />
                 </Grid>
 
@@ -181,9 +194,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="E-mail"
                     name="email"
                     variant="outlined"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </Grid>
 
@@ -195,9 +211,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="Username"
                     name="username"
                     variant="outlined"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                   />
                 </Grid>
 
@@ -209,9 +228,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="Data de criação"
                     name="dateJoined"
                     variant="outlined"
+                    value={dateJoined}
+                    onChange={(e) => setDateJoined(e.target.value)}
                   />
                 </Grid>
 
@@ -223,9 +245,12 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
+                    disabled
                     label="Grupo"
                     name="group"
                     variant="outlined"
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
                   />
                 </Grid>
               </Grid>

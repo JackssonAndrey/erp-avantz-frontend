@@ -23,7 +23,7 @@ export default function Routes() {
       <CustomRoute isPrivate exact path="/profile" component={Profile} />
       <CustomRoute isPrivate exact path="/settings" component={Settings} />
       <CustomRoute isPrivate exact path="/users" component={Users} />
-      <CustomRoute isPrivate exact path="/users/detail/:id" component={UsersDetails} />
+      <CustomRoute isPrivate exact path="/users/details/:id" component={UsersDetails} />
     </Switch>
   );
 }

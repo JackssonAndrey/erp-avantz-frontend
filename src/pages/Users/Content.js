@@ -212,7 +212,7 @@ export default function EnhancedTable() {
   };
 
   function handleDetailsUser(id) {
-    history.push(`/users/detail/${id}`);
+    history.push(`/users/details/${id}`);
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
