@@ -258,12 +258,12 @@ export default function EnhancedTable() {
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
                           <IconButton onClick={() => { }} aria-label="Editar">
-                            <EditIcon size={8} style={{ color: lightBlue[600] }} />
+                            <EditIcon size={8} style={{ color: orange[300] }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Detalhes">
                           <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
-                            <DetailIcon size={8} style={{ color: orange[200] }} />
+                            <DetailIcon size={8} style={{ color: lightBlue[600] }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Deletar">

@@ -4,7 +4,8 @@ import { ToastContainer } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, Avatar, List, ListItem, ListItemText
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, Avatar, List, ListItem, ListItemText, Divider,
+  ListItemSecondaryAction, Checkbox
 } from '@material-ui/core';
 import { ArrowBack, Edit } from '@material-ui/icons';
 
@@ -79,11 +80,12 @@ export default function Users(props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
-  const [access, setAccess] = useState('');
+  const [access, setAccess] = useState([]);
   const [dateJoined, setDateJoined] = useState('');
   const [email, setEmail] = useState('');
   const [group, setGroup] = useState('');
   const [userGroups, setUserGroups] = useState([]);
+  const [userPermissions, setUserPermissions] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
@@ -97,7 +99,7 @@ export default function Users(props) {
       setFirstName(response.data.first_name);
       setLastName(response.data.last_name);
       setUsername(response.data.username);
-      setAccess(response.data.acess);
+      setAccess(response.data.acess.split(''));
       setDateJoined(response.data.date_joined);
       setEmail(response.data.email);
       setGroup(response.data.idgrp_id);
@@ -125,6 +127,18 @@ export default function Users(props) {
       }
     });
   }, [userGroups]);
+
+  useEffect(() => {
+    api.get('/permissions/', {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      setUserPermissions(response.data);
+    }).catch(reject => {
+      console.log(reject);
+    });
+  }, []);
 
   return (
     <div className={classes.root}>
@@ -274,6 +288,58 @@ export default function Users(props) {
                     value={nameGroup}
                     onChange={(e) => setNameGroup(e.target.value)}
                   />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+
+          <Card className={classes.cardContent}>
+            <CardContent>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={12}
+                  sm={12}
+                  xl={12}
+                >
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <List >
+                      <h2>Permissões do usuário</h2>
+                      <Divider />
+                      {userPermissions.map(permission => (
+                        <ListItem key={permission.id} role={undefined} dense button>
+                          <ListItemText primary={permission.descr} />
+                          <ListItemSecondaryAction>
+                            {
+                              access[permission.id] === '1' ? (
+                                <Checkbox
+                                  edge="end"
+                                  checked
+                                  disabled
+                                  tabIndex={-1}
+                                  disableRipple
+                                />
+                              ) : (
+                                  <Checkbox
+                                    edge="end"
+                                    disabled
+                                    tabIndex={-1}
+                                    disableRipple
+                                  />
+                                )
+                            }
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
                 </Grid>
               </Grid>
             </CardContent>
