@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Button, Card, CardContent, IconButton, Grid, TextField, Avatar
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, Avatar, List, ListItem, ListItemText
 } from '@material-ui/core';
 import { ArrowBack, Edit } from '@material-ui/icons';
 
@@ -83,6 +83,8 @@ export default function Users(props) {
   const [dateJoined, setDateJoined] = useState('');
   const [email, setEmail] = useState('');
   const [group, setGroup] = useState('');
+  const [userGroups, setUserGroups] = useState([]);
+  const [nameGroup, setNameGroup] = useState('');
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
 
@@ -98,11 +100,31 @@ export default function Users(props) {
       setAccess(response.data.acess);
       setDateJoined(response.data.date_joined);
       setEmail(response.data.email);
-      setGroup(response.data.idgrp_id)
+      setGroup(response.data.idgrp_id);
     }).catch(reject => {
       console.log(reject);
     });
   }, [idUser]);
+
+  useEffect(() => {
+    api.get('/groups/', {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      setUserGroups(response.data);
+    }).catch(reject => {
+      console.log(reject);
+    });
+  }, []);
+
+  useEffect(() => {
+    userGroups.map(userGroup => {
+      if (userGroup.id_grupo === group) {
+        setNameGroup(userGroup.grupo);
+      }
+    });
+  }, [userGroups]);
 
   return (
     <div className={classes.root}>
@@ -247,10 +269,10 @@ export default function Users(props) {
                     fullWidth
                     disabled
                     label="Grupo"
-                    name="group"
+                    name="groups"
                     variant="outlined"
-                    value={group}
-                    onChange={(e) => setGroup(e.target.value)}
+                    value={nameGroup}
+                    onChange={(e) => setNameGroup(e.target.value)}
                   />
                 </Grid>
               </Grid>
