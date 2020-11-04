@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
-import { green, orange } from '@material-ui/core/colors';
+import { green } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, Avatar, List, ListItem, ListItemText, Divider,
-  ListItemSecondaryAction, Checkbox
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, List, ListItem, ListItemText, Divider,
+  ListItemSecondaryAction, Checkbox, Button, Select, MenuItem, InputLabel, FormControl
 } from '@material-ui/core';
-import { ArrowBack, Edit } from '@material-ui/icons';
+import { ArrowBack } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Users(props) {
+export default function EditUser(props) {
   const classes = useStyles();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -144,7 +144,7 @@ export default function Users(props) {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Detalhes do usuário" />
+      <Menus title="Editar usuário" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
@@ -160,12 +160,6 @@ export default function Users(props) {
                     <ArrowBack />
                   </IconButton>
                 </Link>
-
-                <Link to={`/users/edit/${idUser}`} className="link" >
-                  <IconButton>
-                    <Edit style={{ color: orange[300] }} />
-                  </IconButton>
-                </Link>
               </Box>
             </CardContent>
           </Card>
@@ -178,27 +172,13 @@ export default function Users(props) {
               >
                 <Grid
                   item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Avatar className={classes.avatarLarge} />
-                  </Box>
-                </Grid>
-                <Grid
-                  item
                   xs={6}
                   sm={6}
                   xl={6}
                 >
                   <TextField
                     fullWidth
-                    disabled
+                    required
                     label="Primeiro nome"
                     name="firstName"
                     variant="outlined"
@@ -215,7 +195,6 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
-                    disabled
                     label="Segundo nome"
                     name="lastName"
                     variant="outlined"
@@ -232,7 +211,6 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
-                    disabled
                     label="E-mail"
                     name="email"
                     variant="outlined"
@@ -249,7 +227,7 @@ export default function Users(props) {
                 >
                   <TextField
                     fullWidth
-                    disabled
+                    required
                     label="Username"
                     name="username"
                     variant="outlined"
@@ -281,15 +259,27 @@ export default function Users(props) {
                   sm={8}
                   xl={8}
                 >
-                  <TextField
-                    fullWidth
-                    disabled
-                    label="Grupo"
-                    name="groups"
+                  <FormControl
                     variant="outlined"
-                    value={nameGroup}
-                    onChange={(e) => setNameGroup(e.target.value)}
-                  />
+                    fullWidth
+                    required
+                  >
+                    <InputLabel id="user-group-select" >Grupo</InputLabel>
+                    <Select
+                      labelId="user-group-select"
+                      id="user-group"
+                      value={group || ''}
+                      onChange={(e) => setGroup(e.target.value)}
+                      label="Grupo"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {userGroups.map((userGroup, index) => (
+                        <MenuItem value={userGroup.id} key={index} >{userGroup.grupo}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </CardContent>
@@ -342,6 +332,27 @@ export default function Users(props) {
                       ))}
                     </List>
                   </Box>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={12}
+                  sm={12}
+                  xl={12}
+                >
+                  <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
+                  <Box
+                    display="flex"
+                    justifyContent="flex-start"
+                  >
+                    <Button
+                      color="primary"
+                      variant="contained"
+                    >
+                      Salvar alterações
+                    </Button>
+                  </Box>
+
                 </Grid>
               </Grid>
             </CardContent>

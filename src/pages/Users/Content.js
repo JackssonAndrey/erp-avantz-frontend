@@ -215,6 +215,10 @@ export default function EnhancedTable() {
     history.push(`/users/details/${id}`);
   }
 
+  function handleEditUser(id) {
+    history.push(`/users/edit/${id}`);
+  }
+
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
 
   return (
@@ -257,7 +261,7 @@ export default function EnhancedTable() {
                       <TableCell padding="none" align="left">{user.email}</TableCell>
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
-                          <IconButton onClick={() => { }} aria-label="Editar">
+                          <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
                             <EditIcon size={8} style={{ color: orange[300] }} />
                           </IconButton>
                         </Tooltip>
