@@ -83,10 +83,13 @@ export default function EditUser(props) {
   const [access, setAccess] = useState([]);
   const [dateJoined, setDateJoined] = useState('');
   const [email, setEmail] = useState('');
-  const [group, setGroup] = useState('');
+  const [group, setGroup] = useState(0);
+  const [idPescod, setIdPescod] = useState(0);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
+  const [persons, setPersons] = useState([]);
+
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
 
@@ -103,6 +106,7 @@ export default function EditUser(props) {
       setDateJoined(response.data.date_joined);
       setEmail(response.data.email);
       setGroup(response.data.idgrp_id);
+      setIdPescod(response.data.idpescod_id);
     }).catch(reject => {
       console.log(reject);
     });
@@ -135,6 +139,18 @@ export default function EditUser(props) {
       }
     }).then(response => {
       setUserPermissions(response.data);
+    }).catch(reject => {
+      console.log(reject);
+    });
+  }, []);
+
+  useEffect(() => {
+    api.get('/persons/', {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      setPersons(response.data);
     }).catch(reject => {
       console.log(reject);
     });
@@ -238,26 +254,39 @@ export default function EditUser(props) {
 
                 <Grid
                   item
-                  xs={4}
-                  sm={4}
-                  xl={4}
+                  xs={6}
+                  sm={6}
+                  xl={6}
                 >
-                  <TextField
-                    fullWidth
-                    disabled
-                    label="Data de criação"
-                    name="dateJoined"
+                  <FormControl
                     variant="outlined"
-                    value={dateJoined}
-                    onChange={(e) => setDateJoined(e.target.value)}
-                  />
+                    fullWidth
+                    required
+                  >
+                    <InputLabel id="register-person-select" >Registro de pessoa</InputLabel>
+                    <Select
+                      labelId="register-person-select"
+                      id="register-person"
+                      value={idPescod || ''}
+                      onChange={(e) => setIdPescod(e.target.value)}
+                      label="Registro de pessoa"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {persons.map((person, index) => (
+                        <MenuItem value={person.id_pessoa_cod} key={index} >{person.nomeorrazaosocial}</MenuItem>
+                      ))}
+
+                    </Select>
+                  </FormControl>
                 </Grid>
 
                 <Grid
                   item
-                  xs={8}
-                  sm={8}
-                  xl={8}
+                  xs={6}
+                  sm={6}
+                  xl={6}
                 >
                   <FormControl
                     variant="outlined"
@@ -276,8 +305,9 @@ export default function EditUser(props) {
                         <em>None</em>
                       </MenuItem>
                       {userGroups.map((userGroup, index) => (
-                        <MenuItem value={userGroup.id} key={index} >{userGroup.grupo}</MenuItem>
+                        <MenuItem value={userGroup.id_grupo} key={index} >{userGroup.grupo}</MenuItem>
                       ))}
+
                     </Select>
                   </FormControl>
                 </Grid>
