@@ -319,24 +319,14 @@ export default function Users(props) {
                         <ListItem key={permission.id} role={undefined} dense button>
                           <ListItemText primary={permission.descr} />
                           <ListItemSecondaryAction>
-                            {
-                              access[permission.id] === '1' ? (
-                                <Checkbox
-                                  edge="end"
-                                  checked
-                                  disabled
-                                  tabIndex={-1}
-                                  disableRipple
-                                />
-                              ) : (
-                                  <Checkbox
-                                    edge="end"
-                                    disabled
-                                    tabIndex={-1}
-                                    disableRipple
-                                  />
-                                )
-                            }
+                            <Checkbox
+                              edge="end"
+                              disabled
+                              checked={access[permission.id - 1] === '1' ? true : false}
+                              tabIndex={-1}
+                              disableRipple
+                              color="primary"
+                            />
                           </ListItemSecondaryAction>
                         </ListItem>
                       ))}

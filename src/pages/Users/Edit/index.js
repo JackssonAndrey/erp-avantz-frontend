@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green } from '@material-ui/core/colors';
 import {
@@ -13,6 +13,7 @@ import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import getCookie from '../../../utils/functions';
+import { Context } from '../../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -77,11 +78,11 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EditUser(props) {
   const classes = useStyles();
+  const { handleLogout } = useContext(Context);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [access, setAccess] = useState([]);
-  const [dateJoined, setDateJoined] = useState('');
   const [email, setEmail] = useState('');
   const [group, setGroup] = useState(0);
   const [idPescod, setIdPescod] = useState(0);
@@ -89,6 +90,9 @@ export default function EditUser(props) {
   const [userPermissions, setUserPermissions] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
   const [persons, setPersons] = useState([]);
+  const [checked, setChecked] = useState(false);
+
+
 
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
@@ -103,12 +107,16 @@ export default function EditUser(props) {
       setLastName(response.data.last_name);
       setUsername(response.data.username);
       setAccess(response.data.acess.split(''));
-      setDateJoined(response.data.date_joined);
       setEmail(response.data.email);
       setGroup(response.data.idgrp_id);
       setIdPescod(response.data.idpescod_id);
     }).catch(reject => {
-      console.log(reject);
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(data);
     });
   }, [idUser]);
 
@@ -120,7 +128,12 @@ export default function EditUser(props) {
     }).then(response => {
       setUserGroups(response.data);
     }).catch(reject => {
-      console.log(reject);
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(data);
     });
   }, []);
 
@@ -140,7 +153,12 @@ export default function EditUser(props) {
     }).then(response => {
       setUserPermissions(response.data);
     }).catch(reject => {
-      console.log(reject);
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(data);
     });
   }, []);
 
@@ -152,9 +170,66 @@ export default function EditUser(props) {
     }).then(response => {
       setPersons(response.data);
     }).catch(reject => {
-      console.log(reject);
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(data);
     });
   }, []);
+
+  function handleChangeGroup(e) {
+    setGroup(e.target.value);
+    let userAccess = userGroups.filter(userGroup => {
+      return userGroup.id_grupo === group;
+    });
+    let userAccessArray = userAccess[0].acess.split('');
+    setAccess(userAccessArray);
+  }
+
+  function handleUpdateAccessUserArray() {
+    let elements = document.getElementById("form-edit").elements;
+    let newArrayAccess = [];
+
+    for (let i = 0, element; element = elements[i++];) {
+      if (element.type === "checkbox") {
+        if (element.checked === true) {
+          newArrayAccess.push('1');
+        } else {
+          newArrayAccess.push('0');
+        }
+      }
+    }
+    setAccess(newArrayAccess);
+  }
+
+  function handleEditUser(e) {
+    e.preventDefault();
+    handleUpdateAccessUserArray();
+
+    let data = {
+      "userId": idUser,
+      "username": username,
+      "email": email,
+      "firstName": firstName,
+      "lastName": lastName,
+      "idGroupUser": group,
+      "access": access.join('')
+    };
+
+    api.put('/users/admin_edit', data, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      toast.success('Dados alterados com sucesso!');
+    }).catch(reject => {
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+    });
+
+  }
 
   return (
     <div className={classes.root}>
@@ -179,215 +254,211 @@ export default function EditUser(props) {
               </Box>
             </CardContent>
           </Card>
-
-          <Card className={classes.cardContent}>
-            <CardContent>
-              <Grid
-                container
-                spacing={3}
-              >
+          <form
+            autoComplete="off"
+            id="form-edit"
+            onSubmit={(e) => handleEditUser(e)}
+          >
+            <Card className={classes.cardContent}>
+              <CardContent>
                 <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
+                  container
+                  spacing={3}
                 >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Primeiro nome"
-                    name="firstName"
-                    variant="outlined"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <TextField
-                    fullWidth
-                    label="Segundo nome"
-                    name="lastName"
-                    variant="outlined"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={8}
-                  sm={8}
-                  xl={8}
-                >
-                  <TextField
-                    fullWidth
-                    label="E-mail"
-                    name="email"
-                    variant="outlined"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Username"
-                    name="username"
-                    variant="outlined"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <FormControl
-                    variant="outlined"
-                    fullWidth
-                    required
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
                   >
-                    <InputLabel id="register-person-select" >Registro de pessoa</InputLabel>
-                    <Select
-                      labelId="register-person-select"
-                      id="register-person"
-                      value={idPescod || ''}
-                      onChange={(e) => setIdPescod(e.target.value)}
-                      label="Registro de pessoa"
+                    <TextField
+                      fullWidth
+                      required
+                      label="Primeiro nome"
+                      name="firstName"
+                      variant="outlined"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Segundo nome"
+                      name="lastName"
+                      variant="outlined"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={8}
+                    sm={8}
+                    xl={8}
+                  >
+                    <TextField
+                      fullWidth
+                      label="E-mail"
+                      name="email"
+                      variant="outlined"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Username"
+                      name="username"
+                      variant="outlined"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      required
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {persons.map((person, index) => (
-                        <MenuItem value={person.id_pessoa_cod} key={index} >{person.nomeorrazaosocial}</MenuItem>
-                      ))}
+                      <InputLabel id="register-person-select" >Registro de pessoa</InputLabel>
+                      <Select
+                        labelId="register-person-select"
+                        id="register-person"
+                        value={idPescod || ''}
+                        onChange={(e) => setIdPescod(e.target.value)}
+                        label="Registro de pessoa"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {persons.map((person, index) => (
+                          <MenuItem value={person.id_pessoa_cod} key={index} >{person.nomeorrazaosocial}</MenuItem>
+                        ))}
 
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <FormControl
-                    variant="outlined"
-                    fullWidth
-                    required
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
                   >
-                    <InputLabel id="user-group-select" >Grupo</InputLabel>
-                    <Select
-                      labelId="user-group-select"
-                      id="user-group"
-                      value={group || ''}
-                      onChange={(e) => setGroup(e.target.value)}
-                      label="Grupo"
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      required
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {userGroups.map((userGroup, index) => (
-                        <MenuItem value={userGroup.id_grupo} key={index} >{userGroup.grupo}</MenuItem>
-                      ))}
+                      <InputLabel id="user-group-select" >Grupo</InputLabel>
+                      <Select
+                        labelId="user-group-select"
+                        id="user-group"
+                        value={group || ''}
+                        onChange={handleChangeGroup}
+                        label="Grupo"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {userGroups.map((userGroup, index) => (
+                          <MenuItem value={userGroup.id_grupo} key={index} >{userGroup.grupo}</MenuItem>
+                        ))}
 
-                    </Select>
-                  </FormControl>
+                      </Select>
+                    </FormControl>
+                  </Grid>
                 </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className={classes.cardContent}>
-            <CardContent>
-              <Grid
-                container
-                spacing={3}
-              >
+            <Card className={classes.cardContent}>
+              <CardContent>
                 <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
+                  container
+                  spacing={3}
                 >
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
+                  <Grid
+                    item
+                    xs={12}
+                    sm={12}
+                    xl={12}
                   >
-                    <List >
-                      <h2>Permissões do usuário</h2>
-                      <Divider />
-                      {userPermissions.map(permission => (
-                        <ListItem key={permission.id} role={undefined} dense button>
-                          <ListItemText primary={permission.descr} />
-                          <ListItemSecondaryAction>
-                            {
-                              access[permission.id] === '1' ? (
-                                <Checkbox
-                                  edge="end"
-                                  checked
-                                  disabled
-                                  tabIndex={-1}
-                                  disableRipple
-                                />
-                              ) : (
-                                  <Checkbox
-                                    edge="end"
-                                    disabled
-                                    tabIndex={-1}
-                                    disableRipple
-                                  />
-                                )
-                            }
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Box>
-                </Grid>
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
-                  <Box
-                    display="flex"
-                    justifyContent="flex-start"
-                  >
-                    <Button
-                      color="primary"
-                      variant="contained"
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
                     >
-                      Salvar alterações
-                    </Button>
-                  </Box>
+                      <List >
+                        <h2>Permissões do usuário</h2>
+                        <Divider />
+                        {userPermissions.map(permission => (
+                          <ListItem key={permission.id} role={undefined} dense button>
+                            <ListItemText primary={permission.descr} />
+                            <ListItemSecondaryAction>
+                              <Checkbox
+                                edge="end"
+                                name="arrayAccess"
+                                onChange={(e) => setChecked(e.target.checked)}
+                                checked={access[permission.id - 1] === '1' ? true : false}
+                                tabIndex={-1}
+                                disableRipple
+                                color="primary"
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  </Grid>
 
+                  <Grid
+                    item
+                    xs={12}
+                    sm={12}
+                    xl={12}
+                  >
+                    <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
+                    <Box
+                      display="flex"
+                      justifyContent="flex-start"
+                    >
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        type="submit"
+                      >
+                        Salvar alterações
+                      </Button>
+                    </Box>
+
+                  </Grid>
                 </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-
+              </CardContent>
+            </Card>
+          </form>
         </Container>
         <Box pt={4}>
           <Copyright />
