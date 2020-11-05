@@ -12,6 +12,7 @@ import ResetPassword from '../pages/ResetPassword';
 import Users from '../pages/Users';
 import UsersDetails from '../pages/Users/Details';
 import EditUser from '../pages/Users/Edit';
+import RegisterUser from '../pages/Users/Register';
 
 export default function Routes() {
   return (
@@ -26,6 +27,7 @@ export default function Routes() {
       <CustomRoute isPrivate exact path="/users" component={Users} />
       <CustomRoute isPrivate exact path="/users/details/:id" component={UsersDetails} />
       <CustomRoute isPrivate exact path="/users/edit/:id" component={EditUser} />
+      <CustomRoute isPrivate exact path="/users/register" component={RegisterUser} />
     </Switch>
   );
 }

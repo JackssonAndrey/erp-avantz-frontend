@@ -12,6 +12,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import { Search as SearchIcon } from '@material-ui/icons';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
   root: {},
@@ -41,12 +42,14 @@ const Toolbar = ({ className, ...rest }) => {
         <Button className={classes.exportButton}>
           Export
         </Button> */}
-        <Button
-          color="primary"
-          variant="contained"
-        >
-          Adicionar usuário
+        <Link to="/users/register" className="link" >
+          <Button
+            color="primary"
+            variant="contained"
+          >
+            Adicionar usuário
         </Button>
+        </Link>
       </Box>
       <Box mt={3}>
         <Card>
