@@ -13,8 +13,10 @@ import { ArrowBack, Visibility, VisibilityOff } from '@material-ui/icons';
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import { Context } from '../../../Context/AuthContext';
+import CSRFToken from '../../../Context/CSRFToken';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -92,14 +94,13 @@ export default function RegisterUser() {
   const [idPescod, setIdPescod] = useState(0);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
-  const [nameGroup, setNameGroup] = useState('');
   const [persons, setPersons] = useState([]);
   const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const csrfToken = getCookie('csrftoken');
-
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
     api.get('/groups/', {
       headers: {
         'X-CSRFToken': csrfToken
@@ -116,15 +117,9 @@ export default function RegisterUser() {
     });
   }, []);
 
-  useLayoutEffect(() => {
-    userGroups.map(userGroup => {
-      if (userGroup.id_grupo === group) {
-        setNameGroup(userGroup.grupo);
-      }
-    });
-  }, [userGroups]);
-
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
     api.get('/permissions/', {
       headers: {
         'X-CSRFToken': csrfToken
@@ -142,6 +137,8 @@ export default function RegisterUser() {
   }, []);
 
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
     api.get('/persons/', {
       headers: {
         'X-CSRFToken': csrfToken
@@ -171,11 +168,10 @@ export default function RegisterUser() {
     let userAccess = userGroups.filter(userGroup => {
       return userGroup.id_grupo === group;
     });
-    console.log(userAccess);
-    console.log(userGroups);
-    console.log(group);
-    // let userAccessArray = userAccess[0].acess.split('');
-    // setAccess(userAccessArray);
+    if (userAccess.length > 0) {
+      let userAccessArray = userAccess[0].acess.split('');
+      setAccess(userAccessArray);
+    }
   }
 
   function handleUpdateAccessUserArray() {
@@ -197,23 +193,31 @@ export default function RegisterUser() {
   function handleRegisterNewUser(e) {
     e.preventDefault();
     handleUpdateAccessUserArray();
+    const csrfToken = getCookie('csrftoken');
+    const { instit_id } = JSON.parse(localStorage.getItem('user'));
 
     let data = {
-      "userId": 0,
       "username": username,
-      "email": email,
+      "password": password,
       "firstName": firstName,
       "lastName": lastName,
-      "idGroupUser": group,
+      "email": email,
+      "idPerson": idPescod,
+      "idInstitution": instit_id,
+      "idGroup": group,
+      "active": 1,
       "access": access.join('')
     };
 
-    api.put('/users/admin_edit', data, {
+    api.post('/users/register', data, {
       headers: {
         'X-CSRFToken': csrfToken
       }
     }).then(response => {
       toast.success('Usuário cadastrado com sucesso!');
+      setTimeout(() => {
+        history.push('/users');
+      }, 4000);
     }).catch(reject => {
       const { data } = reject.response;
       toast.error(`${data.detail}`);
@@ -249,6 +253,7 @@ export default function RegisterUser() {
             id="form-register"
             onSubmit={(e) => handleRegisterNewUser(e)}
           >
+            <CSRFToken />
             <Card className={classes.cardContent}>
               <CardContent>
                 <Grid
@@ -336,11 +341,11 @@ export default function RegisterUser() {
                       <Select
                         labelId="register-person-select"
                         id="register-person"
-                        value={idPescod || ''}
+                        value={idPescod || 0}
                         onChange={(e) => setIdPescod(e.target.value)}
                         label="Registro de pessoa"
                       >
-                        <MenuItem value="">
+                        <MenuItem value={0}>
                           <em>None</em>
                         </MenuItem>
                         {persons.map((person, index) => (

@@ -14,6 +14,7 @@ import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import getCookie from '../../../utils/functions';
 import { Context } from '../../../Context/AuthContext';
+import CSRFToken from '../../../Context/CSRFToken';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -88,7 +89,6 @@ export default function EditUser(props) {
   const [idPescod, setIdPescod] = useState(0);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
-  const [nameGroup, setNameGroup] = useState('');
   const [persons, setPersons] = useState([]);
   const [checked, setChecked] = useState(false);
 
@@ -138,14 +138,6 @@ export default function EditUser(props) {
   }, []);
 
   useEffect(() => {
-    userGroups.map(userGroup => {
-      if (userGroup.id_grupo === group) {
-        setNameGroup(userGroup.grupo);
-      }
-    });
-  }, [userGroups]);
-
-  useEffect(() => {
     api.get('/permissions/', {
       headers: {
         'X-CSRFToken': csrfToken
@@ -184,8 +176,11 @@ export default function EditUser(props) {
     let userAccess = userGroups.filter(userGroup => {
       return userGroup.id_grupo === group;
     });
-    let userAccessArray = userAccess[0].acess.split('');
-    setAccess(userAccessArray);
+    console.log(userAccess);
+    if (userAccess.length > 0) {
+      let userAccessArray = userAccess[0].acess.split('');
+      setAccess(userAccessArray);
+    }
   }
 
   function handleUpdateAccessUserArray() {
@@ -259,6 +254,7 @@ export default function EditUser(props) {
             id="form-edit"
             onSubmit={(e) => handleEditUser(e)}
           >
+            <CSRFToken />
             <Card className={classes.cardContent}>
               <CardContent>
                 <Grid
