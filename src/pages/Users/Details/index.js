@@ -91,7 +91,7 @@ export default function Users(props) {
   const csrfToken = getCookie('csrftoken');
 
   useEffect(() => {
-    api.get(`/users/users/${idUser}`, {
+    api.get(`/users/details/${idUser}`, {
       headers: {
         'X-CSRFToken': csrfToken
       }

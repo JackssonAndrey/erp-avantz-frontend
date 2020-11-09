@@ -97,6 +97,7 @@ export default function RegisterUser() {
   const [persons, setPersons] = useState([]);
   const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // const [userAccess, setUserAccess] = useState('');
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -174,25 +175,27 @@ export default function RegisterUser() {
     }
   }
 
-  function handleUpdateAccessUserArray() {
+  function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-register").elements;
     let newArrayAccess = [];
 
     for (let i = 0, element; element = elements[i++];) {
       if (element.type === "checkbox") {
+        let position = element.name;
         if (element.checked === true) {
-          newArrayAccess.push('1');
+          newArrayAccess[position] = 1;
         } else {
-          newArrayAccess.push('0');
+          newArrayAccess[position] = 0;
         }
       }
     }
-    setAccess(newArrayAccess);
+    let accessFormated = newArrayAccess.join('').toString();
+    return accessFormated;
   }
 
   function handleRegisterNewUser(e) {
     e.preventDefault();
-    handleUpdateAccessUserArray();
+    const accessFormated = handleFormatAccessUserArrayToString();
     const csrfToken = getCookie('csrftoken');
     const { instit_id } = JSON.parse(localStorage.getItem('user'));
 
@@ -206,7 +209,7 @@ export default function RegisterUser() {
       "idInstitution": instit_id,
       "idGroup": group,
       "active": 1,
-      "access": access.join('')
+      "access": accessFormated
     };
 
     api.post('/users/register', data, {

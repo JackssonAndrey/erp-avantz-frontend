@@ -92,13 +92,11 @@ export default function EditUser(props) {
   const [persons, setPersons] = useState([]);
   const [checked, setChecked] = useState(false);
 
-
-
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
 
   useEffect(() => {
-    api.get(`/users/users/${idUser}`, {
+    api.get(`/users/details/${idUser}`, {
       headers: {
         'X-CSRFToken': csrfToken
       }
@@ -183,37 +181,39 @@ export default function EditUser(props) {
     }
   }
 
-  function handleUpdateAccessUserArray() {
+  function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-edit").elements;
     let newArrayAccess = [];
 
     for (let i = 0, element; element = elements[i++];) {
       if (element.type === "checkbox") {
+        let position = element.name;
         if (element.checked === true) {
-          newArrayAccess.push('1');
+          newArrayAccess[position] = 1;
         } else {
-          newArrayAccess.push('0');
+          newArrayAccess[position] = 0;
         }
       }
     }
-    setAccess(newArrayAccess);
+    let accessFormated = newArrayAccess.join('').toString();
+    return accessFormated;
   }
 
   function handleEditUser(e) {
     e.preventDefault();
-    handleUpdateAccessUserArray();
+    const accessFormated = handleFormatAccessUserArrayToString();
+    console.log(userAccess);
 
     let data = {
-      "userId": idUser,
       "username": username,
       "email": email,
       "firstName": firstName,
       "lastName": lastName,
       "idGroupUser": group,
-      "access": access.join('')
+      "access": accessFormated
     };
 
-    api.put('/users/admin_edit', data, {
+    api.post(`/users/admin_edit/${idUser}`, data, {
       headers: {
         'X-CSRFToken': csrfToken
       }
@@ -420,6 +420,7 @@ export default function EditUser(props) {
                                 onChange={(e) => setChecked(e.target.checked)}
                                 checked={access[permission.id - 1] === '1' ? true : false}
                                 tabIndex={-1}
+                                name={`${permission.id - 1}`}
                                 disableRipple
                                 color="primary"
                               />
