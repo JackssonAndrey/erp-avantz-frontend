@@ -169,8 +169,7 @@ export default function EditUser(props) {
     });
   }, []);
 
-  function handleChangeGroup(e) {
-    setGroup(e.target.value);
+  useEffect(() => {
     let userAccess = userGroups.filter(userGroup => {
       return userGroup.id_grupo === group;
     });
@@ -179,7 +178,7 @@ export default function EditUser(props) {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
     }
-  }
+  }, [group]);
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-edit").elements;
@@ -202,7 +201,6 @@ export default function EditUser(props) {
   function handleEditUser(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
-    console.log(userAccess);
 
     let data = {
       "username": username,
@@ -210,6 +208,7 @@ export default function EditUser(props) {
       "firstName": firstName,
       "lastName": lastName,
       "idGroupUser": group,
+      "idPerson": idPescod,
       "access": accessFormated
     };
 
@@ -373,7 +372,7 @@ export default function EditUser(props) {
                         labelId="user-group-select"
                         id="user-group"
                         value={group || ''}
-                        onChange={handleChangeGroup}
+                        onChange={(e) => setGroup(e.target.value)}
                         label="Grupo"
                       >
                         <MenuItem value="">

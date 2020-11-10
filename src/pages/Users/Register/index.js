@@ -156,6 +156,17 @@ export default function RegisterUser() {
     });
   }, []);
 
+  useEffect(() => {
+    let userAccess = userGroups.filter(userGroup => {
+      return userGroup.id_grupo === group;
+    });
+    console.log(userAccess);
+    if (userAccess.length > 0) {
+      let userAccessArray = userAccess[0].acess.split('');
+      setAccess(userAccessArray);
+    }
+  }, [group]);
+
   function handleClickShowPassword() {
     setShowPassword(!showPassword);
   };
@@ -163,17 +174,6 @@ export default function RegisterUser() {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
-
-  function handleChangeGroup(e) {
-    setGroup(e.target.value);
-    let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === group;
-    });
-    if (userAccess.length > 0) {
-      let userAccessArray = userAccess[0].acess.split('');
-      setAccess(userAccessArray);
-    }
-  }
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-register").elements;
@@ -375,7 +375,7 @@ export default function RegisterUser() {
                         labelId="user-group-select"
                         id="user-group"
                         value={group || ''}
-                        onChange={handleChangeGroup}
+                        onChange={(e) => setGroup(e.target.value)}
                         label="Grupo"
                       >
                         <MenuItem value="">
