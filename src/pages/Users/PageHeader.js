@@ -12,8 +12,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from '@material-ui/core';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 
@@ -266,7 +265,19 @@ const PageHeader = ({ className, ...rest }) => {
         <DialogTitle id="form-dialog-title">Grupos de usuários</DialogTitle>
         <DialogContent>
           <Paper className={classes.paper}>
-
+            <Box
+              display="flex"
+              justifyContent="flex-end"
+            >
+              <Link to="/groups/register" className="link" >
+                <Button
+                  color="primary"
+                  variant="contained"
+                >
+                  Adicionar grupo
+                </Button>
+              </Link>
+            </Box>
             <TableContainer>
               <Table
                 className={classes.table}
@@ -338,7 +349,7 @@ const PageHeader = ({ className, ...rest }) => {
           </Paper>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="secondary" variant="contained">
             Fechar
           </Button>
         </DialogActions>

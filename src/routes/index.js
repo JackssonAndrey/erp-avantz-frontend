@@ -13,6 +13,9 @@ import Users from '../pages/Users';
 import UsersDetails from '../pages/Users/Details';
 import EditUser from '../pages/Users/Edit';
 import RegisterUser from '../pages/Users/Register';
+import UserGroupDetails from '../pages/UserGroups/Details';
+import EditUserGroup from '../pages/UserGroups/Edit';
+import RegisterUserGroup from '../pages/UserGroups/Register';
 
 export default function Routes() {
   return (
@@ -24,10 +27,15 @@ export default function Routes() {
       <CustomRoute isPrivate exact path="/dashboard" component={Dashboard} />
       <CustomRoute isPrivate exact path="/profile" component={Profile} />
       <CustomRoute isPrivate exact path="/settings" component={Settings} />
+
       <CustomRoute isPrivate exact path="/users" component={Users} />
       <CustomRoute isPrivate exact path="/users/details/:id" component={UsersDetails} />
       <CustomRoute isPrivate exact path="/users/edit/:id" component={EditUser} />
       <CustomRoute isPrivate exact path="/users/register" component={RegisterUser} />
+
+      <CustomRoute isPrivate exact path="/groups/details/:id" component={UserGroupDetails} />
+      <CustomRoute isPrivate exact path="/groups/edit/:id" component={EditUserGroup} />
+      <CustomRoute isPrivate exact path="/groups/register" component={RegisterUserGroup} />
     </Switch>
   );
 }

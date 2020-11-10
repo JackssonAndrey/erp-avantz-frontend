@@ -160,7 +160,6 @@ export default function RegisterUser() {
     let userAccess = userGroups.filter(userGroup => {
       return userGroup.id_grupo === group;
     });
-    console.log(userAccess);
     if (userAccess.length > 0) {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
@@ -447,7 +446,7 @@ export default function RegisterUser() {
                             <ListItemSecondaryAction>
                               <Checkbox
                                 edge="end"
-                                name="arrayAccess"
+                                name={`${permission.id - 1}`}
                                 onChange={(e) => setChecked(e.target.checked)}
                                 checked={access[permission.id - 1] === '1' ? true : false}
                                 tabIndex={-1}

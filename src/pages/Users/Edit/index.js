@@ -415,7 +415,6 @@ export default function EditUser(props) {
                             <ListItemSecondaryAction>
                               <Checkbox
                                 edge="end"
-                                name="arrayAccess"
                                 onChange={(e) => setChecked(e.target.checked)}
                                 checked={access[permission.id - 1] === '1' ? true : false}
                                 tabIndex={-1}

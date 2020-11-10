@@ -126,7 +126,7 @@ export default function Users(props) {
         setNameGroup(userGroup.grupo);
       }
     });
-  }, [userGroups]);
+  }, [group]);
 
   useEffect(() => {
     api.get('/permissions/', {
