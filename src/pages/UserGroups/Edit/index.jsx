@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
+import { green, red, blue } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, List, ListItem, ListItemText, Divider,
-  ListItemSecondaryAction, Checkbox, Button
+  ListItemSecondaryAction, Checkbox, Button, CircularProgress
 } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -59,12 +61,18 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
     marginTop: -12,
     marginLeft: -12,
+  },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[700],
+    },
   },
   cardContent: {
     marginTop: theme.spacing(3)
@@ -77,14 +85,28 @@ const useStyles = makeStyles((theme) => ({
 
 export default function EditUserGroup(props) {
   const classes = useStyles();
+  const timer = useRef();
   const [group, setGroup] = useState('');
   const [userPermissions, setUserPermissions] = useState([]);
   const [access, setAccess] = useState([]);
   const [checked, setChecked] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   const idGroup = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   useEffect(() => {
     api.get(`/groups/details/${idGroup}`, {
@@ -131,10 +153,56 @@ export default function EditUserGroup(props) {
     return accessFormated;
   }
 
+  function handleToggleCheckbox(id) {
+    let elements = document.getElementById("edit-group-form").elements;
+
+  }
+
   function handleEditUserGroup(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
-    console.log(accessFormated);
+
+    api.put(`groups/edit/${idGroup}`, { "nameGroup": group, "accessGroup": accessFormated }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(result => {
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Grupo atualizado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        history.push('/users');
+      }, 7000);
+    }).catch(reject => {
+      const { data } = reject.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
+  }
+
+  const handleButtonClickProgress = () => {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
   }
 
   return (
@@ -218,7 +286,7 @@ export default function EditUserGroup(props) {
                                 edge="end"
                                 name={`${permission.id - 1}`}
                                 checked={access[permission.id - 1] === '1' ? true : false}
-                                onChange={(e) => setChecked(e.target.checked)}
+                                onClick={() => handleToggleCheckbox(permission.id - 1)}
                                 tabIndex={-1}
                                 disableRipple
                                 color="primary"
@@ -245,9 +313,12 @@ export default function EditUserGroup(props) {
                         color="primary"
                         variant="contained"
                         type="submit"
+                        className={buttonClassname}
+                        disabled={loading}
                       >
                         Salvar alterações
-                    </Button>
+                        {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                      </Button>
                     </Box>
 
                   </Grid>

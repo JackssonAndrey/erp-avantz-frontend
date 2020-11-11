@@ -13,7 +13,7 @@ import Divider from '@material-ui/core/Divider';
 import TextField from '@material-ui/core/TextField';
 import { Card, CardContent, Typography, CardActions, CardHeader } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { green } from '@material-ui/core/colors';
+import { green, red, blue } from '@material-ui/core/colors';
 import { toast, ToastContainer } from 'react-toastify';
 
 import api from '../../services/api';
@@ -67,8 +67,14 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -86,6 +92,7 @@ export default function Profile() {
   const timer = useRef();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
   const [loadingImageUpload, setLoadingImageUpload] = useState(false);
   const [successImageUpload, setSuccessImageUpload] = useState(false);
   const [username, setUsername] = useState('');
@@ -99,6 +106,7 @@ export default function Profile() {
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
   });
 
   const buttonClassNameImageUpload = clsx({
@@ -180,8 +188,22 @@ export default function Profile() {
       getImageUser();
     } catch (error) {
       // const { data } = error.response;
-      toast.error(`Não foi possível atualizar a imagem de perfil`);
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`Não foi possível atualizar a imagem de perfil`);
+      }, 2000);
       // console.log(data.detail);
+    }
+  }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
     }
   }
 
@@ -233,10 +255,13 @@ export default function Profile() {
       }, 2000);
     } catch (error) {
       const { data } = error.response;
-      toast.error(`${data.detail}`);
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
       setTimeout(() => {
         handleLogout();
-      }, 5000);
+      }, 7000);
     }
   }
 
