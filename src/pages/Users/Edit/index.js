@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
+import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
+import { green, red, blue } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, List, ListItem, ListItemText, Divider,
-  ListItemSecondaryAction, Checkbox, Button, Select, MenuItem, InputLabel, FormControl
+  ListItemSecondaryAction, Checkbox, Button, Select, MenuItem, InputLabel, FormControl, CircularProgress
 } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 
@@ -60,8 +61,14 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -80,6 +87,10 @@ const useStyles = makeStyles((theme) => ({
 export default function EditUser(props) {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -94,6 +105,11 @@ export default function EditUser(props) {
 
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
 
   useEffect(() => {
     api.get(`/users/details/${idUser}`, {
@@ -116,7 +132,7 @@ export default function EditUser(props) {
       }, 5000);
       console.log(data);
     });
-  }, [idUser]);
+  }, [idUser, csrfToken, handleLogout]);
 
   useEffect(() => {
     api.get('/groups/', {
@@ -133,7 +149,7 @@ export default function EditUser(props) {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [csrfToken, handleLogout]);
 
   useEffect(() => {
     api.get('/permissions/', {
@@ -150,7 +166,7 @@ export default function EditUser(props) {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [csrfToken, handleLogout]);
 
   useEffect(() => {
     api.get('/persons/', {
@@ -167,7 +183,7 @@ export default function EditUser(props) {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [csrfToken, handleLogout]);
 
   useEffect(() => {
     let userAccess = userGroups.filter(userGroup => {
@@ -178,7 +194,13 @@ export default function EditUser(props) {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
     }
-  }, [group]);
+  }, [group, userGroups]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-edit").elements;
@@ -217,13 +239,41 @@ export default function EditUser(props) {
         'X-CSRFToken': csrfToken
       }
     }).then(response => {
-      toast.success('Dados alterados com sucesso!');
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Dados alterados com sucesso!');
+      }, 2000);
     }).catch(reject => {
       const { data } = reject.response;
-      toast.error(`${data.detail}`);
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
     });
 
   }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -444,8 +494,11 @@ export default function EditUser(props) {
                         color="primary"
                         variant="contained"
                         type="submit"
+                        className={buttonClassname}
+                        disabled={loading}
                       >
                         Salvar alterações
+                        {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                       </Button>
                     </Box>
 

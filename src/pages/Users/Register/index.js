@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useContext, useLayoutEffect } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
+import { green, red, blue } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, List, ListItem, ListItemText, Divider,
-  ListItemSecondaryAction, Checkbox, Button, Select, MenuItem, InputLabel, FormControl, OutlinedInput, InputAdornment
+  ListItemSecondaryAction, Checkbox, Button, Select, MenuItem, InputLabel, FormControl, OutlinedInput, InputAdornment,
+  CircularProgress
 } from '@material-ui/core';
 import { ArrowBack, Visibility, VisibilityOff } from '@material-ui/icons';
 
@@ -62,8 +63,14 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -84,6 +91,10 @@ const useStyles = makeStyles((theme) => ({
 export default function RegisterUser() {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -98,6 +109,17 @@ export default function RegisterUser() {
   const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   // const [userAccess, setUserAccess] = useState('');
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -116,7 +138,7 @@ export default function RegisterUser() {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [handleLogout]);
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -135,7 +157,7 @@ export default function RegisterUser() {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [handleLogout]);
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -154,7 +176,7 @@ export default function RegisterUser() {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [handleLogout]);
 
   useEffect(() => {
     let userAccess = userGroups.filter(userGroup => {
@@ -164,7 +186,7 @@ export default function RegisterUser() {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
     }
-  }, [group]);
+  }, [group, userGroups]);
 
   function handleClickShowPassword() {
     setShowPassword(!showPassword);
@@ -216,16 +238,44 @@ export default function RegisterUser() {
         'X-CSRFToken': csrfToken
       }
     }).then(response => {
-      toast.success('Usuário cadastrado com sucesso!');
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Usuário cadastrado com sucesso!');
+      }, 2000);
       setTimeout(() => {
         history.push('/users');
-      }, 4000);
+      }, 7000);
     }).catch(reject => {
       const { data } = reject.response;
-      toast.error(`${data.detail}`);
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
     });
 
   }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -475,8 +525,11 @@ export default function RegisterUser() {
                         color="primary"
                         variant="contained"
                         type="submit"
+                        className={buttonClassname}
+                        disabled={loading}
                       >
                         Salvar
+                        {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                       </Button>
                     </Box>
 

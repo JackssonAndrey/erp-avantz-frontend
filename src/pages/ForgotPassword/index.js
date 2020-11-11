@@ -14,7 +14,7 @@ import {
   makeStyles
 } from '@material-ui/core';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import { grey, green } from '@material-ui/core/colors';
+import { grey, green, red, blue } from '@material-ui/core/colors';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 import api from '../../services/api';
@@ -39,21 +39,26 @@ const useStyles = makeStyles((theme) => ({
     width: '100%', // Fix IE 11 issue.
     marginTop: theme.spacing(1),
   },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
   subtitle: {
     marginTop: theme.spacing(2),
     color: grey[700]
   },
   buttonSuccess: {
+    margin: theme.spacing(3, 0, 2),
     backgroundColor: green[500],
     '&:hover': {
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    margin: theme.spacing(3, 0, 2),
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -68,12 +73,14 @@ function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
   });
 
-  const handleSendMail = async (e) => {
+  async function handleSendMail(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
 
@@ -87,15 +94,19 @@ function ForgotPassword() {
       setTimeout(() => {
         toast.success('E-mail enviado, verifique sua caixa de entrada!');
       }, 2000);
+      return;
     } catch (error) {
       const { data } = error.response;
-      data.email.map(error => {
-        toast.error(`${error}`);
-      })
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        data.email.map(error => {
+          return toast.error(`${error}`);
+        });
+      }, 2000);
     }
   }
 
-  const handleButtonClickProgress = () => {
+  function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
       setLoading(true);
@@ -104,7 +115,18 @@ function ForgotPassword() {
         setLoading(false);
       }, 2000);
     }
-  };
+  }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -147,7 +169,6 @@ function ForgotPassword() {
             color="primary"
             className={buttonClassname}
             disabled={loading}
-            className={classes.submit}
           >
             Enviar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}

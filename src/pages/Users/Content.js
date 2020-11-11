@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
-// import clsx from 'clsx';
+import clsx from 'clsx';
 import { lighten, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -13,15 +13,20 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-// import Checkbox from '@material-ui/core/Checkbox';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DetailIcon from '@material-ui/icons/More';
-import { orange, lightBlue, red } from '@material-ui/core/colors';
-// import FilterListIcon from '@material-ui/icons/FilterList';
+import { orange, lightBlue, red, blue, green } from '@material-ui/core/colors';
 import Avatar from '@material-ui/core/Avatar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Button from '@material-ui/core/Button';
 
 import api from '../../services/api';
 import getCookie from '../../utils/functions';
@@ -163,16 +168,85 @@ const useStyles = makeStyles((theme) => ({
     top: 20,
     width: 1,
   },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgress: {
+    color: blue[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 export default function EnhancedTable() {
   const { handleLogout } = useContext(Context);
   const classes = useStyles();
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [users, setUsers] = useState([]);
+  const [userId, setUserId] = useState('');
+  const [openModal, setOpenModal] = useState(false);
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleClickOpenModal = (id) => {
+    setUserId(id);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setUserId(0);
+    setOpenModal(false);
+  };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
 
   useEffect(() => {
     async function getAllUsers() {
@@ -217,6 +291,30 @@ export default function EnhancedTable() {
 
   function handleEditUser(id) {
     history.push(`/users/edit/${id}`);
+  }
+
+  function handleDeleteUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    api.put(`/users/delete/${id}`, { userId }, {
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    }).then(result => {
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Usuário deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+      }, 7000);
+    }).catch(reject => {
+      const { data } = reject.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
@@ -271,7 +369,7 @@ export default function EnhancedTable() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Deletar">
-                          <IconButton onClick={() => { }} aria-label="Deletar">
+                          <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
                             <DeleteIcon size={8} style={{ color: red[200] }} />
                           </IconButton>
                         </Tooltip>
@@ -298,6 +396,33 @@ export default function EnhancedTable() {
           labelRowsPerPage="Linhas por página"
         />
       </Paper>
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Deletar usuário</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Você realmente deseja deletar este usuário?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => handleDeleteUser(userId)}
+            color="secondary"
+            className={buttonClassname}
+            disabled={loading}
+          >
+            Deletar
+            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </Button>
+          <Button onClick={handleCloseModal} color="primary" autoFocus>
+            Cancelar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

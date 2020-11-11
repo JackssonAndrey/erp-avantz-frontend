@@ -133,7 +133,7 @@ export default function Profile() {
       }
     }
     getUser();
-  }, []);
+  }, [handleLogout]);
 
   useEffect(() => {
     return () => {
@@ -207,7 +207,7 @@ export default function Profile() {
     }
   }
 
-  const handleButtonClickProgress = () => {
+  function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
       setLoading(true);
@@ -218,7 +218,7 @@ export default function Profile() {
     }
   };
 
-  const handleProgressImageUpload = () => {
+  function handleProgressImageUpload() {
     if (!loadingImageUpload) {
       setSuccessImageUpload(false);
       setLoadingImageUpload(true);

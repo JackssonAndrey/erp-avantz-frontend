@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -13,9 +13,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  DialogContentText,
+  CircularProgress
 } from '@material-ui/core';
-import { lighten, makeStyles } from '@material-ui/core/styles';
-
+import { makeStyles } from '@material-ui/core/styles';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -26,14 +27,13 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import DetailIcon from '@material-ui/icons/More';
-import { orange, lightBlue, red } from '@material-ui/core/colors';
+import { orange, lightBlue, red, green, blue } from '@material-ui/core/colors';
 
 import { Search as SearchIcon } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
@@ -70,6 +70,26 @@ const useStyles = makeStyles((theme) => ({
     position: 'absolute',
     top: 20,
     width: 1,
+  },
+  buttonSuccess: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgress: {
+    color: blue[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
   },
 }));
 
@@ -151,19 +171,67 @@ EnhancedTableHead.propTypes = {
 const PageHeader = ({ className, ...rest }) => {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
   const [open, setOpen] = useState(false);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [groups, setGroups] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [groupId, setGroupId] = useState(0);
 
-  const handleClickOpen = () => {
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  function handleClickOpen() {
     setOpen(true);
   };
 
-  const handleClose = () => {
+  function handleClose() {
     setOpen(false);
+  };
+
+  function handleClickOpenModal(id) {
+    setGroupId(id);
+    setOpenModal(true);
+  };
+
+  function handleCloseModal() {
+    setOpenModal(false);
+  };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
   };
 
   useEffect(() => {
@@ -183,7 +251,7 @@ const PageHeader = ({ className, ...rest }) => {
       }, 5000);
       console.log(data);
     });
-  }, []);
+  }, [groupId]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -206,6 +274,31 @@ const PageHeader = ({ className, ...rest }) => {
 
   function handleEditGroup(id) {
     history.push(`/groups/edit/${id}`);
+  }
+
+  function handleDeleteGroupUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    api.delete(`/groups/delete/${id}`, {
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    }).then(result => {
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Grupo deletado com sucesso!');
+      }, 2000);
+      setGroupId(0);
+      setTimeout(() => {
+        handleCloseModal();
+      }, 7000);
+    }).catch(reject => {
+      const { data } = reject.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, groups.length - page * rowsPerPage);
@@ -320,7 +413,7 @@ const PageHeader = ({ className, ...rest }) => {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Deletar">
-                              <IconButton onClick={() => { }} aria-label="Deletar">
+                              <IconButton onClick={() => handleClickOpenModal(group.id_grupo)} aria-label="Deletar">
                                 <DeleteIcon size={8} style={{ color: red[200] }} />
                               </IconButton>
                             </Tooltip>
@@ -351,6 +444,34 @@ const PageHeader = ({ className, ...rest }) => {
         <DialogActions>
           <Button onClick={handleClose} color="secondary" variant="contained">
             Fechar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Deletar grupo de usuário</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Você realmente deseja deletar este grupo?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => handleDeleteGroupUser(groupId)}
+            color="secondary"
+            className={buttonClassname}
+            disabled={loading}
+          >
+            Deletar
+            {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </Button>
+          <Button onClick={handleCloseModal} color="primary" autoFocus>
+            Cancelar
           </Button>
         </DialogActions>
       </Dialog>

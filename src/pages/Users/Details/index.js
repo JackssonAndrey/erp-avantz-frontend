@@ -88,9 +88,9 @@ export default function Users(props) {
   const [userPermissions, setUserPermissions] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
   const idUser = props.match.params.id;
-  const csrfToken = getCookie('csrftoken');
 
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
     api.get(`/users/details/${idUser}`, {
       headers: {
         'X-CSRFToken': csrfToken
@@ -109,6 +109,7 @@ export default function Users(props) {
   }, [idUser]);
 
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
     api.get('/groups/', {
       headers: {
         'X-CSRFToken': csrfToken
@@ -126,9 +127,10 @@ export default function Users(props) {
         setNameGroup(userGroup.grupo);
       }
     });
-  }, [group]);
+  }, [userGroups, group]);
 
   useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
     api.get('/permissions/', {
       headers: {
         'X-CSRFToken': csrfToken

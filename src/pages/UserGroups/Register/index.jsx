@@ -161,7 +161,7 @@ export default function RegisterUserGroup() {
     });
   }
 
-  const handleButtonClickProgress = () => {
+  function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
       setLoading(true);

@@ -4,7 +4,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import SaveIcon from '@material-ui/icons/Save';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { green } from '@material-ui/core/colors';
+import { green, red, blue } from '@material-ui/core/colors';
 import {
   Box,
   Button,
@@ -67,8 +67,14 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -84,10 +90,12 @@ export default function Settings() {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
   });
 
   useEffect(() => {
@@ -111,7 +119,7 @@ export default function Settings() {
     };
   }, []);
 
-  const handleButtonClickProgress = () => {
+  function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
       setLoading(true);
@@ -121,6 +129,17 @@ export default function Settings() {
       }, 2000);
     }
   };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -145,10 +164,15 @@ export default function Settings() {
       }, 2000);
     } catch (error) {
       const { data, status } = error.response;
-      toast.error(`${data.detail}`);
-      if (status === 403) {
-        handleLogout();
-      }
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        if (status === 403) {
+          handleLogout();
+        }
+      }, 7000);
     }
   }
 
