@@ -277,6 +277,20 @@ export default function RegisterUser() {
     }
   };
 
+  function handleChangeCheckbox(name) {
+    let elements = document.getElementById("form-register").elements;
+
+    for (let i = 0, element; element = elements[i++];) {
+      if (element.type === "checkbox" && element.name === name) {
+        if (element.checked) {
+          element.checked = false;
+        } else {
+          element.checked = true;
+        }
+      }
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -494,10 +508,33 @@ export default function RegisterUser() {
                           <ListItem key={permission.id} role={undefined} dense button>
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
+                              {/* {
+                                access[permission.id - 1] === '1'
+                                  ? (
+                                    <Checkbox
+                                      edge="end"
+                                      defaultChecked
+                                      onChange={(e) => setChecked(e.target.checked)}
+                                      tabIndex={-1}
+                                      name={`${permission.id - 1}`}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  ) : (
+                                    <Checkbox
+                                      edge="end"
+                                      onChange={(e) => setChecked(e.target.checked)}
+                                      tabIndex={-1}
+                                      name={`${permission.id - 1}`}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  )
+                              } */}
                               <Checkbox
                                 edge="end"
                                 name={`${permission.id - 1}`}
-                                onChange={(e) => setChecked(e.target.checked)}
+                                onChange={(e) => handleChangeCheckbox(e.target.name)}
                                 checked={access[permission.id - 1] === '1' ? true : false}
                                 tabIndex={-1}
                                 disableRipple

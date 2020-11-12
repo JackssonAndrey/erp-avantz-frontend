@@ -89,7 +89,6 @@ export default function EditUserGroup(props) {
   const [group, setGroup] = useState('');
   const [userPermissions, setUserPermissions] = useState([]);
   const [access, setAccess] = useState([]);
-  const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -151,11 +150,6 @@ export default function EditUserGroup(props) {
     }
     let accessFormated = newArrayAccess.join('').toString();
     return accessFormated;
-  }
-
-  function handleToggleCheckbox(id) {
-    let elements = document.getElementById("edit-group-form").elements;
-
   }
 
   function handleEditUserGroup(e) {
@@ -282,15 +276,28 @@ export default function EditUserGroup(props) {
                           <ListItem key={permission.id} role={undefined} dense button>
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
-                              <Checkbox
-                                edge="end"
-                                name={`${permission.id - 1}`}
-                                checked={access[permission.id - 1] === '1' ? true : false}
-                                onClick={() => handleToggleCheckbox(permission.id - 1)}
-                                tabIndex={-1}
-                                disableRipple
-                                color="primary"
-                              />
+                              {
+                                access[permission.id - 1] === '1'
+                                  ? (
+                                    <Checkbox
+                                      edge="end"
+                                      name={`${permission.id - 1}`}
+                                      defaultChecked
+                                      tabIndex={-1}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  )
+                                  : (
+                                    <Checkbox
+                                      edge="end"
+                                      name={`${permission.id - 1}`}
+                                      tabIndex={-1}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  )
+                              }
                             </ListItemSecondaryAction>
                           </ListItem>
                         ))}

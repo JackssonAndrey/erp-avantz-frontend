@@ -189,7 +189,6 @@ export default function EditUser(props) {
     let userAccess = userGroups.filter(userGroup => {
       return userGroup.id_grupo === group;
     });
-    console.log(userAccess);
     if (userAccess.length > 0) {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
@@ -463,15 +462,29 @@ export default function EditUser(props) {
                           <ListItem key={permission.id} role={undefined} dense button>
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
-                              <Checkbox
-                                edge="end"
-                                onChange={(e) => setChecked(e.target.checked)}
-                                checked={access[permission.id - 1] === '1' ? true : false}
-                                tabIndex={-1}
-                                name={`${permission.id - 1}`}
-                                disableRipple
-                                color="primary"
-                              />
+                              {
+                                access[permission.id - 1] === '1'
+                                  ? (
+                                    <Checkbox
+                                      edge="end"
+                                      defaultChecked
+                                      onChange={(e) => setChecked(e.target.checked)}
+                                      tabIndex={-1}
+                                      name={`${permission.id - 1}`}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  ) : (
+                                    <Checkbox
+                                      edge="end"
+                                      onChange={(e) => setChecked(e.target.checked)}
+                                      tabIndex={-1}
+                                      name={`${permission.id - 1}`}
+                                      disableRipple
+                                      color="primary"
+                                    />
+                                  )
+                              }
                             </ListItemSecondaryAction>
                           </ListItem>
                         ))}
