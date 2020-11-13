@@ -101,7 +101,6 @@ export default function EditUser(props) {
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [persons, setPersons] = useState([]);
-  const [checked, setChecked] = useState(false);
 
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
@@ -186,16 +185,6 @@ export default function EditUser(props) {
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
-    let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === group;
-    });
-    if (userAccess.length > 0) {
-      let userAccessArray = userAccess[0].acess.split('');
-      setAccess(userAccessArray);
-    }
-  }, [group, userGroups]);
-
-  useEffect(() => {
     return () => {
       clearTimeout(timer.current);
     };
@@ -271,6 +260,30 @@ export default function EditUser(props) {
         setSuccess(true);
         setLoading(false);
       }, 2000);
+    }
+  };
+
+  function handleChangeGroup(value) {
+    setGroup(value);
+
+    let userAccess = userGroups.filter(userGroup => {
+      return userGroup.id_grupo === group;
+    });
+    if (userAccess.length > 0) {
+      let userAccessArray = userAccess[0].acess.split('');
+      setAccess(userAccessArray);
+    }
+  }
+
+  const handleToggle = (value) => () => {
+    if (access[value] === '1') {
+      access.splice(value, 1, '0');
+      let newArray = [...access];
+      setAccess(newArray);
+    } else {
+      access.splice(value, 1, '1');
+      let newArray = [...access];
+      setAccess(newArray);
     }
   };
 
@@ -421,7 +434,7 @@ export default function EditUser(props) {
                         labelId="user-group-select"
                         id="user-group"
                         value={group || ''}
-                        onChange={(e) => setGroup(e.target.value)}
+                        onChange={(e) => handleChangeGroup(e.target.value)}
                         label="Grupo"
                       >
                         <MenuItem value="">
@@ -462,29 +475,15 @@ export default function EditUser(props) {
                           <ListItem key={permission.id} role={undefined} dense button>
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
-                              {
-                                access[permission.id - 1] === '1'
-                                  ? (
-                                    <Checkbox
-                                      edge="end"
-                                      defaultChecked
-                                      onChange={(e) => setChecked(e.target.checked)}
-                                      tabIndex={-1}
-                                      name={`${permission.id - 1}`}
-                                      disableRipple
-                                      color="primary"
-                                    />
-                                  ) : (
-                                    <Checkbox
-                                      edge="end"
-                                      onChange={(e) => setChecked(e.target.checked)}
-                                      tabIndex={-1}
-                                      name={`${permission.id - 1}`}
-                                      disableRipple
-                                      color="primary"
-                                    />
-                                  )
-                              }
+                              <Checkbox
+                                edge="end"
+                                name={`${permission.id - 1}`}
+                                checked={access[permission.id - 1] === '1' ? true : false}
+                                tabIndex={-1}
+                                disableRipple
+                                color="primary"
+                                onClick={handleToggle(permission.id - 1)}
+                              />
                             </ListItemSecondaryAction>
                           </ListItem>
                         ))}

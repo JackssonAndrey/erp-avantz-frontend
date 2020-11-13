@@ -106,9 +106,23 @@ export default function RegisterUser() {
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [persons, setPersons] = useState([]);
-  const [checked, setChecked] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // const [userAccess, setUserAccess] = useState('');
+
+  const handleToggle = (value) => () => {
+    if (access[value] === '1') {
+      console.log(value);
+      access.splice(value, 1, '0');
+      let newArray = [...access];
+      setAccess(newArray);
+      console.log(newArray);
+    } else {
+      console.log(value)
+      access.splice(value, 1, '1');
+      let newArray = [...access];
+      setAccess(newArray);
+      console.log(access);
+    }
+  };
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -514,31 +528,36 @@ export default function RegisterUser() {
                                     <Checkbox
                                       edge="end"
                                       defaultChecked
-                                      onChange={(e) => setChecked(e.target.checked)}
+                                      checked={checked.indexOf(permission.id) !== -1}
+                                      onClick={handleToggle(permission.id)}
                                       tabIndex={-1}
                                       name={`${permission.id - 1}`}
                                       disableRipple
                                       color="primary"
+                                      inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
                                     />
                                   ) : (
                                     <Checkbox
                                       edge="end"
-                                      onChange={(e) => setChecked(e.target.checked)}
                                       tabIndex={-1}
+                                      onClick={handleToggle(permission.id)}
+                                      checked={checked.indexOf(permission.id) !== -1}
                                       name={`${permission.id - 1}`}
                                       disableRipple
                                       color="primary"
+                                      inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
                                     />
                                   )
                               } */}
                               <Checkbox
                                 edge="end"
                                 name={`${permission.id - 1}`}
-                                onChange={(e) => handleChangeCheckbox(e.target.name)}
                                 checked={access[permission.id - 1] === '1' ? true : false}
                                 tabIndex={-1}
                                 disableRipple
                                 color="primary"
+                                inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
+                                onClick={handleToggle(permission.id - 1)}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>
