@@ -123,6 +123,7 @@ export default function Profile() {
         setInstituition(data.user.instit_id);
         setDateJoined(data.user.date_joined);
         setUsername(data.user.username);
+        setImagePerfil(data.user.foto);
       } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
@@ -141,29 +142,11 @@ export default function Profile() {
     };
   }, []);
 
-  async function getImageUser() {
-    try {
-      const { data } = await api.get('/imagem/list');
-      setImagePerfil(data.imagem);
-    } catch (error) {
-      const { data } = error.response;
-      toast.error(`Não foi possível carregar a imagem de perfil, ${data.detail}`);
-      // console.log(data.detail);
-    }
-  }
-
-  useEffect(() => {
-    getImageUser();
-  }, []);
-
   async function handleChangeImagePerfil(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
-    const { id, instit_id } = JSON.parse(localStorage.getItem('user'));
     const formData = new FormData();
-    formData.append('imagem', image);
-    formData.append('user', id);
-    formData.append('instit', instit_id);
+    formData.append('foto', image);
 
     if (image === '' || image === {} || image === undefined) {
       toast.error('Selecione uma imagem.');
@@ -171,7 +154,7 @@ export default function Profile() {
     }
 
     try {
-      await api.post('/imagem/upload', formData,
+      const { data } = await api.post('/users/edit/image', formData,
         {
           headers: {
             'X-CSRFToken': csrfToken
@@ -185,7 +168,7 @@ export default function Profile() {
       setTimeout(() => {
         toast.success('Imagem de perfil alterada com sucesso!');
       }, 2000);
-      getImageUser();
+      setImagePerfil(data.imageURL);
     } catch (error) {
       // const { data } = error.response;
       handleButtonClickProgressError();
@@ -291,7 +274,7 @@ export default function Profile() {
                     display="flex"
                     flexDirection="column"
                   >
-                    <Avatar alt="Remy Sharp" src={imagePerfil} className={classes.large} />
+                    <Avatar alt="Remy Sharp" src={`http://localhost:8000${imagePerfil}`} className={classes.large} />
 
                     <Typography
                       color="textPrimary"
