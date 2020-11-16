@@ -251,7 +251,7 @@ const PageHeader = ({ className, ...rest }) => {
       }, 5000);
       console.log(data);
     });
-  }, [groupId]);
+  }, [groupId, handleLogout]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';

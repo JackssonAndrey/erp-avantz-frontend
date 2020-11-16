@@ -177,7 +177,6 @@ function ResetPassword() {
             color="primary"
             className={buttonClassname}
             disabled={loading}
-            className={classes.submit}
           >
             Enviar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}

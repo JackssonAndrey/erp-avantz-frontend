@@ -268,7 +268,7 @@ export default function EnhancedTable() {
 
     }
     getAllUsers();
-  }, []);
+  }, [handleLogout]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';

@@ -214,7 +214,8 @@ export default function RegisterUser() {
     let elements = document.getElementById("form-register").elements;
     let newArrayAccess = [];
 
-    for (let i = 0, element; element = elements[i++];) {
+    for (let i = 0; i < elements.length; i++) {
+      let element = elements[i];
       if (element.type === "checkbox") {
         let position = element.name;
         if (element.checked === true) {
@@ -290,20 +291,6 @@ export default function RegisterUser() {
       }, 2000);
     }
   };
-
-  function handleChangeCheckbox(name) {
-    let elements = document.getElementById("form-register").elements;
-
-    for (let i = 0, element; element = elements[i++];) {
-      if (element.type === "checkbox" && element.name === name) {
-        if (element.checked) {
-          element.checked = false;
-        } else {
-          element.checked = true;
-        }
-      }
-    }
-  }
 
   return (
     <div className={classes.root}>

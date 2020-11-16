@@ -111,7 +111,7 @@ export default function Settings() {
       }
     }
     getUser();
-  }, []);
+  }, [handleLogout]);
 
   useEffect(() => {
     return () => {

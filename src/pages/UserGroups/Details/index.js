@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, Avatar, List, ListItem, ListItemText, Divider,
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, List, ListItem, ListItemText, Divider,
   ListItemSecondaryAction, Checkbox
 } from '@material-ui/core';
 import { ArrowBack, Edit } from '@material-ui/icons';
@@ -97,7 +97,7 @@ export default function UserGroupDetails(props) {
       toast.error(`${data.detail}`);
       console.log(data);
     });
-  }, [idGroup]);
+  }, [idGroup, csrfToken]);
 
   useEffect(() => {
     api.get('/permissions/', {
@@ -109,7 +109,7 @@ export default function UserGroupDetails(props) {
     }).catch(reject => {
       console.log(reject);
     });
-  }, []);
+  }, [csrfToken]);
 
   return (
     <div className={classes.root}>

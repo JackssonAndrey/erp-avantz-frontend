@@ -88,7 +88,6 @@ export default function RegisterUserGroup() {
   const timer = useRef();
   const [group, setGroup] = useState('');
   const [userPermissions, setUserPermissions] = useState([]);
-  const [checked, setChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -116,7 +115,7 @@ export default function RegisterUserGroup() {
     }).catch(reject => {
       console.log(reject);
     });
-  }, []);
+  }, [csrfToken]);
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("register-group-form").elements;

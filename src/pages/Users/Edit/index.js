@@ -194,7 +194,8 @@ export default function EditUser(props) {
     let elements = document.getElementById("form-edit").elements;
     let newArrayAccess = [];
 
-    for (let i = 0, element; element = elements[i++];) {
+    for (let i = 0; i < elements.length; i++) {
+      let element = elements[i];
       if (element.type === "checkbox") {
         let position = element.name;
         if (element.checked === true) {

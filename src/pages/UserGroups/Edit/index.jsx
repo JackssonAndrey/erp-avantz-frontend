@@ -120,7 +120,7 @@ export default function EditUserGroup(props) {
       toast.error(`${data.detail}`);
       console.log(data);
     });
-  }, [idGroup]);
+  }, [idGroup, csrfToken]);
 
   useEffect(() => {
     api.get('/permissions/', {
@@ -132,13 +132,14 @@ export default function EditUserGroup(props) {
     }).catch(reject => {
       console.log(reject);
     });
-  }, []);
+  }, [csrfToken]);
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("edit-group-form").elements;
     let newArrayAccess = [];
 
-    for (let i = 0, element; element = elements[i++];) {
+    for (let i = 0; elements.length < i; i++) {
+      let element = elements[i];
       if (element.type === "checkbox") {
         let position = element.name;
         if (element.checked === true) {
