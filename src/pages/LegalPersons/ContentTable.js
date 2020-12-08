@@ -252,7 +252,7 @@ export default function EnhancedTable() {
     async function getAllPersons() {
       const csrftoken = getCookie('csrftoken');
       try {
-        const { data } = await api.get('/persons/legal/', {
+        const { data } = await api.get('/persons/legal', {
           headers: {
             'X-CSRFToken': csrftoken
           }
