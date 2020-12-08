@@ -41,12 +41,12 @@ export default function mainListItems(props) {
       {
         props.access[39] === '1'
         && (
-          <Link to="/persons" className="link">
+          <Link to="/legal/persons" className="link">
             <ListItem button>
               <ListItemIcon>
                 <Person />
               </ListItemIcon>
-              <ListItemText primary="Pessoas" />
+              <ListItemText primary="Pessoa Jurídica" />
             </ListItem>
           </Link>
         )

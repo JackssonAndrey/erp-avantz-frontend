@@ -71,14 +71,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Persons() {
+export default function LegalPersons() {
   const classes = useStyles();
 
   return (
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Pessoas Físicas/Jurídicas" />
+      <Menus title="Pessoas Jurídicas" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">

@@ -63,9 +63,9 @@ function stableSort(array, comparator) {
 
 const headCells = [
   { id: 'foto', numeric: false, disablePadding: false, label: 'Foto' },
-  { id: 'nome', numeric: false, disablePadding: false, label: 'Nome' },
-  { id: 'cpfCnpj', numeric: false, disablePadding: true, label: 'CPF/CNPJ' },
-  { id: 'tipo', numeric: false, disablePadding: true, label: 'Tipo de Pessoa' },
+  { id: 'razaoSocial', numeric: false, disablePadding: false, label: 'Razão Social' },
+  { id: 'cpfCnpj', numeric: false, disablePadding: true, label: 'CNPJ' },
+  { id: 'fornecedor', numeric: false, disablePadding: true, label: 'Fornecedor' },
   { id: 'actions', numeric: false, disablePadding: false, label: '' },
 ];
 
@@ -139,7 +139,7 @@ const EnhancedTableToolbar = () => {
   return (
     <Toolbar>
       <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
-        Pessoas
+        Pessoas Físicas
       </Typography>
     </Toolbar>
   );
@@ -201,7 +201,7 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [persons, setPersons] = useState([]);
+  const [legalPersons, setLegalPersons] = useState([]);
   const [personId, setPersonId] = useState('');
   const [openModal, setOpenModal] = useState(false);
 
@@ -252,12 +252,12 @@ export default function EnhancedTable() {
     async function getAllPersons() {
       const csrftoken = getCookie('csrftoken');
       try {
-        const { data } = await api.get('/persons/', {
+        const { data } = await api.get('/persons/legal/', {
           headers: {
             'X-CSRFToken': csrftoken
           }
         });
-        setPersons(data);
+        setLegalPersons(data);
       } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
@@ -317,7 +317,7 @@ export default function EnhancedTable() {
     });
   }
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, persons.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, legalPersons.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
@@ -335,10 +335,10 @@ export default function EnhancedTable() {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={persons.length}
+              rowCount={legalPersons.length}
             />
             <TableBody>
-              {stableSort(persons, getComparator(order, orderBy))
+              {stableSort(legalPersons, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((person, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
@@ -356,7 +356,7 @@ export default function EnhancedTable() {
                         {person.nomeorrazaosocial}
                       </TableCell>
                       <TableCell padding="none" align="left">{person.cpfcnpj}</TableCell>
-                      <TableCell padding="none" align="left">{person.tipo}</TableCell>
+                      <TableCell padding="none" align="left">{person.forn}</TableCell>
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
                           <IconButton onClick={() => handleEditPerson(person.id_pessoa_cod)} aria-label="Editar">
@@ -388,7 +388,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={persons.length}
+          count={legalPersons.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
@@ -405,7 +405,7 @@ export default function EnhancedTable() {
         <DialogTitle id="alert-dialog-title">Deletar Pessoa</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Você realmente deseja deletar o registro desta pessoa?
+            Você realmente deseja deletar este registro?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
