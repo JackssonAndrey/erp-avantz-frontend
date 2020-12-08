@@ -92,7 +92,7 @@ const PageHeader = ({ className, ...rest }) => {
         </Button>
         */}
 
-        <Link to="/legal/person/register" className="link" >
+        <Link to="/physical/person/register" className="link" >
           <Button
             color="primary"
             variant="contained"

@@ -63,8 +63,8 @@ function stableSort(array, comparator) {
 
 const headCells = [
   { id: 'foto', numeric: false, disablePadding: false, label: 'Foto' },
-  { id: 'razaoSocial', numeric: false, disablePadding: false, label: 'Razão Social' },
-  { id: 'cpfCnpj', numeric: false, disablePadding: true, label: 'CNPJ' },
+  { id: 'nome', numeric: false, disablePadding: false, label: 'Nome' },
+  { id: 'cpf', numeric: false, disablePadding: true, label: 'CPF' },
   { id: 'fornecedor', numeric: false, disablePadding: true, label: 'Fornecedor' },
   { id: 'actions', numeric: false, disablePadding: false, label: '' },
 ];
@@ -139,7 +139,7 @@ const EnhancedTableToolbar = () => {
   return (
     <Toolbar>
       <Typography className={classes.title} variant="h6" id="tableTitle" component="div">
-        Pessoas Jurídica
+        Pessoas Físicas
       </Typography>
     </Toolbar>
   );
@@ -201,7 +201,7 @@ export default function EnhancedTable() {
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [legalPersons, setLegalPersons] = useState([]);
+  const [physicalPersons, setPhysicalPersons] = useState([]);
   const [personId, setPersonId] = useState('');
   const [openModal, setOpenModal] = useState(false);
 
@@ -252,12 +252,12 @@ export default function EnhancedTable() {
     async function getAllPersons() {
       const csrftoken = getCookie('csrftoken');
       try {
-        const { data } = await api.get('/persons/legal', {
+        const { data } = await api.get('/persons/physical', {
           headers: {
             'X-CSRFToken': csrftoken
           }
         });
-        setLegalPersons(data);
+        setPhysicalPersons(data);
       } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
@@ -286,11 +286,11 @@ export default function EnhancedTable() {
   };
 
   function handleDetailsPerson(id) {
-    history.push(`/legal/person/details/${id}`);
+    history.push(`/physical/person/details/${id}`);
   }
 
   function handleEditPerson(id) {
-    history.push(`/legal/person/edit/${id}`);
+    history.push(`/physical/person/edit/${id}`);
   }
 
   function handleDeletePerson(id) {
@@ -317,7 +317,7 @@ export default function EnhancedTable() {
     });
   }
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, legalPersons.length - page * rowsPerPage);
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, physicalPersons.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
@@ -335,10 +335,10 @@ export default function EnhancedTable() {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
-              rowCount={legalPersons.length}
+              rowCount={physicalPersons.length}
             />
             <TableBody>
-              {stableSort(legalPersons, getComparator(order, orderBy))
+              {stableSort(physicalPersons, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((person, index) => {
                   const labelId = `enhanced-table-checkbox-${index}`;
@@ -388,7 +388,7 @@ export default function EnhancedTable() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={legalPersons.length}
+          count={physicalPersons.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}

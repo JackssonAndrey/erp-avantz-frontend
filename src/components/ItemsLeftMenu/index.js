@@ -51,6 +51,19 @@ export default function mainListItems(props) {
           </Link>
         )
       }
+      {
+        props.access[40] === '1'
+        && (
+          <Link to="/physical/persons" className="link">
+            <ListItem button>
+              <ListItemIcon>
+                <Person />
+              </ListItemIcon>
+              <ListItemText primary="Pessoa Física" />
+            </ListItem>
+          </Link>
+        )
+      }
       <ListItem button>
         <ListItemIcon>
           <ShoppingCartIcon />
