@@ -149,7 +149,7 @@ const initialStateLegalPerson = {
   "data_criacao": ""
 }
 
-export default function LegalPersonDetails(props) {
+export default function EditLegalPerson(props) {
   const classes = useStyles();
   const idPerson = props.match.params.id;
   const [valueTab, setValueTab] = useState(0);
@@ -287,7 +287,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={person.nomeorrazaosocial}
                     onChange={(e) => handleChangeInputsPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -305,7 +305,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.fantasia}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -323,7 +323,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={person.cpfcnpj}
                     onChange={(e) => handleChangeInputsPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -341,7 +341,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.inscricao_estadual === null ? 'Não informado' : legalPerson.inscricao_estadual}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -359,7 +359,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.inscricao_municipal === null ? 'Não informado' : legalPerson.inscricao_municipal}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -377,7 +377,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.data_abertura}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -395,7 +395,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.ramo}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
 
@@ -413,7 +413,7 @@ export default function LegalPersonDetails(props) {
                     variant="outlined"
                     value={legalPerson.tipo_empresa}
                     onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    disabled
+
                   />
                 </Grid>
               </Grid>
@@ -435,7 +435,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="CEP"
                           name="cep"
@@ -457,7 +457,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Rua"
                           name="rua"
@@ -475,7 +475,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Bairro"
                           name="bairro"
@@ -493,7 +493,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Número"
                           name="numero"
@@ -511,7 +511,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Complemento"
                           name="complemento"
@@ -529,7 +529,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Cidade"
                           name="cidade"
@@ -547,7 +547,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Estado"
                           name="estado_endereco"
@@ -587,7 +587,7 @@ export default function LegalPersonDetails(props) {
                         >
                           <TextField
                             fullWidth
-                            disabled
+
                             required
                             label="Telefone"
                             name="tel"
@@ -624,7 +624,7 @@ export default function LegalPersonDetails(props) {
                         >
                           <TextField
                             fullWidth
-                            disabled
+
                             required
                             label="E-mail"
                             name="email"
@@ -666,7 +666,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Nome"
                           name="nome"
@@ -684,7 +684,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Tipo"
                           name="tipo"
@@ -702,7 +702,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Telefone"
                           name="tel"
@@ -720,7 +720,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Endereço"
                           name="endereco"
@@ -759,7 +759,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Banco"
                           name="id_bancos_fk"
@@ -777,7 +777,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Tipo"
                           name="tipo"
@@ -800,7 +800,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Conta"
                           name="conta"
@@ -818,7 +818,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Agência"
                           name="agencia"
@@ -836,7 +836,7 @@ export default function LegalPersonDetails(props) {
                       >
                         <TextField
                           fullWidth
-                          disabled
+
                           required
                           label="Abertura"
                           name="abertura"
@@ -864,7 +864,7 @@ export default function LegalPersonDetails(props) {
                 >
                   <TextField
                     fullWidth
-                    disabled
+
                     required
                     label="Fornecedor"
                     name="forn"

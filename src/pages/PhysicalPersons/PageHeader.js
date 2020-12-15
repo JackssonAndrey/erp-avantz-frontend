@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -69,14 +69,6 @@ const useStyles = makeStyles((theme) => ({
 
 const PageHeader = ({ className, ...rest }) => {
   const classes = useStyles();
-  const timer = useRef();
-
-  useEffect(() => {
-    return () => {
-      clearTimeout(timer.current);
-    };
-  }, []);
-
 
   return (
     <div
