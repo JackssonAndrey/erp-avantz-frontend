@@ -157,6 +157,17 @@ const initialStateLegalPerson = {
   "data_criacao": ""
 }
 
+const initialStateAdress = {
+  "origin": 0,
+  "street": "",
+  "numberHouse": "",
+  "complement": "",
+  "neighborhood": "",
+  "zipCode": "",
+  "city": "",
+  "stateAdress": ""
+}
+
 export default function EditLegalPerson(props) {
   const classes = useStyles();
   const timer = useRef();
@@ -177,7 +188,7 @@ export default function EditLegalPerson(props) {
   const [openModalAddress, setOpenModalAddress] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mail, setMail] = useState('');
-  const [address, setAddress] = useState([{}]);
+  const [address, setAddress] = useState(initialStateAdress);
 
   const handleClickOpenModalPhone = () => {
     setOpenModalPhone(true);
@@ -281,10 +292,19 @@ export default function EditLegalPerson(props) {
     ]);
   }
 
-  function handleSubmitFormEdit(e) {
+  function handleAddNewAddress(e) {
     e.preventDefault();
 
+    console.log(address);
+  }
 
+  function handleSubmitFormEdit(e) {
+    e.preventDefault();
+  }
+
+  function handleChangeAddress(e) {
+    const { name, value } = e.target;
+    setAddress({ ...address, [name]: value });
   }
 
   return (
@@ -497,6 +517,7 @@ export default function EditLegalPerson(props) {
                         color="primary"
                         variant="contained"
                         size="small"
+                        onClick={handleClickOpenModalAddress}
                       >
                         Adicionar
                       </Button>
@@ -1038,7 +1059,7 @@ export default function EditLegalPerson(props) {
               </TabPanel>
 
               <Grid
-                alignItems="flex-end"
+                item
                 xs={12}
                 sm={12}
                 xl={12}
@@ -1149,6 +1170,166 @@ export default function EditLegalPerson(props) {
               Salvar
             </Button>
           </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openModalAddress}
+          onClose={handleCloseModalAddress}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <form onSubmit={(e) => handleAddNewAddress(e)} autoComplete="false">
+            <DialogTitle id="alert-dialog-title">Adicionar um novo endereço</DialogTitle>
+            <DialogContent>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="CEP"
+                    name="zipCode"
+                    variant="outlined"
+                    value={address.zipCode}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+              </Grid>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={6}
+                  sm={6}
+                  xl={6}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Rua"
+                    name="street"
+                    variant="outlined"
+                    value={address.street}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={4}
+                  sm={4}
+                  xl={4}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Bairro"
+                    name="neighborhood"
+                    variant="outlined"
+                    value={address.neighborhood}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={2}
+                  sm={2}
+                  xl={2}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Número"
+                    name="numberHouse"
+                    variant="outlined"
+                    value={address.numberHouse}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={6}
+                  sm={6}
+                  xl={6}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Complemento"
+                    name="complement"
+                    variant="outlined"
+                    value={address.complement}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Cidade"
+                    name="city"
+                    variant="outlined"
+                    value={address.city}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Estado"
+                    name="stateAdress"
+                    variant="outlined"
+                    value={address.stateAdress}
+                    onChange={(e) => handleChangeAddress(e)}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <Divider style={{ marginTop: '20px' }} />
+            <DialogActions>
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="flex-end"
+                padding="15px"
+              >
+                <Button onClick={handleCloseModalAddress} style={{ color: red[300], marginRight: '10px' }}>
+                  Cancelar
+                  {/* {loading && <CircularProgress size={24} className={classes.buttonProgress} />} */}
+                </Button>
+                <Button type="submit" color="primary" variant="contained" autoFocus>
+                  Salvar
+                  {/* {loading && <CircularProgress size={24} className={classes.buttonProgress} />} */}
+                </Button>
+              </Box>
+            </DialogActions>
+          </form>
         </Dialog>
 
         <Box pt={4}>
