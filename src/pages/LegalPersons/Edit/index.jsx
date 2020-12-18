@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, red } from '@material-ui/core/colors';
 import {
@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
-import { ArrowBack, Edit, Delete } from '@material-ui/icons';
+import { ArrowBack, Delete } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -55,13 +55,13 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center'
   },
-  buttonSuccess: {
+  buttonSuccessAddress: {
     backgroundColor: green[500],
     '&:hover': {
       backgroundColor: green[700],
     },
   },
-  buttonProgress: {
+  buttonProgressAddress: {
     color: green[500],
     position: 'absolute',
     top: '50%',
@@ -69,10 +69,70 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  buttonError: {
+  buttonErrorAddress: {
     backgroundColor: red[500],
     '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessPhone: {
+    backgroundColor: green[500],
+    '&:hover': {
       backgroundColor: green[700],
+    },
+  },
+  buttonProgressPhone: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorPhone: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessMail: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressMail: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorMail: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessReference: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressReference: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorReference: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
     },
   },
   cardContent: {
@@ -158,7 +218,7 @@ const initialStateLegalPerson = {
 }
 
 const initialStateAdress = {
-  "origin": 0,
+  "origin": 1,
   "street": "",
   "numberHouse": "",
   "complement": "",
@@ -168,12 +228,31 @@ const initialStateAdress = {
   "stateAdress": ""
 }
 
+const initialStateReference = {
+  "idPerson": 0,
+  "referenceSituation": 1,
+  "referenceType": "",
+  "referenceName": "",
+  "referencePhone": "",
+  "referenceAdress": ""
+}
+
 export default function EditLegalPerson(props) {
   const classes = useStyles();
   const timer = useRef();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState(false);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+  const [successAddress, setSuccessAddress] = useState(false);
+  const [errorAddress, setErrorAddress] = useState(false);
+  const [loadingPhone, setLoadingPhone] = useState(false);
+  const [successPhone, setSuccessPhone] = useState(false);
+  const [errorPhone, setErrorPhone] = useState(false);
+  const [loadingMail, setLoadingMail] = useState(false);
+  const [successMail, setSuccessMail] = useState(false);
+  const [errorMail, setErrorMail] = useState(false);
+  const [loadingReference, setLoadingReference] = useState(false);
+  const [successReference, setSuccessReference] = useState(false);
+  const [errorReference, setErrorReference] = useState(false);
   const idPerson = props.match.params.id;
   const [valueTab, setValueTab] = useState(0);
   const [bankingReferences, setBankingReferences] = useState([{}]);
@@ -186,9 +265,13 @@ export default function EditLegalPerson(props) {
   const [openModalPhone, setOpenModalPhone] = useState(false);
   const [openModalMail, setOpenModalMail] = useState(false);
   const [openModalAddress, setOpenModalAddress] = useState(false);
+  const [openModalReference, setOpenModalReference] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mail, setMail] = useState('');
   const [address, setAddress] = useState(initialStateAdress);
+  const [reference, setReference] = useState(initialStateReference);
+
+  const csrfToken = getCookie('csrftoken');
 
   const handleClickOpenModalPhone = () => {
     setOpenModalPhone(true);
@@ -216,13 +299,36 @@ export default function EditLegalPerson(props) {
     setOpenModalAddress(false);
   };
 
+  const handleClickOpenModalReference = () => {
+    setOpenModalReference(true);
+  };
+
+  const handleCloseModalReference = () => {
+    setOpenModalReference(false);
+  };
+
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
   };
 
-  const buttonClassname = clsx({
-    [classes.buttonSuccess]: success,
-    [classes.buttonError]: error,
+  const buttonClassnameAddress = clsx({
+    [classes.buttonSuccessAddress]: successAddress,
+    [classes.buttonErrorAddress]: errorAddress,
+  });
+
+  const buttonClassnamePhone = clsx({
+    [classes.buttonSuccessPhone]: successPhone,
+    [classes.buttonErrorPhone]: errorPhone,
+  });
+
+  const buttonClassnameMail = clsx({
+    [classes.buttonSuccessMail]: successMail,
+    [classes.buttonErrorMail]: errorMail,
+  });
+
+  const buttonClassnameReference = clsx({
+    [classes.buttonSuccessReference]: successReference,
+    [classes.buttonErrorReference]: errorReference,
   });
 
   useEffect(() => {
@@ -286,16 +392,118 @@ export default function EditLegalPerson(props) {
     setBankingReferences([{ ...bankingReferences, [name]: value }]);
   }
 
-  function handleAddNewPhone() {
-    setPersonPhone([
-      { tel: '' }
-    ]);
+  function handleChangeReference(e) {
+    const { name, value } = e.target;
+    setReference({ ...reference, [name]: value });
+  }
+
+  function handleAddNewPhone(e) {
+    e.preventDefault();
+
+    let phones = [
+      {
+        "idPerson": Number(idPerson),
+        "phoneSituation": 1,
+        phoneNumber
+      }
+    ];
+
+    api.post(`/phones/create`, { phones }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressPhone();
+      setTimeout(() => {
+        toast.success('Telefone cadastrado com sucesso!');
+      }, 2000);
+    }).catch(reject => {
+      handleButtonClickProgressErrorPhone();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
   function handleAddNewAddress(e) {
     e.preventDefault();
 
-    console.log(address);
+    let adresses = [{ ...address, idPerson: Number(idPerson) }];
+
+    api.post(`/adresses/create`, { adresses }, {
+      headers: {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      }
+    }).then(response => {
+      handleButtonClickProgressAddress();
+      setTimeout(() => {
+        toast.success('Endereço cadastrado com sucesso!');
+      }, 2000);
+    }).catch(reject => {
+      // const { data } = reject.response;
+      console.log(reject);
+      handleButtonClickProgressErrorAddress();
+      setTimeout(() => {
+        toast.error(`erro`);
+      }, 2000);
+    });
+  }
+
+  function handleAddNewMail(e) {
+    e.preventDefault();
+
+    let mails = [
+      {
+        "idPerson": Number(idPerson),
+        "situation": 1,
+        "userMail": mail
+      }
+    ];
+
+    api.post(`/mails/create`, { mails }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressMail();
+      setTimeout(() => {
+        toast.success('E-mail cadastrado com sucesso!');
+      }, 2000);
+    }).catch(reject => {
+      handleButtonClickProgressErrorMail();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
+  }
+
+  function handleAddNewReference(e) {
+    e.preventDefault();
+
+    let personReferences = [{
+      ...reference, "idPerson": Number(idPerson)
+    }];
+
+    api.post('/persons_references/create', { personReferences }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressReference();
+      setTimeout(() => {
+        toast.success('Registro de referência cadastrado com sucesso!');
+      }, 2000);
+    }).catch(reject => {
+      handleButtonClickProgressErrorReference();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
   function handleSubmitFormEdit(e) {
@@ -306,6 +514,94 @@ export default function EditLegalPerson(props) {
     const { name, value } = e.target;
     setAddress({ ...address, [name]: value });
   }
+
+  function handleButtonClickProgressErrorAddress() {
+    if (!loading) {
+      setSuccessAddress(false);
+      setLoadingAddress(true);
+      timer.current = window.setTimeout(() => {
+        setErrorAddress(true);
+        setLoadingAddress(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressAddress() {
+    if (!loading) {
+      setSuccessAddress(false);
+      setLoadingAddress(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessAddress(true);
+        setLoadingAddress(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorPhone() {
+    if (!loading) {
+      setSuccessPhone(false);
+      setLoadingPhone(true);
+      timer.current = window.setTimeout(() => {
+        setErrorPhone(true);
+        setLoadingPhone(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressPhone() {
+    if (!loading) {
+      setSuccessPhone(false);
+      setLoadingPhone(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessPhone(true);
+        setLoadingPhone(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorMail() {
+    if (!loading) {
+      setSuccessMail(false);
+      setLoadingMail(true);
+      timer.current = window.setTimeout(() => {
+        setErrorMail(true);
+        setLoadingMail(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressMail() {
+    if (!loading) {
+      setSuccessMail(false);
+      setLoadingMail(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessMail(true);
+        setLoadingMail(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorReference() {
+    if (!loading) {
+      setSuccessReference(false);
+      setLoadingReference(true);
+      timer.current = window.setTimeout(() => {
+        setErrorReference(true);
+        setLoadingReference(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressReference() {
+    if (!loading) {
+      setSuccessReference(false);
+      setLoadingReference(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessReference(true);
+        setLoadingReference(false);
+      }, 2000);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -823,6 +1119,29 @@ export default function EditLegalPerson(props) {
               </TabPanel>
               {/* REFERÊNCIAS */}
               <TabPanel value={valueTab} index={3}>
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <Tooltip title="Adicionar nova referência">
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        size="small"
+                        onClick={handleClickOpenModalReference}
+                      >
+                        Adicionar
+                      </Button>
+                    </Tooltip>
+                  </Grid>
+                </Grid>
+                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                 {
                   personReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -1075,8 +1394,8 @@ export default function EditLegalPerson(props) {
                     color="primary"
                     variant="contained"
                     type="submit"
-                    className={buttonClassname}
-                    disabled={loading}
+                  // className={buttonClassname}
+                  // disabled={loading}
                   >
                     Salvar
                     {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
@@ -1087,6 +1406,7 @@ export default function EditLegalPerson(props) {
           </div>
         </Container>
 
+        {/* REGISTER PHONE MODAL */}
         <Dialog
           open={openModalPhone}
           onClose={handleCloseModalPhone}
@@ -1094,41 +1414,60 @@ export default function EditLegalPerson(props) {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">Adicionar número de telefone</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Grid
-                container
-                spacing={3}
-              >
+          <form onSubmit={(e) => handleAddNewPhone(e)}>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
                 <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
+                  container
+                  spacing={3}
                 >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Telefone"
-                    name="tel"
-                    variant="outlined"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
+                  <Grid
+                    item
+                    xs={12}
+                    sm={12}
+                    xl={12}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Telefone"
+                      name="tel"
+                      variant="outlined"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseModalPhone} style={{ color: red[300] }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCloseModalPhone} color="primary" variant="contained" autoFocus>
-              Salvar
-            </Button>
-          </DialogActions>
+              </DialogContentText>
+            </DialogContent>
+            <Divider style={{ marginTop: '20px' }} />
+            <DialogActions>
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="flex-end"
+                padding="15px"
+              >
+                <Button onClick={handleCloseModalPhone} style={{ color: red[300], marginRight: '10px' }}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  autoFocus
+                  className={buttonClassnamePhone}
+                  disabled={loadingPhone}
+                >
+                  Salvar
+                {loadingPhone && <CircularProgress size={24} className={classes.buttonProgressPhone} />}
+                </Button>
+              </Box>
+            </DialogActions>
+          </form>
         </Dialog>
 
+        {/* REGISTER MAIL MODAL */}
         <Dialog
           open={openModalMail}
           onClose={handleCloseModalMail}
@@ -1137,41 +1476,60 @@ export default function EditLegalPerson(props) {
           maxWidth="sm"
         >
           <DialogTitle id="alert-dialog-title">Adicionar um novo endereço de e-mail</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Grid
-                container
-                spacing={3}
-              >
+          <form onSubmit={(e) => handleAddNewMail(e)}>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
                 <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
+                  container
+                  spacing={3}
                 >
-                  <TextField
-                    fullWidth
-                    required
-                    label="E-mail"
-                    name="mail"
-                    variant="outlined"
-                    value={mail}
-                    onChange={(e) => setMail(e.target.value)}
-                  />
+                  <Grid
+                    item
+                    xs={12}
+                    sm={12}
+                    xl={12}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="E-mail"
+                      name="mail"
+                      variant="outlined"
+                      value={mail}
+                      onChange={(e) => setMail(e.target.value)}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseModalMail} style={{ color: red[300] }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCloseModalMail} color="primary" variant="contained" autoFocus>
-              Salvar
-            </Button>
-          </DialogActions>
+              </DialogContentText>
+            </DialogContent>
+            <Divider style={{ marginTop: '20px' }} />
+            <DialogActions>
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="flex-end"
+                padding="15px"
+              >
+                <Button onClick={handleCloseModalMail} style={{ color: red[300], marginRight: '10px' }}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  autoFocus
+                  className={buttonClassnameMail}
+                  disabled={loadingMail}
+                >
+                  Salvar
+                {loadingMail && <CircularProgress size={24} className={classes.buttonProgressMail} />}
+                </Button>
+              </Box>
+            </DialogActions>
+          </form>
         </Dialog>
 
+        {/* REGISTER ADDRESS MODAL */}
         <Dialog
           open={openModalAddress}
           onClose={handleCloseModalAddress}
@@ -1321,17 +1679,136 @@ export default function EditLegalPerson(props) {
               >
                 <Button onClick={handleCloseModalAddress} style={{ color: red[300], marginRight: '10px' }}>
                   Cancelar
-                  {/* {loading && <CircularProgress size={24} className={classes.buttonProgress} />} */}
                 </Button>
-                <Button type="submit" color="primary" variant="contained" autoFocus>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  autoFocus
+                  className={buttonClassnameAddress}
+                  disabled={loadingAddress}
+                >
                   Salvar
-                  {/* {loading && <CircularProgress size={24} className={classes.buttonProgress} />} */}
+                  {loadingAddress && <CircularProgress size={24} className={classes.buttonProgressAddress} />}
                 </Button>
               </Box>
             </DialogActions>
           </form>
         </Dialog>
 
+        {/* REGISTER REFERENCES MODAL */}
+        <Dialog
+          open={openModalReference}
+          onClose={handleCloseModalReference}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Adicionar um registro para referência</DialogTitle>
+          <form onSubmit={(e) => handleAddNewReference(e)}>
+            <DialogContent>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={6}
+                  sm={6}
+                  xl={6}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Nome"
+                    name="referenceName"
+                    variant="outlined"
+                    value={reference.referenceName}
+                    onChange={(e) => handleChangeReference(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Tipo"
+                    name="referenceType"
+                    variant="outlined"
+                    value={reference.referenceType}
+                    onChange={(e) => handleChangeReference(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Telefone"
+                    name="referencePhone"
+                    variant="outlined"
+                    value={reference.referencePhone}
+                    onChange={(e) => handleChangeReference(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={8}
+                  sm={8}
+                  xl={8}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Endereço"
+                    name="referenceAdress"
+                    variant="outlined"
+                    value={reference.referenceAdress}
+                    onChange={(e) => handleChangeReference(e)}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <Divider style={{ marginTop: '20px' }} />
+            <DialogActions>
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="flex-end"
+                padding="15px"
+              >
+                <Button onClick={handleCloseModalReference} style={{ color: red[300], marginRight: '10px' }}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  autoFocus
+                  className={buttonClassnameReference}
+                  disabled={loadingReference}
+                >
+                  Salvar
+                {loadingReference && <CircularProgress size={24} className={classes.buttonProgressReference} />}
+                </Button>
+              </Box>
+            </DialogActions>
+          </form>
+        </Dialog>
         <Box pt={4}>
           <Copyright />
         </Box>
