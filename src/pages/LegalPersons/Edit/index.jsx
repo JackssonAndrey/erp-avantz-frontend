@@ -6,7 +6,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { green, red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
-  Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle
+  Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle, Select, MenuItem, FormControl,
+  InputLabel
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
@@ -152,6 +153,9 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#FFF'
   },
   containerInput: {
+  },
+  formControl: {
+    width: '100%'
   }
 }));
 
@@ -271,7 +275,6 @@ export default function EditLegalPerson(props) {
   const [address, setAddress] = useState(initialStateAdress);
   const [reference, setReference] = useState(initialStateReference);
 
-  const csrfToken = getCookie('csrftoken');
 
   const handleClickOpenModalPhone = () => {
     setOpenModalPhone(true);
@@ -399,6 +402,7 @@ export default function EditLegalPerson(props) {
 
   function handleAddNewPhone(e) {
     e.preventDefault();
+    const csrfToken = getCookie('csrftoken');
 
     let phones = [
       {
@@ -428,6 +432,7 @@ export default function EditLegalPerson(props) {
 
   function handleAddNewAddress(e) {
     e.preventDefault();
+    const csrfToken = getCookie('csrftoken');
 
     let adresses = [{ ...address, idPerson: Number(idPerson) }];
 
@@ -454,6 +459,7 @@ export default function EditLegalPerson(props) {
 
   function handleAddNewMail(e) {
     e.preventDefault();
+    const csrfToken = getCookie('csrftoken');
 
     let mails = [
       {
@@ -483,6 +489,7 @@ export default function EditLegalPerson(props) {
 
   function handleAddNewReference(e) {
     e.preventDefault();
+    const csrfToken = getCookie('csrftoken');
 
     let personReferences = [{
       ...reference, "idPerson": Number(idPerson)
@@ -1363,16 +1370,24 @@ export default function EditLegalPerson(props) {
                     sm={3}
                     xl={3}
                   >
-                    <TextField
-                      fullWidth
-
-                      required
-                      label="Fornecedor"
-                      name="forn"
-                      variant="outlined"
-                      value={person.forn === 1 ? 'Sim' : 'Não'}
-                      onChange={(e) => handleChangeInputsPerson(e)}
-                    />
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
+                      <Select
+                        labelId="demo-simple-select-outlined-label"
+                        id="demo-simple-select-outlined"
+                        value={person.forn}
+                        onChange={(e) => handleChangeInputsPerson(e)}
+                        label="Fornecedor"
+                        autoWidth={false}
+                        labelWidth={3}
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Sim</MenuItem>
+                        <MenuItem value={0}>Não</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
                 </Grid>
               </TabPanel>

@@ -4,7 +4,8 @@ import { ToastContainer } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem,
+  FormControl, InputLabel
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
@@ -84,6 +85,9 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: '#FFF'
   },
   containerInput: {
+  },
+  formControl: {
+    width: '100%'
   }
 }));
 
@@ -862,16 +866,23 @@ export default function LegalPersonDetails(props) {
                   sm={3}
                   xl={3}
                 >
-                  <TextField
-                    fullWidth
-                    disabled
-                    required
-                    label="Fornecedor"
-                    name="forn"
-                    variant="outlined"
-                    value={person.forn === 1 ? 'Sim' : 'Não'}
-                    onChange={(e) => handleChangeInputsPerson(e)}
-                  />
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-outlined-label"
+                      id="demo-simple-select-outlined"
+                      value={person.forn}
+                      onChange={(e) => handleChangeInputsPerson(e)}
+                      label="Fornecedor"
+                      disabled
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value={1}>Sim</MenuItem>
+                      <MenuItem value={0}>Não</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </TabPanel>

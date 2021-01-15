@@ -29,11 +29,17 @@ export default function useAuth() {
       localStorage.setItem('user', JSON.stringify(data.user));
       api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
       api.defaults.withCredentials = true;
+      // document.cookie = `Set-Cookie: csrftoken=${data.access_token}; SameSite=lax`;
+      // createCookieInHour('csrftoken', data.access_token, 5);
+      // createCookieInHour('refreshtoken', data.access_token, 5);
+      setCookie('csrftoken', data.access_token, { path: '/', SameSite: 'Lax', secure: true, 'max-age': 3600 });
+
       setAuthenticated(true);
       setErrors({ 'error': '' });
       history.push('/dashboard');
     } catch (error) {
-      const { data } = error.response;
+      const { data } = error.response
+      console.log(error);
       console.log('Ooops! Houve um error.', error.message || error);
       setErrors({ 'error': data.detail });
       return;
@@ -63,6 +69,31 @@ export default function useAuth() {
     })();
 
     history.push('/login');
+  }
+
+  // const createCookieInHour = (cookieName, cookieValue, hourToExpire) => {
+  //   let date = new Date();
+  //   date.setTime(date.getTime() + (hourToExpire * 60 * 60 * 1000));
+  //   document.cookie = cookieName + " = " + cookieValue + "; expires = " + date.toGMTString() + "; SameSite=Lax";
+  // }
+
+  function setCookie(name, value, options = {}) {
+
+    if (options.expires instanceof Date) {
+      options.expires = options.expires.toUTCString();
+    }
+
+    let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+    for (let optionKey in options) {
+      updatedCookie += "; " + optionKey;
+      let optionValue = options[optionKey];
+      if (optionValue !== true) {
+        updatedCookie += "=" + optionValue;
+      }
+    }
+
+    document.cookie = updatedCookie;
   }
 
   return { authenticated, loading, handleLogin, handleLogout, errors };
