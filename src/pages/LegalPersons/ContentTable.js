@@ -265,7 +265,6 @@ export default function EnhancedTable() {
           handleLogout();
         }, 5000);
       }
-
     }
     getAllPersons();
   }, [handleLogout]);

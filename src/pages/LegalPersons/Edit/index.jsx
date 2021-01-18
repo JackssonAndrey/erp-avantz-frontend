@@ -2,8 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import { makeStyles } from '@material-ui/core/styles';
-import { green, red } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
   Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle, Select, MenuItem, FormControl,
@@ -17,147 +16,9 @@ import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import getCookie from '../../../utils/functions';
+import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-  },
-  rootForm: {},
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto',
-  },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  input: {
-    display: 'none',
-  },
-  large: {
-    width: theme.spacing(10),
-    height: theme.spacing(10),
-    marginBottom: theme.spacing(4)
-  },
-  form: {
-    width: '100%',
-    padding: theme.spacing(2),
-    display: 'flex',
-    alignItems: 'center'
-  },
-  buttonSuccessAddress: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgressAddress: {
-    color: green[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  buttonErrorAddress: {
-    backgroundColor: red[500],
-    '&:hover': {
-      backgroundColor: red[800],
-    },
-  },
-  buttonSuccessPhone: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgressPhone: {
-    color: green[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  buttonErrorPhone: {
-    backgroundColor: red[500],
-    '&:hover': {
-      backgroundColor: red[800],
-    },
-  },
-  buttonSuccessMail: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgressMail: {
-    color: green[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  buttonErrorMail: {
-    backgroundColor: red[500],
-    '&:hover': {
-      backgroundColor: red[800],
-    },
-  },
-  buttonSuccessReference: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgressReference: {
-    color: green[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  buttonErrorReference: {
-    backgroundColor: red[500],
-    '&:hover': {
-      backgroundColor: red[800],
-    },
-  },
-  cardContent: {
-    marginTop: theme.spacing(3)
-  },
-  avatarLarge: {
-    width: theme.spacing(10),
-    height: theme.spacing(10)
-  },
-  tabArea: {
-    marginTop: theme.spacing(3),
-    boxShadow: '0 3px 3px #9e9e9e',
-    minHeight: '400px',
-    backgroundColor: '#FFF'
-  },
-  appBar: {
-    backgroundColor: '#FFF'
-  },
-  containerInput: {
-  },
-  formControl: {
-    width: '100%'
-  }
-}));
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -248,9 +109,15 @@ export default function EditLegalPerson(props) {
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [successAddress, setSuccessAddress] = useState(false);
   const [errorAddress, setErrorAddress] = useState(false);
+  const [loadingRemoveAddress, setLoadingRemoveAddress] = useState(false);
+  const [successRemoveAddress, setSuccessRemoveAddress] = useState(false);
+  const [errorRemoveAddress, setErrorRemoveAddress] = useState(false);
   const [loadingPhone, setLoadingPhone] = useState(false);
   const [successPhone, setSuccessPhone] = useState(false);
   const [errorPhone, setErrorPhone] = useState(false);
+  const [loadingRemovePhone, setLoadingRemovePhone] = useState(false);
+  const [successRemovePhone, setSuccessRemovePhone] = useState(false);
+  const [errorRemovePhone, setErrorRemovePhone] = useState(false);
   const [loadingMail, setLoadingMail] = useState(false);
   const [successMail, setSuccessMail] = useState(false);
   const [errorMail, setErrorMail] = useState(false);
@@ -262,13 +129,17 @@ export default function EditLegalPerson(props) {
   const [bankingReferences, setBankingReferences] = useState([{}]);
   const [person, setPerson] = useState(initialStatePerson);
   const [personAddress, setPersonAddress] = useState([{}]);
+  const [addressId, setAddressId] = useState(0);
   const [personMail, setPersonMail] = useState([{}]);
   const [personPhone, setPersonPhone] = useState([{}]);
+  const [phoneId, setPhoneId] = useState(0);
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
   const [openModalPhone, setOpenModalPhone] = useState(false);
+  const [openModalRemovePhone, setOpenModalRemovePhone] = useState(false);
   const [openModalMail, setOpenModalMail] = useState(false);
   const [openModalAddress, setOpenModalAddress] = useState(false);
+  const [openModalRemoveAddress, setOpenModalRemoveAddress] = useState(false);
   const [openModalReference, setOpenModalReference] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mail, setMail] = useState('');
@@ -282,6 +153,16 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalPhone = () => {
     setOpenModalPhone(false);
+    setPhoneNumber('');
+  };
+
+  const handleClickOpenModalRemovePhone = (id) => {
+    setOpenModalRemovePhone(true);
+    setPhoneId(id);
+  };
+
+  const handleCloseModaRemovelPhone = () => {
+    setOpenModalRemovePhone(false);
     setPhoneNumber('');
   };
 
@@ -302,6 +183,15 @@ export default function EditLegalPerson(props) {
     setOpenModalAddress(false);
   };
 
+  const handleClickOpenModalRemoveAddress = (id) => {
+    setOpenModalRemoveAddress(true);
+    setAddressId(id);
+  };
+
+  const handleCloseModalRemoveAddress = () => {
+    setOpenModalRemoveAddress(false);
+  };
+
   const handleClickOpenModalReference = () => {
     setOpenModalReference(true);
   };
@@ -319,9 +209,19 @@ export default function EditLegalPerson(props) {
     [classes.buttonErrorAddress]: errorAddress,
   });
 
+  const buttonClassnameRemoveAddress = clsx({
+    [classes.buttonSuccessRemoveAddress]: successRemoveAddress,
+    [classes.buttonErrorRemoveAddress]: errorRemoveAddress,
+  });
+
   const buttonClassnamePhone = clsx({
     [classes.buttonSuccessPhone]: successPhone,
     [classes.buttonErrorPhone]: errorPhone,
+  });
+
+  const buttonClassnameRemovePhone = clsx({
+    [classes.buttonSuccessRemovePhone]: successRemovePhone,
+    [classes.buttonErrorRemovePhone]: errorRemovePhone,
   });
 
   const buttonClassnameMail = clsx({
@@ -544,6 +444,50 @@ export default function EditLegalPerson(props) {
     }
   };
 
+  function handleButtonClickProgressErrorRemoveAddress() {
+    if (!loading) {
+      setSuccessRemoveAddress(false);
+      setLoadingRemoveAddress(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemoveAddress(true);
+        setLoadingRemoveAddress(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemoveAddress() {
+    if (!loading) {
+      setSuccessRemoveAddress(false);
+      setLoadingRemoveAddress(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemoveAddress(true);
+        setLoadingRemoveAddress(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorRemovePhone() {
+    if (!loading) {
+      setSuccessRemovePhone(false);
+      setLoadingRemovePhone(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemovePhone(true);
+        setLoadingRemovePhone(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemovePhone() {
+    if (!loading) {
+      setSuccessRemovePhone(false);
+      setLoadingRemovePhone(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemovePhone(true);
+        setLoadingRemovePhone(false);
+      }, 2000);
+    }
+  };
+
   function handleButtonClickProgressErrorPhone() {
     if (!loading) {
       setSuccessPhone(false);
@@ -609,6 +553,14 @@ export default function EditLegalPerson(props) {
       }, 2000);
     }
   };
+
+  function handleRemoveAddress(id) {
+    console.log(id);
+  }
+
+  function handleRemovePhone(id) {
+    console.log(id);
+  }
 
   return (
     <div className={classes.root}>
@@ -980,6 +932,7 @@ export default function EditLegalPerson(props) {
                               style={{ background: red[300], color: '#FFF' }}
                               variant="contained"
                               size="small"
+                              onClick={() => handleClickOpenModalRemoveAddress(address.id_enderecos)}
                             >
                               Remover
                             </Button>
@@ -1049,7 +1002,7 @@ export default function EditLegalPerson(props) {
                             />
                           </Grid>
                           <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar">
+                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}>
                               <Delete size={8} style={{ color: red[300] }} />
                             </IconButton>
                           </Tooltip>
@@ -1824,6 +1777,90 @@ export default function EditLegalPerson(props) {
             </DialogActions>
           </form>
         </Dialog>
+
+        {/* REMOVE REGISTER PHONE */}
+        <Dialog
+          open={openModalRemovePhone}
+          onClose={handleCloseModaRemovelPhone}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Remover registro de telefone</DialogTitle>
+          <DialogContent>
+
+            <Typography>
+              Deseja realmente excluir este registro de telefone?
+              </Typography>
+          </DialogContent>
+          <Divider style={{ marginTop: '20px' }} />
+          <DialogActions>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              alignItems="flex-end"
+              padding="15px"
+            >
+              <Button onClick={handleCloseModaRemovelPhone} style={{ color: red[300], marginRight: '10px' }}>
+                Cancelar
+                </Button>
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                autoFocus
+                className={buttonClassnameRemovePhone}
+                disabled={loadingRemovePhone}
+                onClick={() => handleRemovePhone(phoneId)}
+              >
+                Excluir
+                  {loadingRemovePhone && <CircularProgress size={24} className={classes.buttonProgressRemovePhone} />}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
+        {/* REMOVE REGISTER ADDRESS */}
+        <Dialog
+          open={openModalRemoveAddress}
+          onClose={handleCloseModalRemoveAddress}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Remover registro de endereço</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Deseja realmente excluir este registro de endereço?
+              </Typography>
+          </DialogContent>
+          <Divider style={{ marginTop: '20px' }} />
+          <DialogActions>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              alignItems="flex-end"
+              padding="15px"
+            >
+              <Button onClick={handleCloseModalRemoveAddress} style={{ color: red[300], marginRight: '10px' }}>
+                Cancelar
+                </Button>
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                autoFocus
+                className={buttonClassnameRemoveAddress}
+                disabled={loadingRemoveAddress}
+                onClick={() => handleRemoveAddress(addressId)}
+              >
+                Excluir
+                  {loadingRemoveAddress && <CircularProgress size={24} className={classes.buttonProgressRemoveAddress} />}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
         <Box pt={4}>
           <Copyright />
         </Box>

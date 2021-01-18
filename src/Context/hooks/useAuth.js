@@ -25,14 +25,15 @@ export default function useAuth() {
 
     try {
       const { data } = await api.post('/users/login', { username, password });
-      localStorage.setItem('token', JSON.stringify(data.access_token));
+      let cookie = data.access_token;
+      localStorage.setItem('token', JSON.stringify(cookie));
       localStorage.setItem('user', JSON.stringify(data.user));
-      api.defaults.headers.Authorization = `Bearer ${data.access_token}`;
+      api.defaults.headers.Authorization = `Bearer ${cookie}`;
       api.defaults.withCredentials = true;
-      // document.cookie = `Set-Cookie: csrftoken=${data.access_token}; SameSite=lax`;
-      // createCookieInHour('csrftoken', data.access_token, 5);
-      // createCookieInHour('refreshtoken', data.access_token, 5);
-      setCookie('csrftoken', data.access_token, { path: '/', SameSite: 'Lax', secure: true, 'max-age': 3600 });
+      // document.cookie = `Set-Cookie: csrftoken=${cookie}; SameSite=lax`;
+      createCookieInHour('csrftoken', cookie, 5);
+      createCookieInHour('refreshtoken', cookie, 5);
+      // setCookie('csrftoken', cookie, { path: '/', SameSite: 'None', secure: true, 'max-age': 3600 });
 
       setAuthenticated(true);
       setErrors({ 'error': '' });
@@ -71,11 +72,11 @@ export default function useAuth() {
     history.push('/login');
   }
 
-  // const createCookieInHour = (cookieName, cookieValue, hourToExpire) => {
-  //   let date = new Date();
-  //   date.setTime(date.getTime() + (hourToExpire * 60 * 60 * 1000));
-  //   document.cookie = cookieName + " = " + cookieValue + "; expires = " + date.toGMTString() + "; SameSite=Lax";
-  // }
+  const createCookieInHour = (cookieName, cookieValue, hourToExpire) => {
+    let date = new Date();
+    date.setTime(date.getTime() + (hourToExpire * 60 * 60 * 1000));
+    document.cookie = cookieName + " = " + cookieValue + "; expires = " + date.toGMTString();
+  }
 
   function setCookie(name, value, options = {}) {
 
