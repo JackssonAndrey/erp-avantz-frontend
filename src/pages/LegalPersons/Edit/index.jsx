@@ -102,9 +102,22 @@ const initialStateReference = {
   "referenceAdress": ""
 }
 
+const initialStateBankingReference = {
+  "idPerson": 0,
+  "idBanking": 0,
+  "situation": 1,
+  "agency": "",
+  "account": "",
+  "opening": "",
+  "type": ""
+}
+
 export default function EditLegalPerson(props) {
   const classes = useStyles();
   const timer = useRef();
+  const idPerson = props.match.params.id;
+
+  // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [successAddress, setSuccessAddress] = useState(false);
@@ -118,34 +131,58 @@ export default function EditLegalPerson(props) {
   const [loadingRemovePhone, setLoadingRemovePhone] = useState(false);
   const [successRemovePhone, setSuccessRemovePhone] = useState(false);
   const [errorRemovePhone, setErrorRemovePhone] = useState(false);
+  const [loadingRemoveMail, setLoadingRemoveMail] = useState(false);
+  const [successRemoveMail, setSuccessRemoveMail] = useState(false);
+  const [errorRemoveMail, setErrorRemoveMail] = useState(false);
   const [loadingMail, setLoadingMail] = useState(false);
   const [successMail, setSuccessMail] = useState(false);
   const [errorMail, setErrorMail] = useState(false);
   const [loadingReference, setLoadingReference] = useState(false);
   const [successReference, setSuccessReference] = useState(false);
   const [errorReference, setErrorReference] = useState(false);
-  const idPerson = props.match.params.id;
+  const [loadingRemoveReference, setLoadingRemoveReference] = useState(false);
+  const [successRemoveReference, setSuccessRemoveReference] = useState(false);
+  const [errorRemoveReference, setErrorRemoveReference] = useState(false);
+  const [loadingBankingReference, setLoadingBankingReference] = useState(false);
+  const [successBankingReference, setSuccessBankingReference] = useState(false);
+  const [errorBankingReference, setErrorBankingReference] = useState(false);
+  const [loadingRemoveBankingReference, setLoadingRemoveBankingReference] = useState(false);
+  const [successRemoveBankingReference, setSuccessRemoveBankingReference] = useState(false);
+  const [errorRemoveBankingReference, setErrorRemoveBankingReference] = useState(false);
+
+  // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
   const [bankingReferences, setBankingReferences] = useState([{}]);
+  const [bankingReferenceId, setBankingReferenceId] = useState(0);
   const [person, setPerson] = useState(initialStatePerson);
   const [personAddress, setPersonAddress] = useState([{}]);
   const [addressId, setAddressId] = useState(0);
   const [personMail, setPersonMail] = useState([{}]);
+  const [personMailId, setPersonMailId] = useState(0);
   const [personPhone, setPersonPhone] = useState([{}]);
   const [phoneId, setPhoneId] = useState(0);
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
+  const [personReferenceId, setPersonReferenceId] = useState(0);
+
+  // MODALS STATES
   const [openModalPhone, setOpenModalPhone] = useState(false);
   const [openModalRemovePhone, setOpenModalRemovePhone] = useState(false);
   const [openModalMail, setOpenModalMail] = useState(false);
   const [openModalAddress, setOpenModalAddress] = useState(false);
   const [openModalRemoveAddress, setOpenModalRemoveAddress] = useState(false);
+  const [openModalRemoveMail, setOpenModalRemoveMail] = useState(false);
   const [openModalReference, setOpenModalReference] = useState(false);
+  const [openModalRemoveReference, setOpenModalRemoveReference] = useState(false);
+  const [openModalBankingReference, setOpenModalBankingReference] = useState(false);
+  const [openModalRemoveBankingReference, setOpenModalRemoveBankingReference] = useState(false);
+
+  // REGISTER STATE
   const [phoneNumber, setPhoneNumber] = useState('');
   const [mail, setMail] = useState('');
   const [address, setAddress] = useState(initialStateAdress);
   const [reference, setReference] = useState(initialStateReference);
-
+  const [banking, setBanking] = useState(initialStateBankingReference);
 
   const handleClickOpenModalPhone = () => {
     setOpenModalPhone(true);
@@ -163,7 +200,33 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModaRemovelPhone = () => {
     setOpenModalRemovePhone(false);
-    setPhoneNumber('');
+  };
+
+  const handleClickOpenModalRemoveMail = (id) => {
+    setOpenModalRemoveMail(true);
+    setPersonMailId(id);
+  };
+
+  const handleCloseModalRemoveMail = () => {
+    setOpenModalRemoveMail(false);
+  };
+
+  const handleClickOpenModalRemoveReference = (id) => {
+    setOpenModalRemoveReference(true);
+    setPersonReferenceId(id);
+  };
+
+  const handleCloseModalRemoveReference = () => {
+    setOpenModalRemoveReference(false);
+  };
+
+  const handleClickOpenModalRemoveBankingReference = (id) => {
+    setOpenModalRemoveBankingReference(true);
+    setBankingReferenceId(id);
+  };
+
+  const handleCloseModalRemoveBankingReference = () => {
+    setOpenModalRemoveBankingReference(false);
   };
 
   const handleClickOpenModalMail = () => {
@@ -173,6 +236,14 @@ export default function EditLegalPerson(props) {
   const handleCloseModalMail = () => {
     setOpenModalMail(false);
     setMail('');
+  };
+
+  const handleClickOpenModalBankingReference = () => {
+    setOpenModalBankingReference(true);
+  };
+
+  const handleCloseModalBankingReference = () => {
+    setOpenModalBankingReference(false);
   };
 
   const handleClickOpenModalAddress = () => {
@@ -214,6 +285,16 @@ export default function EditLegalPerson(props) {
     [classes.buttonErrorRemoveAddress]: errorRemoveAddress,
   });
 
+  const buttonClassnameRemoveMail = clsx({
+    [classes.buttonSuccessRemoveMail]: successRemoveMail,
+    [classes.buttonErrorRemoveMail]: errorRemoveMail,
+  });
+
+  const buttonClassnameRemoveReference = clsx({
+    [classes.buttonSuccessRemoveReference]: successRemoveReference,
+    [classes.buttonErrorRemoveReference]: errorRemoveReference,
+  });
+
   const buttonClassnamePhone = clsx({
     [classes.buttonSuccessPhone]: successPhone,
     [classes.buttonErrorPhone]: errorPhone,
@@ -232,6 +313,16 @@ export default function EditLegalPerson(props) {
   const buttonClassnameReference = clsx({
     [classes.buttonSuccessReference]: successReference,
     [classes.buttonErrorReference]: errorReference,
+  });
+
+  const buttonClassnameBankingReference = clsx({
+    [classes.buttonSuccessBankingReference]: successBankingReference,
+    [classes.buttonErrorBankingReference]: errorBankingReference,
+  });
+
+  const buttonClassnameRemoveBankingReference = clsx({
+    [classes.buttonSuccessRemoveBankingReference]: successRemoveBankingReference,
+    [classes.buttonErrorRemoveBankingReference]: errorRemoveBankingReference,
   });
 
   useEffect(() => {
@@ -293,6 +384,11 @@ export default function EditLegalPerson(props) {
   function handleChangeInputsBankingReferences(e) {
     const { name, value } = e.target;
     setBankingReferences([{ ...bankingReferences, [name]: value }]);
+  }
+
+  function handleChangeInputsBanking(e) {
+    const { name, value } = e.target;
+    setBanking({ ...banking, [name]: value });
   }
 
   function handleChangeReference(e) {
@@ -413,6 +509,10 @@ export default function EditLegalPerson(props) {
     });
   }
 
+  function handleAddNewBankingReference(e) {
+    e.preventDefault();
+  }
+
   function handleSubmitFormEdit(e) {
     e.preventDefault();
   }
@@ -423,7 +523,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressErrorAddress() {
-    if (!loading) {
+    if (!errorAddress) {
       setSuccessAddress(false);
       setLoadingAddress(true);
       timer.current = window.setTimeout(() => {
@@ -434,7 +534,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressAddress() {
-    if (!loading) {
+    if (!loadingAddress) {
       setSuccessAddress(false);
       setLoadingAddress(true);
       timer.current = window.setTimeout(() => {
@@ -445,7 +545,7 @@ export default function EditLegalPerson(props) {
   };
 
   function handleButtonClickProgressErrorRemoveAddress() {
-    if (!loading) {
+    if (!loadingRemoveAddress) {
       setSuccessRemoveAddress(false);
       setLoadingRemoveAddress(true);
       timer.current = window.setTimeout(() => {
@@ -456,7 +556,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressRemoveAddress() {
-    if (!loading) {
+    if (!loadingRemoveAddress) {
       setSuccessRemoveAddress(false);
       setLoadingRemoveAddress(true);
       timer.current = window.setTimeout(() => {
@@ -467,7 +567,7 @@ export default function EditLegalPerson(props) {
   };
 
   function handleButtonClickProgressErrorRemovePhone() {
-    if (!loading) {
+    if (!loadingRemovePhone) {
       setSuccessRemovePhone(false);
       setLoadingRemovePhone(true);
       timer.current = window.setTimeout(() => {
@@ -478,7 +578,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressRemovePhone() {
-    if (!loading) {
+    if (!loadingRemovePhone) {
       setSuccessRemovePhone(false);
       setLoadingRemovePhone(true);
       timer.current = window.setTimeout(() => {
@@ -488,8 +588,74 @@ export default function EditLegalPerson(props) {
     }
   };
 
+  function handleButtonClickProgressErrorRemoveMail() {
+    if (!loadingRemoveMail) {
+      setSuccessRemoveMail(false);
+      setLoadingRemoveMail(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemoveMail(true);
+        setLoadingRemoveMail(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemoveMail() {
+    if (!loadingRemoveMail) {
+      setSuccessRemoveMail(false);
+      setLoadingRemoveMail(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemoveMail(true);
+        setLoadingRemoveMail(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorRemoveReference() {
+    if (!loadingRemoveReference) {
+      setSuccessRemoveReference(false);
+      setLoadingRemoveReference(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemoveReference(true);
+        setLoadingRemoveReference(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemoveReference() {
+    if (!loadingRemoveReference) {
+      setSuccessRemoveReference(false);
+      setLoadingRemoveReference(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemoveReference(true);
+        setLoadingRemoveReference(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorRemoveBankingReference() {
+    if (!loadingRemoveBankingReference) {
+      setSuccessRemoveBankingReference(false);
+      setLoadingRemoveBankingReference(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemoveBankingReference(true);
+        setLoadingRemoveBankingReference(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemoveBankingReference() {
+    if (!loadingRemoveBankingReference) {
+      setSuccessRemoveBankingReference(false);
+      setLoadingRemoveBankingReference(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemoveBankingReference(true);
+        setLoadingRemoveBankingReference(false);
+      }, 2000);
+    }
+  };
+
   function handleButtonClickProgressErrorPhone() {
-    if (!loading) {
+    if (!errorPhone) {
       setSuccessPhone(false);
       setLoadingPhone(true);
       timer.current = window.setTimeout(() => {
@@ -500,7 +666,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressPhone() {
-    if (!loading) {
+    if (!loadingPhone) {
       setSuccessPhone(false);
       setLoadingPhone(true);
       timer.current = window.setTimeout(() => {
@@ -511,7 +677,7 @@ export default function EditLegalPerson(props) {
   };
 
   function handleButtonClickProgressErrorMail() {
-    if (!loading) {
+    if (!errorMail) {
       setSuccessMail(false);
       setLoadingMail(true);
       timer.current = window.setTimeout(() => {
@@ -522,7 +688,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressMail() {
-    if (!loading) {
+    if (!loadingMail) {
       setSuccessMail(false);
       setLoadingMail(true);
       timer.current = window.setTimeout(() => {
@@ -532,8 +698,30 @@ export default function EditLegalPerson(props) {
     }
   };
 
+  function handleButtonClickProgressErrorBanking() {
+    if (!errorBankingReference) {
+      setSuccessBankingReference(false);
+      setLoadingBankingReference(true);
+      timer.current = window.setTimeout(() => {
+        setErrorBankingReference(true);
+        setLoadingBankingReference(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressBanking() {
+    if (!loadingBankingReference) {
+      setSuccessBankingReference(false);
+      setLoadingBankingReference(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessBankingReference(true);
+        setLoadingBankingReference(false);
+      }, 2000);
+    }
+  };
+
   function handleButtonClickProgressErrorReference() {
-    if (!loading) {
+    if (!errorReference) {
       setSuccessReference(false);
       setLoadingReference(true);
       timer.current = window.setTimeout(() => {
@@ -544,7 +732,7 @@ export default function EditLegalPerson(props) {
   }
 
   function handleButtonClickProgressReference() {
-    if (!loading) {
+    if (!loadingReference) {
       setSuccessReference(false);
       setLoadingReference(true);
       timer.current = window.setTimeout(() => {
@@ -559,6 +747,18 @@ export default function EditLegalPerson(props) {
   }
 
   function handleRemovePhone(id) {
+    console.log(id);
+  }
+
+  function handleRemoveMail(id) {
+    console.log(id);
+  }
+
+  function handleRemoveReference(id) {
+    console.log(id);
+  }
+
+  function handleRemoveBankingReference(id) {
     console.log(id);
   }
 
@@ -1067,7 +1267,7 @@ export default function EditLegalPerson(props) {
                             />
                           </Grid>
                           <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar">
+                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}>
                               <Delete size={8} style={{ color: red[300] }} />
                             </IconButton>
                           </Tooltip>
@@ -1191,6 +1391,28 @@ export default function EditLegalPerson(props) {
                           />
                         </Grid>
                       </Grid>
+                      <Grid
+                        container
+                        spacing={3}
+                      >
+                        <Grid
+                          item
+                          xs={3}
+                          sm={3}
+                          xl={3}
+                        >
+                          <Tooltip title="Remover este registro">
+                            <Button
+                              style={{ background: red[300], color: '#FFF' }}
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleClickOpenModalRemoveReference(reference.id_referencia)}
+                            >
+                              Remover
+                            </Button>
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
                     </Typography>
                   ))
                 }
@@ -1198,6 +1420,28 @@ export default function EditLegalPerson(props) {
               </TabPanel>
               {/* DADOS BANCÁRIOS */}
               <TabPanel value={valueTab} index={4}>
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <Tooltip title="Adicionar nova conta">
+                      <Button
+                        color="primary"
+                        variant="contained"
+                        size="small"
+                        onClick={handleClickOpenModalBankingReference}
+                      >
+                        Adicionar
+                      </Button>
+                    </Tooltip>
+                  </Grid>
+                </Grid>
                 {
                   bankingReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -1218,16 +1462,26 @@ export default function EditLegalPerson(props) {
                           sm={4}
                           xl={4}
                         >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Banco"
-                            name="id_bancos_fk"
-                            variant="outlined"
-                            value={banking.id_bancos_fk}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
-                          />
+                          <FormControl variant="outlined" className={classes.formControl}>
+                            <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
+                            <Select
+                              labelId="demo-simple-select-outlined-label"
+                              id="demo-simple-select-outlined"
+                              value={banking.id_bancos_fk}
+                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              label="Banco"
+                              name="id_bancos_fk"
+                              required
+                              autoWidth={false}
+                              labelWidth={3}
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              <MenuItem value={1}>Sim</MenuItem>
+                              <MenuItem value={0}>Não</MenuItem>
+                            </Select>
+                          </FormControl>
                         </Grid>
 
                         <Grid
@@ -1307,6 +1561,28 @@ export default function EditLegalPerson(props) {
                           />
                         </Grid>
                       </Grid>
+                      <Grid
+                        container
+                        spacing={3}
+                      >
+                        <Grid
+                          item
+                          xs={3}
+                          sm={3}
+                          xl={3}
+                        >
+                          <Tooltip title="Remover este registro">
+                            <Button
+                              style={{ background: red[300], color: '#FFF' }}
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleClickOpenModalRemoveBankingReference(banking.id_banco)}
+                            >
+                              Remover
+                            </Button>
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
                     </Typography>
                   ))
                 }
@@ -1384,29 +1660,27 @@ export default function EditLegalPerson(props) {
           <DialogTitle id="alert-dialog-title">Adicionar número de telefone</DialogTitle>
           <form onSubmit={(e) => handleAddNewPhone(e)}>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <Grid
+                container
+                spacing={3}
+              >
                 <Grid
-                  container
-                  spacing={3}
+                  item
+                  xs={12}
+                  sm={12}
+                  xl={12}
                 >
-                  <Grid
-                    item
-                    xs={12}
-                    sm={12}
-                    xl={12}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Telefone"
-                      name="tel"
-                      variant="outlined"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                    />
-                  </Grid>
+                  <TextField
+                    fullWidth
+                    required
+                    label="Telefone"
+                    name="tel"
+                    variant="outlined"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
                 </Grid>
-              </DialogContentText>
+              </Grid>
             </DialogContent>
             <Divider style={{ marginTop: '20px' }} />
             <DialogActions>
@@ -1446,29 +1720,27 @@ export default function EditLegalPerson(props) {
           <DialogTitle id="alert-dialog-title">Adicionar um novo endereço de e-mail</DialogTitle>
           <form onSubmit={(e) => handleAddNewMail(e)}>
             <DialogContent>
-              <DialogContentText id="alert-dialog-description">
+              <Grid
+                container
+                spacing={3}
+              >
                 <Grid
-                  container
-                  spacing={3}
+                  item
+                  xs={12}
+                  sm={12}
+                  xl={12}
                 >
-                  <Grid
-                    item
-                    xs={12}
-                    sm={12}
-                    xl={12}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="E-mail"
-                      name="mail"
-                      variant="outlined"
-                      value={mail}
-                      onChange={(e) => setMail(e.target.value)}
-                    />
-                  </Grid>
+                  <TextField
+                    fullWidth
+                    required
+                    label="E-mail"
+                    name="mail"
+                    variant="outlined"
+                    value={mail}
+                    onChange={(e) => setMail(e.target.value)}
+                  />
                 </Grid>
-              </DialogContentText>
+              </Grid>
             </DialogContent>
             <Divider style={{ marginTop: '20px' }} />
             <DialogActions>
@@ -1658,6 +1930,164 @@ export default function EditLegalPerson(props) {
                 >
                   Salvar
                   {loadingAddress && <CircularProgress size={24} className={classes.buttonProgressAddress} />}
+                </Button>
+              </Box>
+            </DialogActions>
+          </form>
+        </Dialog>
+
+        {/* REGISTER BANKING REFERENCE MODAL */}
+        <Dialog
+          open={openModalBankingReference}
+          onClose={handleCloseModalBankingReference}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <form onSubmit={(e) => handleAddNewBankingReference(e)} autoComplete="false">
+            <DialogTitle id="alert-dialog-title">Adicionar uma nova conta</DialogTitle>
+            <DialogContent>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={4}
+                  sm={4}
+                  xl={4}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-outlined-label"
+                      id="demo-simple-select-outlined"
+                      value={banking.idBanking}
+                      onChange={(e) => handleChangeInputsBanking(e)}
+                      label="Banco"
+                      name="idBanking"
+                      required
+                      autoWidth={false}
+                      labelWidth={3}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value={1}>Sim</MenuItem>
+                      <MenuItem value={0}>Não</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={4}
+                  sm={4}
+                  xl={4}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="demo-simple-select-outlined-label">Tipo</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-outlined-label"
+                      id="demo-simple-select-outlined"
+                      value={banking.type}
+                      onChange={(e) => handleChangeInputsBanking(e)}
+                      label="Tipo"
+                      name="type"
+                      required
+                      autoWidth={false}
+                      labelWidth={3}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="conta corrente">Conta Corrente</MenuItem>
+                      <MenuItem value="conta poupança">Conta Poupança</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Conta"
+                    name="account"
+                    variant="outlined"
+                    value={banking.account}
+                    onChange={(e) => handleChangeInputsBanking(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={2}
+                  sm={2}
+                  xl={2}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Agência"
+                    name="agency"
+                    variant="outlined"
+                    value={banking.agency}
+                    onChange={(e) => handleChangeInputsBanking(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={4}
+                  sm={4}
+                  xl={4}
+                >
+                  <TextField
+                    fullWidth
+
+                    required
+                    label="Abertura"
+                    name="opening"
+                    variant="outlined"
+                    value={banking.opening}
+                    onChange={(e) => handleChangeInputsBanking(e)}
+                  />
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <Divider style={{ marginTop: '20px' }} />
+            <DialogActions>
+              <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="flex-end"
+                padding="15px"
+              >
+                <Button onClick={handleCloseModalBankingReference} style={{ color: red[300], marginRight: '10px' }}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  color="primary"
+                  variant="contained"
+                  autoFocus
+                  className={buttonClassnameBankingReference}
+                  disabled={loadingBankingReference}
+                >
+                  Salvar
+                  {loadingBankingReference && <CircularProgress size={24} className={classes.buttonProgressBankingReference} />}
                 </Button>
               </Box>
             </DialogActions>
@@ -1861,6 +2291,128 @@ export default function EditLegalPerson(props) {
           </DialogActions>
         </Dialog>
 
+        {/* REMOVE REGISTER MAIL */}
+        <Dialog
+          open={openModalRemoveMail}
+          onClose={handleCloseModalRemoveMail}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Remover registro de e-mail</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Deseja realmente excluir este registro de e-mail?
+              </Typography>
+          </DialogContent>
+          <Divider style={{ marginTop: '20px' }} />
+          <DialogActions>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              alignItems="flex-end"
+              padding="15px"
+            >
+              <Button onClick={handleCloseModalRemoveMail} style={{ color: red[300], marginRight: '10px' }}>
+                Cancelar
+                </Button>
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                autoFocus
+                className={buttonClassnameRemoveMail}
+                disabled={loadingRemoveMail}
+                onClick={() => handleRemoveMail(personMailId)}
+              >
+                Excluir
+                  {loadingRemoveMail && <CircularProgress size={24} className={classes.buttonProgressRemoveMail} />}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
+        {/* REMOVE REGISTER REFERENCE */}
+        <Dialog
+          open={openModalRemoveReference}
+          onClose={handleCloseModalRemoveReference}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Remover registro de referência pessoal</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Deseja realmente excluir este registro de referência pessoal?
+              </Typography>
+          </DialogContent>
+          <Divider style={{ marginTop: '20px' }} />
+          <DialogActions>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              alignItems="flex-end"
+              padding="15px"
+            >
+              <Button onClick={handleCloseModalRemoveReference} style={{ color: red[300], marginRight: '10px' }}>
+                Cancelar
+                </Button>
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                autoFocus
+                className={buttonClassnameRemoveReference}
+                disabled={loadingRemoveReference}
+                onClick={() => handleRemoveReference(personReferenceId)}
+              >
+                Excluir
+                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveReference} />}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
+
+        {/* REMOVE REGISTER BANKING */}
+        <Dialog
+          open={openModalRemoveBankingReference}
+          onClose={handleCloseModalRemoveBankingReference}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          maxWidth="md"
+        >
+          <DialogTitle id="alert-dialog-title">Remover registro de referência pessoal</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Deseja realmente excluir este registro de referência pessoal?
+            </Typography>
+          </DialogContent>
+          <Divider style={{ marginTop: '20px' }} />
+          <DialogActions>
+            <Box
+              display="flex"
+              justifyContent="flex-start"
+              alignItems="flex-end"
+              padding="15px"
+            >
+              <Button onClick={handleCloseModalRemoveBankingReference} style={{ color: red[300], marginRight: '10px' }}>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                autoFocus
+                className={buttonClassnameRemoveBankingReference}
+                disabled={loadingRemoveBankingReference}
+                onClick={() => handleRemoveBankingReference(bankingReferenceId)}
+              >
+                Excluir
+                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
+              </Button>
+            </Box>
+          </DialogActions>
+        </Dialog>
         <Box pt={4}>
           <Copyright />
         </Box>

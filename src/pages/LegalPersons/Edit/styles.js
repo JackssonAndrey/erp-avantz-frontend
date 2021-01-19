@@ -91,6 +91,26 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: red[800],
     },
   },
+  buttonSuccessRemovePhone: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressRemovePhone: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorRemovePhone: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
   buttonSuccessMail: {
     backgroundColor: green[500],
     '&:hover': {
@@ -111,6 +131,26 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: red[800],
     },
   },
+  buttonSuccessRemoveMail: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressRemoveMail: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorRemoveMail: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
   buttonSuccessReference: {
     backgroundColor: green[500],
     '&:hover': {
@@ -126,6 +166,66 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: -12,
   },
   buttonErrorReference: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessRemoveReference: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressRemoveReference: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorRemoveReference: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessBankingReference: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressBankingReference: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorBankingReference: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: red[800],
+    },
+  },
+  buttonSuccessRemoveBankingReference: {
+    backgroundColor: green[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
+  buttonProgressRemoveBankingReference: {
+    color: green[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
+  },
+  buttonErrorRemoveBankingReference: {
     backgroundColor: red[500],
     '&:hover': {
       backgroundColor: red[800],
