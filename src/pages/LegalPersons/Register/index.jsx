@@ -5,8 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
-  Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel
+  Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
+  InputLabel, OutlinedInput, InputAdornment
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
@@ -54,7 +54,6 @@ function a11yProps(index) {
 }
 
 const initialStatePerson = {
-  "id_pessoa_cod": 0,
   "id_instituicao_fk": 0,
   "tipo": 0,
   "sit": 0,
@@ -68,7 +67,6 @@ const initialStatePerson = {
 }
 
 const initialStateLegalPerson = {
-  "id_pessoa_cod_fk": 0,
   "fantasia": "",
   "ramo": "",
   "inscricao_estadual": "",
@@ -94,7 +92,6 @@ const initialStateAdress = {
 }
 
 const initialStateReference = {
-  "idPerson": 0,
   "referenceSituation": 1,
   "referenceType": "",
   "referenceName": "",
@@ -103,7 +100,6 @@ const initialStateReference = {
 }
 
 const initialStateBankingReference = {
-  "idPerson": 0,
   "idBanking": 0,
   "situation": 1,
   "agency": "",
@@ -157,9 +153,9 @@ export default function RegisterLegalPerson(props) {
   const [person, setPerson] = useState(initialStatePerson);
   const [personAddress, setPersonAddress] = useState([initialStateAdress]);
   const [addressId, setAddressId] = useState(0);
-  const [personMail, setPersonMail] = useState([{}]);
+  const [personMail, setPersonMail] = useState([{ userMail: '' }]);
   const [personMailId, setPersonMailId] = useState(0);
-  const [personPhone, setPersonPhone] = useState([{}]);
+  const [personPhone, setPersonPhone] = useState([{ phoneNumber: '' }]);
   const [phoneId, setPhoneId] = useState(0);
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
@@ -331,26 +327,6 @@ export default function RegisterLegalPerson(props) {
     };
   }, []);
 
-  useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-    api.get(`/persons/legal/details/${idPerson}`, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
-      const { data } = response;
-      setBankingReferences(data.bankingReferences);
-      setPerson(data.person);
-      setPersonAddress(data.personAdress);
-      setPersonMail(data.personMail);
-      setPersonPhone(data.personPhone);
-      setLegalPerson(data.personPhysical);
-      setPersonReferences(data.personReferences);
-    }).catch(reject => {
-      console.log(reject);
-    });
-  }, [idPerson]);
-
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
     setPerson({ ...person, [name]: value });
@@ -361,38 +337,60 @@ export default function RegisterLegalPerson(props) {
     setLegalPerson({ ...legalPerson, [name]: value });
   }
 
-  function handleChangeInputsAddress(e, pos) {
+  function handleChangeInputsAddress(e, position) {
     const { name, value } = e.target;
-    personAddress.map((addressValue, index) => {
-      if (index === pos) {
-        addressValue[name] = value;
-        let newArrayAddress = personAddress;
-        newArrayAddress[index][name] = value;
-        console.log(newArrayAddress[index]);
+    const updatedPersonAddress = personAddress.map((addressValue, index) => {
+      if (index === position) {
+        return { ...addressValue, [name]: value }
       }
+      return addressValue;
     });
-    // setPersonAddress([{ ...personAddress, [name]: value }]);
-    console.log(personAddress);
+    setPersonAddress(updatedPersonAddress);
   }
 
-  function handleChangeInputsPhone(e) {
+  function handleChangeInputsPhone(e, position) {
     const { name, value } = e.target;
-    setPersonPhone([{ ...personPhone, [name]: value }]);
+    const updatedPersonPhone = personPhone.map((phone, index) => {
+      if (index === position) {
+        return { ...phone, [name]: value }
+      }
+      return phone;
+    });
+    setPersonPhone(updatedPersonPhone);
+    console.log(personPhone);
   }
 
-  function handleChangeInputsMails(e) {
+  function handleChangeInputsMails(e, position) {
     const { name, value } = e.target;
-    setPersonMail([{ ...personMail, [name]: value }]);
+    const updatedPersonMail = personMail.map((mail, index) => {
+      if (index === position) {
+        return { ...mail, [name]: value }
+      }
+      return mail;
+    });
+    setPersonMail(updatedPersonMail);
   }
 
-  function handleChangeInputsReferences(e) {
+  function handleChangeInputsReferences(e, position) {
     const { name, value } = e.target;
-    setPersonReferences([{ ...personReferences, [name]: value }]);
+    const updatedPersonReferences = personReferences.map((reference, index) => {
+      if (index === position) {
+        return { ...reference, [name]: value }
+      }
+      return reference;
+    });
+    setPersonReferences(updatedPersonReferences);
   }
 
-  function handleChangeInputsBankingReferences(e) {
+  function handleChangeInputsBankingReferences(e, position) {
     const { name, value } = e.target;
-    setBankingReferences([{ ...bankingReferences, [name]: value }]);
+    const updatedBankingReference = bankingReferences.map((banking, index) => {
+      if (index === position) {
+        return { ...banking, [name]: value }
+      }
+      return banking;
+    });
+    setBankingReferences(updatedBankingReference);
   }
 
   function handleChangeInputsBanking(e) {
@@ -405,99 +403,39 @@ export default function RegisterLegalPerson(props) {
     setReference({ ...reference, [name]: value });
   }
 
-  function handleAddNewPhone(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let phones = [
-      {
-        "idPerson": Number(idPerson),
-        "phoneSituation": 1,
-        phoneNumber
-      }
-    ];
-
-    api.post(`/phones/create`, { phones }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
-      handleButtonClickProgressPhone();
-      setTimeout(() => {
-        toast.success('Telefone cadastrado com sucesso!');
-      }, 2000);
-    }).catch(reject => {
-      handleButtonClickProgressErrorPhone();
-      const { data } = reject.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    });
+  function handleAddNewPhone() {
+    setPersonPhone([
+      ...personPhone,
+      { phoneNumber: '' }
+    ]);
   }
 
   function handleAddNewAddress() {
-    let personObject = personAddress.concat([initialStateAdress]);
-    setPersonAddress(personObject);
+    setPersonAddress([
+      ...personAddress,
+      initialStateAdress
+    ]);
   }
 
-  function handleAddNewMail(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let mails = [
-      {
-        "idPerson": Number(idPerson),
-        "situation": 1,
-        "userMail": mail
-      }
-    ];
-
-    api.post(`/mails/create`, { mails }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
-      handleButtonClickProgressMail();
-      setTimeout(() => {
-        toast.success('E-mail cadastrado com sucesso!');
-      }, 2000);
-    }).catch(reject => {
-      handleButtonClickProgressErrorMail();
-      const { data } = reject.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    });
+  function handleAddNewMail() {
+    setPersonMail([
+      ...personMail,
+      { userMail: '' }
+    ]);
   }
 
-  function handleAddNewReference(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let personReferences = [{
-      ...reference, "idPerson": Number(idPerson)
-    }];
-
-    api.post('/persons_references/create', { personReferences }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
-      handleButtonClickProgressReference();
-      setTimeout(() => {
-        toast.success('Registro de referência cadastrado com sucesso!');
-      }, 2000);
-    }).catch(reject => {
-      handleButtonClickProgressErrorReference();
-      const { data } = reject.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    });
+  function handleAddNewReference() {
+    setPersonReferences([
+      ...personReferences,
+      initialStateReference
+    ]);
   }
 
-  function handleAddNewBankingReference(e) {
-    e.preventDefault();
+  function handleAddNewBankingReference() {
+    setBankingReferences([
+      ...bankingReferences,
+      initialStateBankingReference
+    ]);
   }
 
   function handleSubmitFormRegister(e) {
@@ -508,204 +446,6 @@ export default function RegisterLegalPerson(props) {
     const { name, value } = e.target;
     setAddress({ ...address, [name]: value });
   }
-
-  function handleButtonClickProgressErrorAddress() {
-    if (!errorAddress) {
-      setSuccessAddress(false);
-      setLoadingAddress(true);
-      timer.current = window.setTimeout(() => {
-        setErrorAddress(true);
-        setLoadingAddress(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressAddress() {
-    if (!loadingAddress) {
-      setSuccessAddress(false);
-      setLoadingAddress(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessAddress(true);
-        setLoadingAddress(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveAddress() {
-    if (!loadingRemoveAddress) {
-      setSuccessRemoveAddress(false);
-      setLoadingRemoveAddress(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveAddress(true);
-        setLoadingRemoveAddress(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveAddress() {
-    if (!loadingRemoveAddress) {
-      setSuccessRemoveAddress(false);
-      setLoadingRemoveAddress(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveAddress(true);
-        setLoadingRemoveAddress(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemovePhone() {
-    if (!loadingRemovePhone) {
-      setSuccessRemovePhone(false);
-      setLoadingRemovePhone(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemovePhone(true);
-        setLoadingRemovePhone(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemovePhone() {
-    if (!loadingRemovePhone) {
-      setSuccessRemovePhone(false);
-      setLoadingRemovePhone(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemovePhone(true);
-        setLoadingRemovePhone(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveMail() {
-    if (!loadingRemoveMail) {
-      setSuccessRemoveMail(false);
-      setLoadingRemoveMail(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveMail(true);
-        setLoadingRemoveMail(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveMail() {
-    if (!loadingRemoveMail) {
-      setSuccessRemoveMail(false);
-      setLoadingRemoveMail(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveMail(true);
-        setLoadingRemoveMail(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveReference() {
-    if (!loadingRemoveReference) {
-      setSuccessRemoveReference(false);
-      setLoadingRemoveReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveReference(true);
-        setLoadingRemoveReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveReference() {
-    if (!loadingRemoveReference) {
-      setSuccessRemoveReference(false);
-      setLoadingRemoveReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveReference(true);
-        setLoadingRemoveReference(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveBankingReference() {
-    if (!loadingRemoveBankingReference) {
-      setSuccessRemoveBankingReference(false);
-      setLoadingRemoveBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveBankingReference(true);
-        setLoadingRemoveBankingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveBankingReference() {
-    if (!loadingRemoveBankingReference) {
-      setSuccessRemoveBankingReference(false);
-      setLoadingRemoveBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveBankingReference(true);
-        setLoadingRemoveBankingReference(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorPhone() {
-    if (!errorPhone) {
-      setSuccessPhone(false);
-      setLoadingPhone(true);
-      timer.current = window.setTimeout(() => {
-        setErrorPhone(true);
-        setLoadingPhone(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressPhone() {
-    if (!loadingPhone) {
-      setSuccessPhone(false);
-      setLoadingPhone(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessPhone(true);
-        setLoadingPhone(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorMail() {
-    if (!errorMail) {
-      setSuccessMail(false);
-      setLoadingMail(true);
-      timer.current = window.setTimeout(() => {
-        setErrorMail(true);
-        setLoadingMail(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressMail() {
-    if (!loadingMail) {
-      setSuccessMail(false);
-      setLoadingMail(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessMail(true);
-        setLoadingMail(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorBanking() {
-    if (!errorBankingReference) {
-      setSuccessBankingReference(false);
-      setLoadingBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorBankingReference(true);
-        setLoadingBankingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressBanking() {
-    if (!loadingBankingReference) {
-      setSuccessBankingReference(false);
-      setLoadingBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessBankingReference(true);
-        setLoadingBankingReference(false);
-      }, 2000);
-    }
-  };
 
   function handleButtonClickProgressErrorReference() {
     if (!errorReference) {
@@ -729,25 +469,43 @@ export default function RegisterLegalPerson(props) {
     }
   };
 
-  function handleRemoveAddress(id) {
-    personAddress.splice(id - 1, 1);
+  function handleRemoveAddress(index) {
+    const personAddressCopy = Array.from(personAddress);
+    personAddressCopy.splice(index, 1);
+    setPersonAddress(personAddressCopy);
     handleCloseModalRemoveAddress();
+    console.log(personAddress);
   }
 
-  function handleRemovePhone(id) {
-    console.log(id);
+  function handleRemovePhone(index) {
+    const personPhoneCopy = Array.from(personPhone);
+    const elRemovido = personPhoneCopy.splice(index, 1);
+    console.log(`elemento removido ->`, elRemovido);
+    console.log(`array atualizado ->`, personPhoneCopy);
+    setPersonPhone(personPhoneCopy);
+    handleCloseModaRemovelPhone();
+    console.log('array antigo atualizado', personPhone);
   }
 
-  function handleRemoveMail(id) {
-    console.log(id);
+  function handleRemoveMail(index) {
+    const personMailCopy = Array.from(personMail);
+    personMailCopy.splice(index, 1);
+    setPersonMail(personMailCopy);
+    handleCloseModalRemoveMail();
   }
 
-  function handleRemoveReference(id) {
-    console.log(id);
+  function handleRemoveReference(index) {
+    const personReferenceCopy = Array.from(personReferences);
+    personReferenceCopy.splice(index, 1);
+    setPersonReferences(personReferenceCopy);
+    handleCloseModalRemoveReference();
   }
 
-  function handleRemoveBankingReference(id) {
-    console.log(id);
+  function handleRemoveBankingReference(index) {
+    const bankingReferenceCopy = Array.from(bankingReferences);
+    bankingReferenceCopy.splice(index, 1);
+    setBankingReferences(bankingReferenceCopy);
+    handleCloseModalRemoveBankingReference();
   }
 
   return (
@@ -1150,9 +908,9 @@ export default function RegisterLegalPerson(props) {
                           color="primary"
                           variant="contained"
                           size="small"
-                          onClick={handleClickOpenModalPhone}
+                          onClick={handleAddNewPhone}
                         >
-                          Adicionar
+                          Adicionar Telefone
                       </Button>
                       </Tooltip>
                     </Grid>
@@ -1165,39 +923,50 @@ export default function RegisterLegalPerson(props) {
                       </Typography>
                     )
                   }
-                  {
-                    personPhone.map((phone, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={3}
-                            sm={3}
-                            xl={3}
-                          >
-                            <TextField
-                              fullWidth
+                  <Typography component="div">
+                    <Grid
+                      container
+                      spacing={3}
+                    >
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
 
-                              required
-                              label="Telefone"
-                              name="tel"
-                              variant="outlined"
-                              value={phone.tel}
-                              onChange={(e) => handleChangeInputsPhone(e)}
-                            />
-                          </Grid>
-                          <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}>
-                              <Delete size={8} style={{ color: red[300] }} />
-                            </IconButton>
-                          </Tooltip>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
+                        {
+                          personPhone.map((phone, index) => (
+                            <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                              <InputLabel>Telefone</InputLabel>
+                              <OutlinedInput
+                                value={phone.tel}
+                                onChange={(e) => handleChangeInputsPhone(e, index)}
+                                fullWidth
+                                required
+                                label="Telefone"
+                                name="phoneNumber"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Deletar">
+                                      <IconButton
+                                        aria-label="Deletar"
+                                        onClick={() => handleClickOpenModalRemovePhone(index)}
+                                        edge="end"
+                                      >
+                                        <Delete size={8} style={{ color: red[300] }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
+                                labelWidth={70}
+                              />
+                            </FormControl>
+                          ))
+                        }
+                      </Grid>
+                    </Grid>
+                  </Typography>
                 </Typography>
                 <Typography component="div" style={{ marginTop: '20px' }} className={classes.containerInput}>
                   <Grid
@@ -1215,9 +984,9 @@ export default function RegisterLegalPerson(props) {
                           color="primary"
                           variant="contained"
                           size="small"
-                          onClick={handleClickOpenModalMail}
+                          onClick={handleAddNewMail}
                         >
-                          Adicionar
+                          Adicionar E-mail
                       </Button>
                       </Tooltip>
                     </Grid>
@@ -1230,39 +999,50 @@ export default function RegisterLegalPerson(props) {
                       </Typography>
                     )
                   }
-                  {
-                    personMail.map((mail, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={4}
-                            sm={4}
-                            xl={4}
-                          >
-                            <TextField
-                              fullWidth
 
-                              required
-                              label="E-mail"
-                              name="email"
-                              variant="outlined"
-                              value={mail.email}
-                              onChange={(e) => handleChangeInputsMails(e)}
-                            />
-                          </Grid>
-                          <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}>
-                              <Delete size={8} style={{ color: red[300] }} />
-                            </IconButton>
-                          </Tooltip>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
+                  <Typography component="div">
+                    <Grid
+                      container
+                      spacing={3}
+                    >
+                      <Grid
+                        item
+                        xs={4}
+                        sm={4}
+                        xl={4}
+                      >
+                        {
+                          personMail.map((mail, index) => (
+                            <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                              <InputLabel>E-mail</InputLabel>
+                              <OutlinedInput
+                                value={mail.email}
+                                onChange={(e) => handleChangeInputsMails(e, index)}
+                                fullWidth
+                                required
+                                label="E-mail"
+                                name="userMail"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Deletar">
+                                      <IconButton
+                                        aria-label="Deletar"
+                                        onClick={() => handleClickOpenModalRemoveMail(index)}
+                                        edge="end"
+                                      >
+                                        <Delete size={8} style={{ color: red[300] }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
+                                labelWidth={70}
+                              />
+                            </FormControl>
+                          ))
+                        }
+                      </Grid>
+                    </Grid>
+                  </Typography>
                 </Typography>
               </TabPanel>
               {/* REFERÊNCIAS */}
@@ -1282,7 +1062,7 @@ export default function RegisterLegalPerson(props) {
                         color="primary"
                         variant="contained"
                         size="small"
-                        onClick={handleClickOpenModalReference}
+                        onClick={handleAddNewReference}
                       >
                         Adicionar
                       </Button>
@@ -1321,7 +1101,7 @@ export default function RegisterLegalPerson(props) {
                             name="nome"
                             variant="outlined"
                             value={reference.nome}
-                            onChange={(e) => handleChangeInputsReferences(e)}
+                            onChange={(e) => handleChangeInputsReferences(e, index)}
                           />
                         </Grid>
 
@@ -1339,7 +1119,7 @@ export default function RegisterLegalPerson(props) {
                             name="tipo"
                             variant="outlined"
                             value={reference.tipo}
-                            onChange={(e) => handleChangeInputsReferences(e)}
+                            onChange={(e) => handleChangeInputsReferences(e, index)}
                           />
                         </Grid>
 
@@ -1357,7 +1137,7 @@ export default function RegisterLegalPerson(props) {
                             name="tel"
                             variant="outlined"
                             value={reference.tel}
-                            onChange={(e) => handleChangeInputsReferences(e)}
+                            onChange={(e) => handleChangeInputsReferences(e, index)}
                           />
                         </Grid>
 
@@ -1375,7 +1155,7 @@ export default function RegisterLegalPerson(props) {
                             name="endereco"
                             variant="outlined"
                             value={reference.endereco}
-                            onChange={(e) => handleChangeInputsReferences(e)}
+                            onChange={(e) => handleChangeInputsReferences(e, index)}
                           />
                         </Grid>
                       </Grid>
@@ -1423,13 +1203,14 @@ export default function RegisterLegalPerson(props) {
                         color="primary"
                         variant="contained"
                         size="small"
-                        onClick={handleClickOpenModalBankingReference}
+                        onClick={handleAddNewBankingReference}
                       >
                         Adicionar
                       </Button>
                     </Tooltip>
                   </Grid>
                 </Grid>
+                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                 {
                   bankingReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -1456,9 +1237,9 @@ export default function RegisterLegalPerson(props) {
                               labelId="demo-simple-select-outlined-label"
                               id="demo-simple-select-outlined"
                               value={banking.id_bancos_fk}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                               label="Banco"
-                              name="id_bancos_fk"
+                              name="idBanking"
                               required
                               autoWidth={false}
                               labelWidth={3}
@@ -1483,10 +1264,10 @@ export default function RegisterLegalPerson(props) {
 
                             required
                             label="Tipo"
-                            name="tipo"
+                            name="type"
                             variant="outlined"
                             value={banking.tipo}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                           />
                         </Grid>
                       </Grid>
@@ -1506,10 +1287,10 @@ export default function RegisterLegalPerson(props) {
 
                             required
                             label="Conta"
-                            name="conta"
+                            name="account"
                             variant="outlined"
                             value={banking.conta}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                           />
                         </Grid>
 
@@ -1524,10 +1305,10 @@ export default function RegisterLegalPerson(props) {
 
                             required
                             label="Agência"
-                            name="agencia"
+                            name="agency"
                             variant="outlined"
                             value={banking.agencia}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                           />
                         </Grid>
 
@@ -1542,10 +1323,10 @@ export default function RegisterLegalPerson(props) {
 
                             required
                             label="Abertura"
-                            name="abertura"
+                            name="opening"
                             variant="outlined"
                             value={banking.abertura}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                           />
                         </Grid>
                       </Grid>
@@ -1564,7 +1345,7 @@ export default function RegisterLegalPerson(props) {
                               style={{ background: red[300], color: '#FFF' }}
                               variant="contained"
                               size="small"
-                              onClick={() => handleClickOpenModalRemoveBankingReference(banking.id_banco)}
+                              onClick={() => handleClickOpenModalRemoveBankingReference(index)}
                             >
                               Remover
                             </Button>
@@ -1637,563 +1418,6 @@ export default function RegisterLegalPerson(props) {
             </form>
           </div>
         </Container>
-
-        {/* REGISTER PHONE MODAL */}
-        <Dialog
-          open={openModalPhone}
-          onClose={handleCloseModalPhone}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar número de telefone</DialogTitle>
-          <form onSubmit={(e) => handleAddNewPhone(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Telefone"
-                    name="tel"
-                    variant="outlined"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalPhone} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnamePhone}
-                  disabled={loadingPhone}
-                >
-                  Salvar
-                {loadingPhone && <CircularProgress size={24} className={classes.buttonProgressPhone} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER MAIL MODAL */}
-        <Dialog
-          open={openModalMail}
-          onClose={handleCloseModalMail}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="sm"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar um novo endereço de e-mail</DialogTitle>
-          <form onSubmit={(e) => handleAddNewMail(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="E-mail"
-                    name="mail"
-                    variant="outlined"
-                    value={mail}
-                    onChange={(e) => setMail(e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalMail} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameMail}
-                  disabled={loadingMail}
-                >
-                  Salvar
-                {loadingMail && <CircularProgress size={24} className={classes.buttonProgressMail} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER ADDRESS MODAL */}
-        <Dialog
-          open={openModalAddress}
-          onClose={handleCloseModalAddress}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar um novo endereço</DialogTitle>
-          <DialogContent>
-            <Grid
-              container
-              spacing={3}
-            >
-              <Grid
-                item
-                xs={3}
-                sm={3}
-                xl={3}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="CEP"
-                  name="zipCode"
-                  variant="outlined"
-                  value={address.zipCode}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-            </Grid>
-            <Grid
-              container
-              spacing={3}
-            >
-              <Grid
-                item
-                xs={6}
-                sm={6}
-                xl={6}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="Rua"
-                  name="street"
-                  variant="outlined"
-                  value={address.street}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-
-              <Grid
-                item
-                xs={4}
-                sm={4}
-                xl={4}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="Bairro"
-                  name="neighborhood"
-                  variant="outlined"
-                  value={address.neighborhood}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-
-              <Grid
-                item
-                xs={2}
-                sm={2}
-                xl={2}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="Número"
-                  name="numberHouse"
-                  variant="outlined"
-                  value={address.numberHouse}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-
-              <Grid
-                item
-                xs={6}
-                sm={6}
-                xl={6}
-              >
-                <TextField
-                  fullWidth
-
-                  required
-                  label="Complemento"
-                  name="complement"
-                  variant="outlined"
-                  value={address.complement}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-
-              <Grid
-                item
-                xs={3}
-                sm={3}
-                xl={3}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="Cidade"
-                  name="city"
-                  variant="outlined"
-                  value={address.city}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-
-              <Grid
-                item
-                xs={3}
-                sm={3}
-                xl={3}
-              >
-                <TextField
-                  fullWidth
-                  required
-                  label="Estado"
-                  name="stateAdress"
-                  variant="outlined"
-                  value={address.stateAdress}
-                  onChange={(e) => handleChangeAddress(e)}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <Divider style={{ marginTop: '20px' }} />
-          <DialogActions>
-            <Box
-              display="flex"
-              justifyContent="flex-start"
-              alignItems="flex-end"
-              padding="15px"
-            >
-              <Button onClick={handleCloseModalAddress} style={{ color: red[300], marginRight: '10px' }}>
-                Cancelar
-                </Button>
-              <Button
-                type="button"
-                color="primary"
-                variant="contained"
-                autoFocus
-                className={buttonClassnameAddress}
-                disabled={loadingAddress}
-                onClick={handleAddNewAddress}
-              >
-                Adicionar
-                  {loadingAddress && <CircularProgress size={24} className={classes.buttonProgressAddress} />}
-              </Button>
-            </Box>
-          </DialogActions>
-        </Dialog>
-
-        {/* REGISTER BANKING REFERENCE MODAL */}
-        <Dialog
-          open={openModalBankingReference}
-          onClose={handleCloseModalBankingReference}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <form onSubmit={(e) => handleAddNewBankingReference(e)} autoComplete="false">
-            <DialogTitle id="alert-dialog-title">Adicionar uma nova conta</DialogTitle>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={banking.idBanking}
-                      onChange={(e) => handleChangeInputsBanking(e)}
-                      label="Banco"
-                      name="idBanking"
-                      required
-                      autoWidth={false}
-                      labelWidth={3}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value={1}>Sim</MenuItem>
-                      <MenuItem value={0}>Não</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-outlined-label">Tipo</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={banking.type}
-                      onChange={(e) => handleChangeInputsBanking(e)}
-                      label="Tipo"
-                      name="type"
-                      required
-                      autoWidth={false}
-                      labelWidth={3}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="conta corrente">Conta Corrente</MenuItem>
-                      <MenuItem value="conta poupança">Conta Poupança</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Conta"
-                    name="account"
-                    variant="outlined"
-                    value={banking.account}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={2}
-                  sm={2}
-                  xl={2}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Agência"
-                    name="agency"
-                    variant="outlined"
-                    value={banking.agency}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Abertura"
-                    name="opening"
-                    variant="outlined"
-                    value={banking.opening}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalBankingReference} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameBankingReference}
-                  disabled={loadingBankingReference}
-                >
-                  Salvar
-                  {loadingBankingReference && <CircularProgress size={24} className={classes.buttonProgressBankingReference} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER REFERENCES MODAL */}
-        <Dialog
-          open={openModalReference}
-          onClose={handleCloseModalReference}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar um registro para referência</DialogTitle>
-          <form onSubmit={(e) => handleAddNewReference(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Nome"
-                    name="referenceName"
-                    variant="outlined"
-                    value={reference.referenceName}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Tipo"
-                    name="referenceType"
-                    variant="outlined"
-                    value={reference.referenceType}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Telefone"
-                    name="referencePhone"
-                    variant="outlined"
-                    value={reference.referencePhone}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={8}
-                  sm={8}
-                  xl={8}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Endereço"
-                    name="referenceAdress"
-                    variant="outlined"
-                    value={reference.referenceAdress}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalReference} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameReference}
-                  disabled={loadingReference}
-                >
-                  Salvar
-                {loadingReference && <CircularProgress size={24} className={classes.buttonProgressReference} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
 
         {/* REMOVE REGISTER PHONE */}
         <Dialog
