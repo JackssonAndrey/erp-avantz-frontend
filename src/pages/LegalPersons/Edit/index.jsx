@@ -6,7 +6,7 @@ import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
   Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel
+  InputLabel, OutlinedInput, InputAdornment
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
@@ -1164,7 +1164,7 @@ export default function EditLegalPerson(props) {
                           size="small"
                           onClick={handleClickOpenModalPhone}
                         >
-                          Adicionar
+                          Adicionar Telefone
                       </Button>
                       </Tooltip>
                     </Grid>
@@ -1177,39 +1177,52 @@ export default function EditLegalPerson(props) {
                       </Typography>
                     )
                   }
-                  {
-                    personPhone.map((phone, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={3}
-                            sm={3}
-                            xl={3}
-                          >
-                            <TextField
-                              fullWidth
+                  <Typography component="div">
+                    <Grid
+                      container
+                      spacing={3}
+                    >
+                      <Grid
+                        item
+                        xs={4}
+                        sm={4}
+                        xl={4}
+                      >
+                        {
+                          personPhone.map((phone, index) => (
+                            <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                              <InputLabel>Telefone</InputLabel>
+                              <OutlinedInput
+                                value={phone.tel}
+                                onChange={(e) => handleChangeInputsPhone(e, index)}
+                                fullWidth
+                                required
+                                label="Telefone"
+                                value={phone.tel}
+                                name="phoneNumber"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Deletar">
+                                      <IconButton
+                                        aria-label="Deletar"
+                                        onClick={() => handleClickOpenModalRemovePhone(index)}
+                                        edge="end"
+                                      >
+                                        <Delete size={8} style={{ color: red[300] }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
+                                labelWidth={70}
+                              />
+                            </FormControl>
+                          ))
+                        }
 
-                              required
-                              label="Telefone"
-                              name="tel"
-                              variant="outlined"
-                              value={phone.tel}
-                              onChange={(e) => handleChangeInputsPhone(e)}
-                            />
-                          </Grid>
-                          <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}>
-                              <Delete size={8} style={{ color: red[300] }} />
-                            </IconButton>
-                          </Tooltip>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
+
+                      </Grid>
+                    </Grid>
+                  </Typography>
                 </Typography>
                 <Typography component="div" style={{ marginTop: '20px' }} className={classes.containerInput}>
                   <Grid
@@ -1229,7 +1242,7 @@ export default function EditLegalPerson(props) {
                           size="small"
                           onClick={handleClickOpenModalMail}
                         >
-                          Adicionar
+                          Adicionar Telefone
                       </Button>
                       </Tooltip>
                     </Grid>
@@ -1242,39 +1255,50 @@ export default function EditLegalPerson(props) {
                       </Typography>
                     )
                   }
-                  {
-                    personMail.map((mail, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={4}
-                            sm={4}
-                            xl={4}
-                          >
-                            <TextField
-                              fullWidth
-
-                              required
-                              label="E-mail"
-                              name="email"
-                              variant="outlined"
-                              value={mail.email}
-                              onChange={(e) => handleChangeInputsMails(e)}
-                            />
-                          </Grid>
-                          <Tooltip title="Deletar">
-                            <IconButton aria-label="Deletar" onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}>
-                              <Delete size={8} style={{ color: red[300] }} />
-                            </IconButton>
-                          </Tooltip>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
+                  <Typography component="div">
+                    <Grid
+                      container
+                      spacing={3}
+                    >
+                      <Grid
+                        item
+                        xs={4}
+                        sm={4}
+                        xl={4}
+                      >
+                        {
+                          personMail.map((mail, index) => (
+                            <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                              <InputLabel>E-mail</InputLabel>
+                              <OutlinedInput
+                                value={mail.email}
+                                onChange={(e) => handleChangeInputsMails(e, index)}
+                                fullWidth
+                                required
+                                value={mail.email}
+                                label="E-mail"
+                                name="userMail"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Deletar">
+                                      <IconButton
+                                        aria-label="Deletar"
+                                        onClick={() => handleClickOpenModalRemoveMail(index)}
+                                        edge="end"
+                                      >
+                                        <Delete size={8} style={{ color: red[300] }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
+                                labelWidth={70}
+                              />
+                            </FormControl>
+                          ))
+                        }
+                      </Grid>
+                    </Grid>
+                  </Typography>
                 </Typography>
               </TabPanel>
               {/* REFERÊNCIAS */}

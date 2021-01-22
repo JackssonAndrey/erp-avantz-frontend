@@ -251,6 +251,9 @@ const useStyles = makeStyles((theme) => ({
   },
   formControl: {
     width: '100%'
+  },
+  inputList: {
+    marginTop: theme.spacing(2)
   }
 }));
 

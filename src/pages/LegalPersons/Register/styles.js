@@ -254,6 +254,10 @@ const useStyles = makeStyles((theme) => ({
   },
   inputList: {
     marginTop: theme.spacing(2)
+  },
+  divFooter: {
+    position: 'absolute',
+    bottom: 0
   }
 }));
 
