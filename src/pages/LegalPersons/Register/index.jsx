@@ -54,30 +54,25 @@ function a11yProps(index) {
 }
 
 const initialStatePerson = {
-  "id_instituicao_fk": 0,
-  "tipo": 0,
-  "sit": 0,
-  "forn": 0,
-  "cpfcnpj": "",
-  "nomeorrazaosocial": "",
-  "foto": "",
-  "img_bites": 0,
-  "limite": "0",
-  "saldo": "0"
+  "personIsProvider": 0,
+  "personCNPJ": "",
+  "companyName": "",
+  "personPhoto": "",
+  "personLimit": 0,
+  "personBalance": 0,
 }
 
 const initialStateLegalPerson = {
-  "fantasia": "",
-  "ramo": "",
-  "inscricao_estadual": "",
-  "inscricao_municipal": "",
-  "tipo_empresa": "",
-  "capsocial": "0",
-  "faturamento": "0",
-  "tribut": 0,
-  "contato": 0,
-  "data_abertura": "",
-  "data_criacao": ""
+  "fantasyName": "",
+  "branch": "",
+  "companyType": "",
+  "shareCapital": 0,
+  "revenues": 0,
+  "taxation": "",
+  "contact": "",
+  "openDate": "",
+  "stateRegistrationCompany": "",
+  "municipalRegistrationCompany": "",
 }
 
 const initialStateAdress = {
@@ -108,43 +103,12 @@ const initialStateBankingReference = {
   "type": ""
 }
 
-export default function RegisterLegalPerson(props) {
+export default function RegisterLegalPerson() {
   const classes = useStyles();
   const timer = useRef();
-  const idPerson = props.match.params.id;
 
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
-  const [loadingAddress, setLoadingAddress] = useState(false);
-  const [successAddress, setSuccessAddress] = useState(false);
-  const [errorAddress, setErrorAddress] = useState(false);
-  const [loadingRemoveAddress, setLoadingRemoveAddress] = useState(false);
-  const [successRemoveAddress, setSuccessRemoveAddress] = useState(false);
-  const [errorRemoveAddress, setErrorRemoveAddress] = useState(false);
-  const [loadingPhone, setLoadingPhone] = useState(false);
-  const [successPhone, setSuccessPhone] = useState(false);
-  const [errorPhone, setErrorPhone] = useState(false);
-  const [loadingRemovePhone, setLoadingRemovePhone] = useState(false);
-  const [successRemovePhone, setSuccessRemovePhone] = useState(false);
-  const [errorRemovePhone, setErrorRemovePhone] = useState(false);
-  const [loadingRemoveMail, setLoadingRemoveMail] = useState(false);
-  const [successRemoveMail, setSuccessRemoveMail] = useState(false);
-  const [errorRemoveMail, setErrorRemoveMail] = useState(false);
-  const [loadingMail, setLoadingMail] = useState(false);
-  const [successMail, setSuccessMail] = useState(false);
-  const [errorMail, setErrorMail] = useState(false);
-  const [loadingReference, setLoadingReference] = useState(false);
-  const [successReference, setSuccessReference] = useState(false);
-  const [errorReference, setErrorReference] = useState(false);
-  const [loadingRemoveReference, setLoadingRemoveReference] = useState(false);
-  const [successRemoveReference, setSuccessRemoveReference] = useState(false);
-  const [errorRemoveReference, setErrorRemoveReference] = useState(false);
-  const [loadingBankingReference, setLoadingBankingReference] = useState(false);
-  const [successBankingReference, setSuccessBankingReference] = useState(false);
-  const [errorBankingReference, setErrorBankingReference] = useState(false);
-  const [loadingRemoveBankingReference, setLoadingRemoveBankingReference] = useState(false);
-  const [successRemoveBankingReference, setSuccessRemoveBankingReference] = useState(false);
-  const [errorRemoveBankingReference, setErrorRemoveBankingReference] = useState(false);
 
   // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
@@ -162,32 +126,11 @@ export default function RegisterLegalPerson(props) {
   const [personReferenceId, setPersonReferenceId] = useState(0);
 
   // MODALS STATES
-  const [openModalPhone, setOpenModalPhone] = useState(false);
   const [openModalRemovePhone, setOpenModalRemovePhone] = useState(false);
-  const [openModalMail, setOpenModalMail] = useState(false);
-  const [openModalAddress, setOpenModalAddress] = useState(false);
   const [openModalRemoveAddress, setOpenModalRemoveAddress] = useState(false);
   const [openModalRemoveMail, setOpenModalRemoveMail] = useState(false);
-  const [openModalReference, setOpenModalReference] = useState(false);
   const [openModalRemoveReference, setOpenModalRemoveReference] = useState(false);
-  const [openModalBankingReference, setOpenModalBankingReference] = useState(false);
   const [openModalRemoveBankingReference, setOpenModalRemoveBankingReference] = useState(false);
-
-  // REGISTER STATE
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [mail, setMail] = useState('');
-  const [address, setAddress] = useState(initialStateAdress);
-  const [reference, setReference] = useState(initialStateReference);
-  const [banking, setBanking] = useState(initialStateBankingReference);
-
-  const handleClickOpenModalPhone = () => {
-    setOpenModalPhone(true);
-  };
-
-  const handleCloseModalPhone = () => {
-    setOpenModalPhone(false);
-    setPhoneNumber('');
-  };
 
   const handleClickOpenModalRemovePhone = (id) => {
     setOpenModalRemovePhone(true);
@@ -225,31 +168,6 @@ export default function RegisterLegalPerson(props) {
     setOpenModalRemoveBankingReference(false);
   };
 
-  const handleClickOpenModalMail = () => {
-    setOpenModalMail(true);
-  };
-
-  const handleCloseModalMail = () => {
-    setOpenModalMail(false);
-    setMail('');
-  };
-
-  const handleClickOpenModalBankingReference = () => {
-    setOpenModalBankingReference(true);
-  };
-
-  const handleCloseModalBankingReference = () => {
-    setOpenModalBankingReference(false);
-  };
-
-  const handleClickOpenModalAddress = () => {
-    setOpenModalAddress(true);
-  };
-
-  const handleCloseModalAddress = () => {
-    setOpenModalAddress(false);
-  };
-
   const handleClickOpenModalRemoveAddress = (id) => {
     setOpenModalRemoveAddress(true);
     setAddressId(id);
@@ -259,67 +177,9 @@ export default function RegisterLegalPerson(props) {
     setOpenModalRemoveAddress(false);
   };
 
-  const handleClickOpenModalReference = () => {
-    setOpenModalReference(true);
-  };
-
-  const handleCloseModalReference = () => {
-    setOpenModalReference(false);
-  };
-
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
   };
-
-  const buttonClassnameAddress = clsx({
-    [classes.buttonSuccessAddress]: successAddress,
-    [classes.buttonErrorAddress]: errorAddress,
-  });
-
-  const buttonClassnameRemoveAddress = clsx({
-    [classes.buttonSuccessRemoveAddress]: successRemoveAddress,
-    [classes.buttonErrorRemoveAddress]: errorRemoveAddress,
-  });
-
-  const buttonClassnameRemoveMail = clsx({
-    [classes.buttonSuccessRemoveMail]: successRemoveMail,
-    [classes.buttonErrorRemoveMail]: errorRemoveMail,
-  });
-
-  const buttonClassnameRemoveReference = clsx({
-    [classes.buttonSuccessRemoveReference]: successRemoveReference,
-    [classes.buttonErrorRemoveReference]: errorRemoveReference,
-  });
-
-  const buttonClassnamePhone = clsx({
-    [classes.buttonSuccessPhone]: successPhone,
-    [classes.buttonErrorPhone]: errorPhone,
-  });
-
-  const buttonClassnameRemovePhone = clsx({
-    [classes.buttonSuccessRemovePhone]: successRemovePhone,
-    [classes.buttonErrorRemovePhone]: errorRemovePhone,
-  });
-
-  const buttonClassnameMail = clsx({
-    [classes.buttonSuccessMail]: successMail,
-    [classes.buttonErrorMail]: errorMail,
-  });
-
-  const buttonClassnameReference = clsx({
-    [classes.buttonSuccessReference]: successReference,
-    [classes.buttonErrorReference]: errorReference,
-  });
-
-  const buttonClassnameBankingReference = clsx({
-    [classes.buttonSuccessBankingReference]: successBankingReference,
-    [classes.buttonErrorBankingReference]: errorBankingReference,
-  });
-
-  const buttonClassnameRemoveBankingReference = clsx({
-    [classes.buttonSuccessRemoveBankingReference]: successRemoveBankingReference,
-    [classes.buttonErrorRemoveBankingReference]: errorRemoveBankingReference,
-  });
 
   useEffect(() => {
     return () => {
@@ -393,16 +253,6 @@ export default function RegisterLegalPerson(props) {
     setBankingReferences(updatedBankingReference);
   }
 
-  function handleChangeInputsBanking(e) {
-    const { name, value } = e.target;
-    setBanking({ ...banking, [name]: value });
-  }
-
-  function handleChangeReference(e) {
-    const { name, value } = e.target;
-    setReference({ ...reference, [name]: value });
-  }
-
   function handleAddNewPhone() {
     setPersonPhone([
       ...personPhone,
@@ -437,37 +287,6 @@ export default function RegisterLegalPerson(props) {
       initialStateBankingReference
     ]);
   }
-
-  function handleSubmitFormRegister(e) {
-    e.preventDefault();
-  }
-
-  function handleChangeAddress(e) {
-    const { name, value } = e.target;
-    setAddress({ ...address, [name]: value });
-  }
-
-  function handleButtonClickProgressErrorReference() {
-    if (!errorReference) {
-      setSuccessReference(false);
-      setLoadingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorReference(true);
-        setLoadingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressReference() {
-    if (!loadingReference) {
-      setSuccessReference(false);
-      setLoadingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessReference(true);
-        setLoadingReference(false);
-      }, 2000);
-    }
-  };
 
   function handleRemoveAddress(index) {
     const personAddressCopy = Array.from(personAddress);
@@ -508,6 +327,23 @@ export default function RegisterLegalPerson(props) {
     handleCloseModalRemoveBankingReference();
   }
 
+  // SUBMIT REGISTER FORM
+  function handleSubmitFormRegister(e) {
+    e.preventDefault();
+
+    const data = {
+      ...person,
+      ...legalPerson,
+      adresses: personAddress,
+      phones: personPhone,
+      mails: personMail,
+      personReferences,
+      bankingReferences
+    }
+
+    console.log(data);
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -546,7 +382,8 @@ export default function RegisterLegalPerson(props) {
                 <Tab label="Contatos" {...a11yProps(2)} />
                 <Tab label="Referências" {...a11yProps(3)} />
                 <Tab label="Dados bancários" {...a11yProps(4)} />
-                <Tab label="Opções" {...a11yProps(5)} />
+                <Tab label="Financeiro" {...a11yProps(5)} />
+                <Tab label="Opções" {...a11yProps(6)} />
               </Tabs>
             </AppBar>
             <form onSubmit={(e) => handleSubmitFormRegister(e)} >
@@ -571,9 +408,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Razão social"
-                          name="nomeorrazaosocial"
+                          name="companyName"
                           variant="outlined"
-                          value={person.nomeorrazaosocial}
+                          value={person.companyName}
                           onChange={(e) => handleChangeInputsPerson(e)}
 
                         />
@@ -589,9 +426,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Nome fantasia"
-                          name="fantasia"
+                          name="fantasyName"
                           variant="outlined"
-                          value={legalPerson.fantasia}
+                          value={legalPerson.fantasyName}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -607,9 +444,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="CNPJ"
-                          name="cpfcnpj"
+                          name="personCNPJ"
                           variant="outlined"
-                          value={person.cpfcnpj}
+                          value={person.personCNPJ}
                           onChange={(e) => handleChangeInputsPerson(e)}
 
                         />
@@ -625,9 +462,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Inscrição Estadual"
-                          name="inscricao_estadual"
+                          name="stateRegistrationCompany"
                           variant="outlined"
-                          value={legalPerson.inscricao_estadual === null ? 'Não informado' : legalPerson.inscricao_estadual}
+                          value={legalPerson.stateRegistrationCompany === null ? 'Não informado' : legalPerson.stateRegistrationCompany}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -643,9 +480,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Inscrição Municipal"
-                          name="inscricao_municipal"
+                          name="municipalRegistrationCompany"
                           variant="outlined"
-                          value={legalPerson.inscricao_municipal === null ? 'Não informado' : legalPerson.inscricao_municipal}
+                          value={legalPerson.municipalRegistrationCompany === null ? 'Não informado' : legalPerson.municipalRegistrationCompany}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -661,9 +498,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Data de abertura"
-                          name="data_abertura"
+                          name="openDate"
                           variant="outlined"
-                          value={legalPerson.data_abertura}
+                          value={legalPerson.openDate}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -679,9 +516,9 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Ramo"
-                          name="ramo"
+                          name="branch"
                           variant="outlined"
-                          value={legalPerson.ramo}
+                          value={legalPerson.branch}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -697,9 +534,45 @@ export default function RegisterLegalPerson(props) {
                           fullWidth
                           required
                           label="Tipo da empresa"
-                          name="tipo_empresa"
+                          name="companyType"
                           variant="outlined"
-                          value={legalPerson.tipo_empresa}
+                          value={legalPerson.companyType}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                        />
+                      </Grid>
+
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Tributação"
+                          name="taxation"
+                          variant="outlined"
+                          value={legalPerson.taxation}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                        />
+                      </Grid>
+
+                      <Grid
+                        item
+                        xs={4}
+                        sm={4}
+                        xl={4}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Contato na empresa"
+                          name="contact"
+                          variant="outlined"
+                          value={legalPerson.contact}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                         />
@@ -1361,8 +1234,84 @@ export default function RegisterLegalPerson(props) {
                       ))
                     }
                   </TabPanel>
-                  {/* OPÇÕES */}
+                  {/* FINANCEIRO */}
                   <TabPanel value={valueTab} index={5}>
+                    <Grid
+                      container
+                      spacing={3}
+                    >
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Limite"
+                          name="personLimit"
+                          variant="outlined"
+                          value={person.personLimit}
+                          onChange={(e) => handleChangeInputsPerson(e)}
+                        />
+                      </Grid>
+
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Saldo"
+                          name="personBalance"
+                          variant="outlined"
+                          value={person.personBalance}
+                          onChange={(e) => handleChangeInputsPerson(e)}
+                        />
+                      </Grid>
+
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Capital"
+                          name="shareCapital"
+                          variant="outlined"
+                          value={legalPerson.shareCapital}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        />
+                      </Grid>
+
+                      <Grid
+                        item
+                        xs={3}
+                        sm={3}
+                        xl={3}
+                      >
+                        <TextField
+                          fullWidth
+                          required
+                          label="Receitas"
+                          name="revenues"
+                          variant="outlined"
+                          value={legalPerson.revenues}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        />
+                      </Grid>
+                    </Grid>
+                  </TabPanel>
+
+                  {/* OPÇÕES */}
+                  <TabPanel value={valueTab} index={6}>
                     <Grid
                       container
                       spacing={3}
@@ -1378,7 +1327,7 @@ export default function RegisterLegalPerson(props) {
                           <Select
                             labelId="demo-simple-select-outlined-label"
                             id="demo-simple-select-outlined"
-                            value={person.forn}
+                            value={person.personIsProvider}
                             onChange={(e) => handleChangeInputsPerson(e)}
                             label="Fornecedor"
                             autoWidth={false}
@@ -1462,12 +1411,9 @@ export default function RegisterLegalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemovePhone}
-                disabled={loadingRemovePhone}
                 onClick={() => handleRemovePhone(phoneId)}
               >
                 Excluir
-                  {loadingRemovePhone && <CircularProgress size={24} className={classes.buttonProgressRemovePhone} />}
               </Button>
             </Box>
           </DialogActions>
@@ -1503,12 +1449,9 @@ export default function RegisterLegalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveAddress}
-                disabled={loadingRemoveAddress}
                 onClick={() => handleRemoveAddress(addressId)}
               >
                 Excluir
-                  {loadingRemoveAddress && <CircularProgress size={24} className={classes.buttonProgressRemoveAddress} />}
               </Button>
             </Box>
           </DialogActions>
@@ -1544,12 +1487,9 @@ export default function RegisterLegalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveMail}
-                disabled={loadingRemoveMail}
                 onClick={() => handleRemoveMail(personMailId)}
               >
                 Excluir
-                  {loadingRemoveMail && <CircularProgress size={24} className={classes.buttonProgressRemoveMail} />}
               </Button>
             </Box>
           </DialogActions>
@@ -1585,12 +1525,9 @@ export default function RegisterLegalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveReference}
-                disabled={loadingRemoveReference}
                 onClick={() => handleRemoveReference(personReferenceId)}
               >
-                Excluir
-                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveReference} />}
+                Excluir />}
               </Button>
             </Box>
           </DialogActions>
@@ -1626,12 +1563,9 @@ export default function RegisterLegalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveBankingReference}
-                disabled={loadingRemoveBankingReference}
                 onClick={() => handleRemoveBankingReference(bankingReferenceId)}
               >
                 Excluir
-                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
               </Button>
             </Box>
           </DialogActions>

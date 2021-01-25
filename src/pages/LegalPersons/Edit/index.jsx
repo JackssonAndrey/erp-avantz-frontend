@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
-  Divider, Button, Tooltip, Dialog, DialogContent, DialogContentText, DialogActions, DialogTitle, Select, MenuItem, FormControl,
+  Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
   InputLabel, OutlinedInput, InputAdornment
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
@@ -77,7 +77,7 @@ const initialStateLegalPerson = {
   "capsocial": "0",
   "faturamento": "0",
   "tribut": 0,
-  "contato": 0,
+  "contato": "",
   "data_abertura": "",
   "data_criacao": ""
 }
@@ -351,6 +351,7 @@ export default function EditLegalPerson(props) {
     });
   }, [idPerson]);
 
+  // FUNCTION FOR THE INPUTS CHANGE
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
     setPerson({ ...person, [name]: value });
@@ -396,6 +397,12 @@ export default function EditLegalPerson(props) {
     setReference({ ...reference, [name]: value });
   }
 
+  function handleChangeAddress(e) {
+    const { name, value } = e.target;
+    setAddress({ ...address, [name]: value });
+  }
+
+  // FUNCTIONS FOR THE ADD PERSON DATA
   function handleAddNewPhone(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
@@ -511,17 +518,29 @@ export default function EditLegalPerson(props) {
 
   function handleAddNewBankingReference(e) {
     e.preventDefault();
+
+    const csrfToken = getCookie('csrftoken');
+
+    api.post('/banking_references/create', { bankingReferences }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressBanking();
+      setTimeout(() => {
+        toast.success('Registro de banco cadastrado com sucesso!');
+      }, 2000);
+      handleCloseModalBankingReference();
+    }).catch(reject => {
+      handleButtonClickProgressErrorBanking();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
-  function handleSubmitFormEdit(e) {
-    e.preventDefault();
-  }
-
-  function handleChangeAddress(e) {
-    const { name, value } = e.target;
-    setAddress({ ...address, [name]: value });
-  }
-
+  // FUNCTIONS FOR THE BUTTONS ANIMATIONS
   function handleButtonClickProgressErrorAddress() {
     if (!errorAddress) {
       setSuccessAddress(false);
@@ -742,24 +761,157 @@ export default function EditLegalPerson(props) {
     }
   };
 
+  // REMOVE PERSON DATA
   function handleRemoveAddress(id) {
-    console.log(id);
+    const csrfToken = getCookie('csrftoken');
+
+    api.put(`/adresses/delete/${id}`, { addressId }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressRemoveAddress();
+      setTimeout(() => {
+        toast.success('Registro apagado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveReference();
+      }, 2400);
+    }).catch(reject => {
+      handleButtonClickProgressErrorRemoveAddress();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveAddress();
+      }, 2400);
+    });
   }
 
   function handleRemovePhone(id) {
-    console.log(id);
+    const csrfToken = getCookie('csrftoken');
+
+    api.put(`/phones/delete/${id}`, { phoneId }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressRemovePhone();
+      setTimeout(() => {
+        toast.success('Registro apagado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveReference();
+      }, 2400);
+    }).catch(reject => {
+      handleButtonClickProgressErrorRemovePhone();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModaRemovelPhone();
+      }, 2400);
+    });
   }
 
   function handleRemoveMail(id) {
-    console.log(id);
+    const csrfToken = getCookie('csrftoken');
+
+    api.put(`/mails/delete/${id}`, { personMailId }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressRemoveMail();
+      setTimeout(() => {
+        toast.success('Registro apagado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveMail();
+      }, 2400)
+    }).catch(reject => {
+      handleButtonClickProgressErrorRemoveMail();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveMail();
+      }, 2400);
+    });
   }
 
   function handleRemoveReference(id) {
-    console.log(id);
+    const csrfToken = getCookie('csrftoken');
+
+    api.put(`/persons_references/delete/${id}`, { personReferenceId }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressRemoveReference();
+      setTimeout(() => {
+        toast.success('Registro apagado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveReference();
+      }, 2400);
+    }).catch(reject => {
+      handleButtonClickProgressErrorRemoveReference();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveReference();
+      }, 2400);
+    });
   }
 
   function handleRemoveBankingReference(id) {
-    console.log(id);
+    const csrfToken = getCookie('csrftoken');
+
+    api.put(`/banking_references/delete/${id}`, { bankingReferenceId }, {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      handleButtonClickProgressRemoveBankingReference();
+      setTimeout(() => {
+        toast.success('Registro apagado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveBankingReference();
+      }, 2400);
+    }).catch(reject => {
+      handleButtonClickProgressErrorRemoveBankingReference();
+      const { data } = reject.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModalRemoveBankingReference();
+      }, 2400);
+    });
+  }
+
+  // SUBMIT EDIT FORM
+  function handleSubmitFormEdit(e) {
+    e.preventDefault();
+
+    const data = {
+      ...person,
+      ...legalPerson,
+      adresses: personAddress,
+      phones: personPhone,
+      mails: personMail,
+      personReferences,
+      bankingReferences
+    }
+
+    console.log(data);
   }
 
   return (
@@ -800,7 +952,8 @@ export default function EditLegalPerson(props) {
                 <Tab label="Contatos" {...a11yProps(2)} />
                 <Tab label="Referências" {...a11yProps(3)} />
                 <Tab label="Dados bancários" {...a11yProps(4)} />
-                <Tab label="Opções" {...a11yProps(5)} />
+                <Tab label="Financeiro" {...a11yProps(5)} />
+                <Tab label="Opções" {...a11yProps(6)} />
               </Tabs>
             </AppBar>
             <form onSubmit={(e) => handleSubmitFormEdit(e)} >
@@ -949,6 +1102,42 @@ export default function EditLegalPerson(props) {
                       name="tipo_empresa"
                       variant="outlined"
                       value={legalPerson.tipo_empresa}
+                      onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Tributação"
+                      name="tribut"
+                      variant="outlined"
+                      value={legalPerson.tribut}
+                      onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Contato na empresa"
+                      name="contato"
+                      variant="outlined"
+                      value={legalPerson.contato}
                       onChange={(e) => handleChangeInputsLegalPerson(e)}
 
                     />
@@ -1193,7 +1382,6 @@ export default function EditLegalPerson(props) {
                             <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
                               <InputLabel>Telefone</InputLabel>
                               <OutlinedInput
-                                value={phone.tel}
                                 onChange={(e) => handleChangeInputsPhone(e, index)}
                                 fullWidth
                                 required
@@ -1205,7 +1393,7 @@ export default function EditLegalPerson(props) {
                                     <Tooltip title="Deletar">
                                       <IconButton
                                         aria-label="Deletar"
-                                        onClick={() => handleClickOpenModalRemovePhone(index)}
+                                        onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}
                                         edge="end"
                                       >
                                         <Delete size={8} style={{ color: red[300] }} />
@@ -1271,7 +1459,6 @@ export default function EditLegalPerson(props) {
                             <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
                               <InputLabel>E-mail</InputLabel>
                               <OutlinedInput
-                                value={mail.email}
                                 onChange={(e) => handleChangeInputsMails(e, index)}
                                 fullWidth
                                 required
@@ -1283,7 +1470,7 @@ export default function EditLegalPerson(props) {
                                     <Tooltip title="Deletar">
                                       <IconButton
                                         aria-label="Deletar"
-                                        onClick={() => handleClickOpenModalRemoveMail(index)}
+                                        onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}
                                         edge="end"
                                       >
                                         <Delete size={8} style={{ color: red[300] }} />
@@ -1466,6 +1653,7 @@ export default function EditLegalPerson(props) {
                     </Tooltip>
                   </Grid>
                 </Grid>
+                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                 {
                   bankingReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -1611,8 +1799,83 @@ export default function EditLegalPerson(props) {
                   ))
                 }
               </TabPanel>
-              {/* OPÇÕES */}
+              {/* FINANCEIRO */}
               <TabPanel value={valueTab} index={5}>
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Limite"
+                      name="limite"
+                      variant="outlined"
+                      value={person.limite}
+                      onChange={(e) => handleChangeInputsPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Saldo"
+                      name="saldo"
+                      variant="outlined"
+                      value={person.saldo}
+                      onChange={(e) => handleChangeInputsPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Capital"
+                      name="capsocial"
+                      variant="outlined"
+                      value={legalPerson.capsocial}
+                      onChange={(e) => handleChangeInputsLegalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Receitas"
+                      name="faturamento"
+                      variant="outlined"
+                      value={legalPerson.faturamento}
+                      onChange={(e) => handleChangeInputsLegalPerson(e)}
+                    />
+                  </Grid>
+                </Grid>
+              </TabPanel>
+              {/* OPÇÕES */}
+              <TabPanel value={valueTab} index={6}>
                 <Grid
                   container
                   spacing={3}
