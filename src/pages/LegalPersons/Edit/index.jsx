@@ -83,6 +83,7 @@ const initialStateLegalPerson = {
 }
 
 const initialStateAdress = {
+  "idAddress": 0,
   "origin": 1,
   "street": "",
   "numberHouse": "",

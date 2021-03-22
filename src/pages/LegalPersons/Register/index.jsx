@@ -8,7 +8,11 @@ import {
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
   InputLabel, OutlinedInput, InputAdornment
 } from '@material-ui/core';
+import { KeyboardDatePicker, MuiPickersUtilsProvider, DatePicker } from '@material-ui/pickers';
+import DateMomentUtils from '@date-io/moment';
 import PropTypes from 'prop-types';
+import { v4 as uuidV4 } from 'uuid';
+import moment from 'moment';
 
 import { ArrowBack, Delete } from '@material-ui/icons';
 
@@ -53,76 +57,79 @@ function a11yProps(index) {
   };
 }
 
-const initialStatePerson = {
-  "personIsProvider": 0,
-  "personCNPJ": "",
-  "companyName": "",
-  "personPhoto": "",
-  "personLimit": 0,
-  "personBalance": 0,
-}
-
-const initialStateLegalPerson = {
-  "fantasyName": "",
-  "branch": "",
-  "companyType": "",
-  "shareCapital": 0,
-  "revenues": 0,
-  "taxation": "",
-  "contact": "",
-  "openDate": "",
-  "stateRegistrationCompany": "",
-  "municipalRegistrationCompany": "",
-}
-
-const initialStateAdress = {
-  "origin": 1,
-  "street": "",
-  "numberHouse": "",
-  "complement": "",
-  "neighborhood": "",
-  "zipCode": "",
-  "city": "",
-  "stateAdress": ""
-}
-
-const initialStateReference = {
-  "referenceSituation": 1,
-  "referenceType": "",
-  "referenceName": "",
-  "referencePhone": "",
-  "referenceAdress": ""
-}
-
-const initialStateBankingReference = {
-  "idBanking": 0,
-  "situation": 1,
-  "agency": "",
-  "account": "",
-  "opening": "",
-  "type": ""
-}
-
 export default function RegisterLegalPerson() {
   const classes = useStyles();
   const timer = useRef();
+
+  const initialStatePerson = {
+    "personIsProvider": 0,
+    "personCNPJ": "",
+    "companyName": "",
+    "personPhoto": "",
+    "personLimit": 0,
+    "personBalance": 0,
+  }
+
+  const initialStateLegalPerson = {
+    "fantasyName": "",
+    "branch": "",
+    "companyType": "",
+    "shareCapital": 0,
+    "revenues": 0,
+    "taxation": "",
+    "contact": "",
+    "openDate": moment().format('L'),
+    "stateRegistrationCompany": "",
+    "municipalRegistrationCompany": "",
+  }
+
+  const initialStateAdress = {
+    id: uuidV4(),
+    origin: 1,
+    street: "",
+    numberHouse: "",
+    complement: "",
+    neighborhood: "",
+    zipCode: "",
+    city: "",
+    stateAdress: ""
+  }
+
+  const initialStateReference = {
+    id: uuidV4(),
+    referenceSituation: 1,
+    referenceType: "",
+    referenceName: "",
+    referencePhone: "",
+    referenceAdress: ""
+  }
+
+  const initialStateBankingReference = {
+    id: uuidV4(),
+    idBanking: 0,
+    situation: 1,
+    agency: "",
+    account: "",
+    opening: "",
+    type: ""
+  }
 
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
 
   // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
-  const [bankingReferences, setBankingReferences] = useState([{}]);
+  const [bankingReferences, setBankingReferences] = useState([]);
   const [bankingReferenceId, setBankingReferenceId] = useState(0);
   const [person, setPerson] = useState(initialStatePerson);
-  const [personAddress, setPersonAddress] = useState([initialStateAdress]);
+  const [personAddress, setPersonAddress] = useState([]);
   const [addressId, setAddressId] = useState(0);
-  const [personMail, setPersonMail] = useState([{ userMail: '' }]);
+  const [personMail, setPersonMail] = useState([]);
   const [personMailId, setPersonMailId] = useState(0);
-  const [personPhone, setPersonPhone] = useState([{ phoneNumber: '' }]);
+  const [personPhone, setPersonPhone] = useState([]);
   const [phoneId, setPhoneId] = useState(0);
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
-  const [personReferences, setPersonReferences] = useState([{}]);
+  const [personReferences, setPersonReferences] = useState([]);
   const [personReferenceId, setPersonReferenceId] = useState(0);
 
   // MODALS STATES
@@ -217,7 +224,6 @@ export default function RegisterLegalPerson() {
       return phone;
     });
     setPersonPhone(updatedPersonPhone);
-    console.log(personPhone);
   }
 
   function handleChangeInputsMails(e, position) {
@@ -263,7 +269,17 @@ export default function RegisterLegalPerson() {
   function handleAddNewAddress() {
     setPersonAddress([
       ...personAddress,
-      initialStateAdress
+      {
+        id: uuidV4(),
+        origin: 1,
+        street: "",
+        numberHouse: "",
+        complement: "",
+        neighborhood: "",
+        zipCode: "",
+        city: "",
+        stateAdress: ""
+      }
     ]);
   }
 
@@ -277,53 +293,66 @@ export default function RegisterLegalPerson() {
   function handleAddNewReference() {
     setPersonReferences([
       ...personReferences,
-      initialStateReference
+      {
+        id: uuidV4(),
+        referenceSituation: 1,
+        referenceType: "",
+        referenceName: "",
+        referencePhone: "",
+        referenceAdress: ""
+      }
     ]);
   }
 
   function handleAddNewBankingReference() {
     setBankingReferences([
       ...bankingReferences,
-      initialStateBankingReference
+      {
+        id: uuidV4(),
+        idBanking: 0,
+        situation: 1,
+        agency: "",
+        account: "",
+        opening: "",
+        type: ""
+      }
     ]);
   }
 
   function handleRemoveAddress(index) {
-    const personAddressCopy = Array.from(personAddress);
-    personAddressCopy.splice(index, 1);
-    setPersonAddress(personAddressCopy);
+    const newArrayAddresses = personAddress.filter((address) => address.id !== index);
+
+    setPersonAddress(newArrayAddresses);
     handleCloseModalRemoveAddress();
-    console.log(personAddress);
   }
 
   function handleRemovePhone(index) {
-    const personPhoneCopy = Array.from(personPhone);
-    const elRemovido = personPhoneCopy.splice(index, 1);
-    console.log(`elemento removido ->`, elRemovido);
-    console.log(`array atualizado ->`, personPhoneCopy);
-    setPersonPhone(personPhoneCopy);
+    const newArrayPhone = personPhone.filter((phone) => phone.phoneNumber !== index);
+
+    setPersonPhone(newArrayPhone);
     handleCloseModaRemovelPhone();
-    console.log('array antigo atualizado', personPhone);
   }
 
   function handleRemoveMail(index) {
-    const personMailCopy = Array.from(personMail);
-    personMailCopy.splice(index, 1);
-    setPersonMail(personMailCopy);
+    const newArrayMails = personMail.filter((mail) => mail.userMail !== index);
+
+    setPersonMail(newArrayMails);
     handleCloseModalRemoveMail();
   }
 
   function handleRemoveReference(index) {
-    const personReferenceCopy = Array.from(personReferences);
-    personReferenceCopy.splice(index, 1);
-    setPersonReferences(personReferenceCopy);
+    const newArrayReferences = personReferences.filter((reference) => reference.id !== index);
+    console.log('index', index);
+    console.log('novo array', newArrayReferences);
+
+    setPersonReferences(newArrayReferences);
     handleCloseModalRemoveReference();
   }
 
   function handleRemoveBankingReference(index) {
-    const bankingReferenceCopy = Array.from(bankingReferences);
-    bankingReferenceCopy.splice(index, 1);
-    setBankingReferences(bankingReferenceCopy);
+    const newArrayBankingReference = bankingReferences.filter((value) => value.id !== index);
+
+    setBankingReferences(newArrayBankingReference);
     handleCloseModalRemoveBankingReference();
   }
 
@@ -494,16 +523,20 @@ export default function RegisterLegalPerson() {
                         sm={3}
                         xl={3}
                       >
-                        <TextField
-                          fullWidth
-                          required
-                          label="Data de abertura"
-                          name="openDate"
-                          variant="outlined"
-                          value={legalPerson.openDate}
-                          onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                        />
+                        <MuiPickersUtilsProvider utils={DateMomentUtils}>
+                          <KeyboardDatePicker
+                            disableToolbar
+                            variant="outlined"
+                            format="dd/MM/yyyy"
+                            margin="normal"
+                            label="Data de abertura"
+                            value={legalPerson.openDate}
+                            onChange={(e) => handleChangeInputsLegalPerson(e)}
+                            KeyboardButtonProps={{
+                              'aria-label': 'change date',
+                            }}
+                          />
+                        </MuiPickersUtilsProvider>
                       </Grid>
 
                       <Grid
@@ -599,11 +632,18 @@ export default function RegisterLegalPerson() {
                             onClick={handleAddNewAddress}
                           >
                             Adicionar
-                      </Button>
+                          </Button>
                         </Tooltip>
                       </Grid>
                     </Grid>
                     <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                    {
+                      personAddress.length === 0 && (
+                        <Typography component="h3" align="center" color="textSecondary">
+                          Este registro não contém informações de endereço.
+                        </Typography>
+                      )
+                    }
                     {
                       personAddress.map((addressValue, index) => (
                         <Typography component="div" key={index}>
@@ -624,7 +664,7 @@ export default function RegisterLegalPerson() {
                                 label="CEP"
                                 name="zipCode"
                                 variant="outlined"
-                                value={addressValue.cep}
+                                value={addressValue.zipCode}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -646,7 +686,7 @@ export default function RegisterLegalPerson() {
                                 label="Rua"
                                 name="street"
                                 variant="outlined"
-                                value={addressValue.rua}
+                                value={addressValue.street}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -664,7 +704,7 @@ export default function RegisterLegalPerson() {
                                 label="Bairro"
                                 name="neighborhood"
                                 variant="outlined"
-                                value={addressValue.bairro}
+                                value={addressValue.neighborhood}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -682,7 +722,7 @@ export default function RegisterLegalPerson() {
                                 label="Número"
                                 name="numberHouse"
                                 variant="outlined"
-                                value={addressValue.numero}
+                                value={addressValue.numberHouse}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -700,7 +740,7 @@ export default function RegisterLegalPerson() {
                                 label="Complemento"
                                 name="complement"
                                 variant="outlined"
-                                value={addressValue.complemento === null ? 'Não informado' : addressValue.complemento}
+                                value={addressValue.complement === null ? 'Não informado' : addressValue.complement}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -718,7 +758,7 @@ export default function RegisterLegalPerson() {
                                 label="Cidade"
                                 name="city"
                                 variant="outlined"
-                                value={addressValue.cidade}
+                                value={addressValue.city}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -736,7 +776,7 @@ export default function RegisterLegalPerson() {
                                 label="Estado"
                                 name="stateAdress"
                                 variant="outlined"
-                                value={addressValue.estado_endereco}
+                                value={addressValue.stateAdress}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -756,10 +796,10 @@ export default function RegisterLegalPerson() {
                                   style={{ background: red[300], color: '#FFF' }}
                                   variant="contained"
                                   size="small"
-                                  onClick={() => handleClickOpenModalRemoveAddress(index)}
+                                  onClick={() => handleClickOpenModalRemoveAddress(addressValue.id)}
                                 >
                                   Remover
-                            </Button>
+                                </Button>
                               </Tooltip>
                             </Grid>
                           </Grid>
@@ -789,7 +829,7 @@ export default function RegisterLegalPerson() {
                               onClick={handleAddNewPhone}
                             >
                               Adicionar Telefone
-                      </Button>
+                            </Button>
                           </Tooltip>
                         </Grid>
                       </Grid>
@@ -797,7 +837,7 @@ export default function RegisterLegalPerson() {
                       {
                         personPhone.length === 0 && (
                           <Typography component="h3" align="center" color="textSecondary">
-                            Este registro não contém informações sobre telefones
+                            Este registro não contém informações sobre telefones.
                           </Typography>
                         )
                       }
@@ -818,7 +858,7 @@ export default function RegisterLegalPerson() {
                                 <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
                                   <InputLabel>Telefone</InputLabel>
                                   <OutlinedInput
-                                    value={phone.tel}
+                                    value={phone.phoneNumber}
                                     onChange={(e) => handleChangeInputsPhone(e, index)}
                                     fullWidth
                                     required
@@ -829,7 +869,7 @@ export default function RegisterLegalPerson() {
                                         <Tooltip title="Deletar">
                                           <IconButton
                                             aria-label="Deletar"
-                                            onClick={() => handleClickOpenModalRemovePhone(index)}
+                                            onClick={() => handleClickOpenModalRemovePhone(phone.phoneNumber)}
                                             edge="end"
                                           >
                                             <Delete size={8} style={{ color: red[300] }} />
@@ -865,7 +905,7 @@ export default function RegisterLegalPerson() {
                               onClick={handleAddNewMail}
                             >
                               Adicionar E-mail
-                      </Button>
+                            </Button>
                           </Tooltip>
                         </Grid>
                       </Grid>
@@ -873,7 +913,7 @@ export default function RegisterLegalPerson() {
                       {
                         personMail.length === 0 && (
                           <Typography component="h3" align="center" color="textSecondary">
-                            Este registro não contém informações sobre email
+                            Este registro não contém informações sobre email.
                           </Typography>
                         )
                       }
@@ -894,7 +934,7 @@ export default function RegisterLegalPerson() {
                                 <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
                                   <InputLabel>E-mail</InputLabel>
                                   <OutlinedInput
-                                    value={mail.email}
+                                    value={mail.userMail}
                                     onChange={(e) => handleChangeInputsMails(e, index)}
                                     fullWidth
                                     required
@@ -905,7 +945,7 @@ export default function RegisterLegalPerson() {
                                         <Tooltip title="Deletar">
                                           <IconButton
                                             aria-label="Deletar"
-                                            onClick={() => handleClickOpenModalRemoveMail(index)}
+                                            onClick={() => handleClickOpenModalRemoveMail(mail.userMail)}
                                             edge="end"
                                           >
                                             <Delete size={8} style={{ color: red[300] }} />
@@ -943,7 +983,7 @@ export default function RegisterLegalPerson() {
                             onClick={handleAddNewReference}
                           >
                             Adicionar
-                      </Button>
+                          </Button>
                         </Tooltip>
                       </Grid>
                     </Grid>
@@ -951,7 +991,7 @@ export default function RegisterLegalPerson() {
                     {
                       personReferences.length === 0 && (
                         <Typography component="h3" align="center" color="textSecondary">
-                          Este registro não contém informações sobre referências
+                          Este registro não contém informações sobre referências.
                         </Typography>
                       )
                     }
@@ -976,9 +1016,9 @@ export default function RegisterLegalPerson() {
 
                                 required
                                 label="Nome"
-                                name="nome"
+                                name="referenceName"
                                 variant="outlined"
-                                value={reference.nome}
+                                value={reference.referenceName}
                                 onChange={(e) => handleChangeInputsReferences(e, index)}
                               />
                             </Grid>
@@ -994,9 +1034,9 @@ export default function RegisterLegalPerson() {
 
                                 required
                                 label="Tipo"
-                                name="tipo"
+                                name="referenceType"
                                 variant="outlined"
-                                value={reference.tipo}
+                                value={reference.referenceType}
                                 onChange={(e) => handleChangeInputsReferences(e, index)}
                               />
                             </Grid>
@@ -1012,9 +1052,9 @@ export default function RegisterLegalPerson() {
 
                                 required
                                 label="Telefone"
-                                name="tel"
+                                name="referencePhone"
                                 variant="outlined"
-                                value={reference.tel}
+                                value={reference.referencePhone}
                                 onChange={(e) => handleChangeInputsReferences(e, index)}
                               />
                             </Grid>
@@ -1030,9 +1070,9 @@ export default function RegisterLegalPerson() {
 
                                 required
                                 label="Endereço"
-                                name="endereco"
+                                name="referenceAddress"
                                 variant="outlined"
-                                value={reference.endereco}
+                                value={reference.referenceAddress}
                                 onChange={(e) => handleChangeInputsReferences(e, index)}
                               />
                             </Grid>
@@ -1052,10 +1092,10 @@ export default function RegisterLegalPerson() {
                                   style={{ background: red[300], color: '#FFF' }}
                                   variant="contained"
                                   size="small"
-                                  onClick={() => handleClickOpenModalRemoveReference(reference.id_referencia)}
+                                  onClick={() => handleClickOpenModalRemoveReference(reference.id)}
                                 >
                                   Remover
-                            </Button>
+                                </Button>
                               </Tooltip>
                             </Grid>
                           </Grid>
@@ -1084,7 +1124,7 @@ export default function RegisterLegalPerson() {
                             onClick={handleAddNewBankingReference}
                           >
                             Adicionar
-                      </Button>
+                          </Button>
                         </Tooltip>
                       </Grid>
                     </Grid>
@@ -1092,7 +1132,7 @@ export default function RegisterLegalPerson() {
                     {
                       bankingReferences.length === 0 && (
                         <Typography component="h3" align="center" color="textSecondary">
-                          Este registro não contém informações bancárias
+                          Este registro não contém informações bancárias.
                         </Typography>
                       )
                     }
@@ -1144,7 +1184,7 @@ export default function RegisterLegalPerson() {
                                 label="Tipo"
                                 name="type"
                                 variant="outlined"
-                                value={banking.tipo}
+                                value={banking.type}
                                 onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                               />
                             </Grid>
@@ -1167,7 +1207,7 @@ export default function RegisterLegalPerson() {
                                 label="Conta"
                                 name="account"
                                 variant="outlined"
-                                value={banking.conta}
+                                value={banking.account}
                                 onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                               />
                             </Grid>
@@ -1185,7 +1225,7 @@ export default function RegisterLegalPerson() {
                                 label="Agência"
                                 name="agency"
                                 variant="outlined"
-                                value={banking.agencia}
+                                value={banking.agency}
                                 onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                               />
                             </Grid>
@@ -1203,7 +1243,7 @@ export default function RegisterLegalPerson() {
                                 label="Abertura"
                                 name="opening"
                                 variant="outlined"
-                                value={banking.abertura}
+                                value={banking.opening}
                                 onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                               />
                             </Grid>
@@ -1223,10 +1263,10 @@ export default function RegisterLegalPerson() {
                                   style={{ background: red[300], color: '#FFF' }}
                                   variant="contained"
                                   size="small"
-                                  onClick={() => handleClickOpenModalRemoveBankingReference(index)}
+                                  onClick={() => handleClickOpenModalRemoveBankingReference(banking.id)}
                                 >
                                   Remover
-                            </Button>
+                                </Button>
                               </Tooltip>
                             </Grid>
                           </Grid>
@@ -1374,8 +1414,6 @@ export default function RegisterLegalPerson() {
                   </Grid>
                 </Box>
               </Box>
-
-
             </form>
           </div>
         </Container>
@@ -1393,7 +1431,7 @@ export default function RegisterLegalPerson() {
 
             <Typography>
               Deseja realmente excluir este registro de telefone?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -1405,7 +1443,7 @@ export default function RegisterLegalPerson() {
             >
               <Button onClick={handleCloseModaRemovelPhone} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -1431,7 +1469,7 @@ export default function RegisterLegalPerson() {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de endereço?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -1443,7 +1481,7 @@ export default function RegisterLegalPerson() {
             >
               <Button onClick={handleCloseModalRemoveAddress} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -1469,7 +1507,7 @@ export default function RegisterLegalPerson() {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de e-mail?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -1481,7 +1519,7 @@ export default function RegisterLegalPerson() {
             >
               <Button onClick={handleCloseModalRemoveMail} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -1507,7 +1545,7 @@ export default function RegisterLegalPerson() {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de referência pessoal?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -1519,7 +1557,7 @@ export default function RegisterLegalPerson() {
             >
               <Button onClick={handleCloseModalRemoveReference} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -1527,7 +1565,7 @@ export default function RegisterLegalPerson() {
                 autoFocus
                 onClick={() => handleRemoveReference(personReferenceId)}
               >
-                Excluir />}
+                Excluir
               </Button>
             </Box>
           </DialogActions>
