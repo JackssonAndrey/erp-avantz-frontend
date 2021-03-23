@@ -29,6 +29,8 @@ export default function useAuth() {
       localStorage.setItem('token', JSON.stringify(cookie));
       localStorage.setItem('user', JSON.stringify(data.user));
       api.defaults.headers.Authorization = `Bearer ${cookie}`;
+      api.defaults.xsrfCookieName = 'csrftoken';
+      api.defaults.xsrfHeaderName = 'X-CSRFToken';
       api.defaults.withCredentials = true;
       // document.cookie = `Set-Cookie: csrftoken=${cookie}; SameSite=lax`;
       createCookieInHour('csrftoken', cookie, 5);

@@ -8,17 +8,17 @@ import {
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
   InputLabel, OutlinedInput, InputAdornment
 } from '@material-ui/core';
-import { KeyboardDatePicker, MuiPickersUtilsProvider, DatePicker } from '@material-ui/pickers';
-import DateMomentUtils from '@date-io/moment';
 import PropTypes from 'prop-types';
 import { v4 as uuidV4 } from 'uuid';
 import moment from 'moment';
+import InputMask from 'react-input-mask';
 
 import { ArrowBack, Delete } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
@@ -71,47 +71,16 @@ export default function RegisterLegalPerson() {
   }
 
   const initialStateLegalPerson = {
-    "fantasyName": "",
-    "branch": "",
-    "companyType": "",
-    "shareCapital": 0,
-    "revenues": 0,
-    "taxation": "",
-    "contact": "",
-    "openDate": moment().format('L'),
-    "stateRegistrationCompany": "",
-    "municipalRegistrationCompany": "",
-  }
-
-  const initialStateAdress = {
-    id: uuidV4(),
-    origin: 1,
-    street: "",
-    numberHouse: "",
-    complement: "",
-    neighborhood: "",
-    zipCode: "",
-    city: "",
-    stateAdress: ""
-  }
-
-  const initialStateReference = {
-    id: uuidV4(),
-    referenceSituation: 1,
-    referenceType: "",
-    referenceName: "",
-    referencePhone: "",
-    referenceAdress: ""
-  }
-
-  const initialStateBankingReference = {
-    id: uuidV4(),
-    idBanking: 0,
-    situation: 1,
-    agency: "",
-    account: "",
-    opening: "",
-    type: ""
+    fantasyName: "",
+    branch: "",
+    companyType: "",
+    shareCapital: 0,
+    revenues: 0,
+    taxation: "",
+    contact: "",
+    openDate: moment().format('YYYY-MM-DD'),
+    stateRegistrationCompany: "",
+    municipalRegistrationCompany: "",
   }
 
   // SUCCESS AND ERRORS BUTTONS STATES
@@ -357,10 +326,11 @@ export default function RegisterLegalPerson() {
   }
 
   // SUBMIT REGISTER FORM
-  function handleSubmitFormRegister(e) {
+  async function handleSubmitFormRegister(e) {
     e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
 
-    const data = {
+    const personData = {
       ...person,
       ...legalPerson,
       adresses: personAddress,
@@ -370,7 +340,18 @@ export default function RegisterLegalPerson() {
       bankingReferences
     }
 
-    console.log(data);
+    try {
+      await api.post('/persons/legal/create', personData, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      toast.success('Cadastro feito com sucesso!');
+      history.pushState('/legal/person');
+    } catch (err) {
+      const { data } = err.response;
+      toast.error(`${data.detail}`);
+    }
   }
 
   return (
@@ -459,7 +440,6 @@ export default function RegisterLegalPerson() {
                           variant="outlined"
                           value={legalPerson.fantasyName}
                           onChange={(e) => handleChangeInputsLegalPerson(e)}
-
                         />
                       </Grid>
 
@@ -469,16 +449,16 @@ export default function RegisterLegalPerson() {
                         sm={4}
                         xl={4}
                       >
-                        <TextField
-                          fullWidth
-                          required
-                          label="CNPJ"
-                          name="personCNPJ"
-                          variant="outlined"
-                          value={person.personCNPJ}
-                          onChange={(e) => handleChangeInputsPerson(e)}
-
-                        />
+                        <InputMask mask="99.999.999/9999-99" value={person.personCNPJ} onChange={(e) => handleChangeInputsPerson(e)}>
+                          <TextField
+                            fullWidth
+                            required
+                            label="CNPJ"
+                            name="personCNPJ"
+                            variant="outlined"
+                            value={person.personCNPJ}
+                          />
+                        </InputMask>
                       </Grid>
 
                       <Grid
@@ -523,20 +503,15 @@ export default function RegisterLegalPerson() {
                         sm={3}
                         xl={3}
                       >
-                        <MuiPickersUtilsProvider utils={DateMomentUtils}>
-                          <KeyboardDatePicker
-                            disableToolbar
-                            variant="outlined"
-                            format="dd/MM/yyyy"
-                            margin="normal"
-                            label="Data de abertura"
-                            value={legalPerson.openDate}
-                            onChange={(e) => handleChangeInputsLegalPerson(e)}
-                            KeyboardButtonProps={{
-                              'aria-label': 'change date',
-                            }}
-                          />
-                        </MuiPickersUtilsProvider>
+                        <TextField
+                          fullWidth
+                          name="openDate"
+                          type="date"
+                          label="Data de abertura"
+                          variant="outlined"
+                          value={legalPerson.openDate}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        />
                       </Grid>
 
                       <Grid
@@ -938,6 +913,7 @@ export default function RegisterLegalPerson() {
                                     onChange={(e) => handleChangeInputsMails(e, index)}
                                     fullWidth
                                     required
+                                    type="email"
                                     label="E-mail"
                                     name="userMail"
                                     endAdornment={
@@ -1049,7 +1025,6 @@ export default function RegisterLegalPerson() {
                             >
                               <TextField
                                 fullWidth
-
                                 required
                                 label="Telefone"
                                 name="referencePhone"
@@ -1067,7 +1042,6 @@ export default function RegisterLegalPerson() {
                             >
                               <TextField
                                 fullWidth
-
                                 required
                                 label="Endereço"
                                 name="referenceAddress"
