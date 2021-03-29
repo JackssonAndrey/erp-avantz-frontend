@@ -885,7 +885,7 @@ export default function EditLegalPerson(props) {
 
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
 
-  // REMOVE PERSON DATA
+  // ----------------- REMOVE PERSON DATA -----------------
   function handleRemoveAddress(id) {
     const csrfToken = getCookie('csrftoken');
 
