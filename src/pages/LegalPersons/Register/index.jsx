@@ -6,12 +6,13 @@ import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel, OutlinedInput, InputAdornment
+  InputLabel, OutlinedInput, InputAdornment, FormHelperText
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { v4 as uuidV4 } from 'uuid';
 import moment from 'moment';
 import InputMask from 'react-input-mask';
+import cep from 'cep-promise';
 
 import { ArrowBack, Delete } from '@material-ui/icons';
 
@@ -76,7 +77,7 @@ export default function RegisterLegalPerson() {
     companyType: "",
     shareCapital: 0,
     revenues: 0,
-    taxation: "",
+    taxation: 1,
     contact: "",
     openDate: moment().format('YYYY-MM-DD'),
     stateRegistrationCompany: "",
@@ -100,6 +101,9 @@ export default function RegisterLegalPerson() {
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([]);
   const [personReferenceId, setPersonReferenceId] = useState(0);
+  const [isZipCodeValid, setIsZipCodeValid] = useState(true);
+  const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
+  const [registeredBanks, setRegisteredBanks] = useState([]);
 
   // MODALS STATES
   const [openModalRemovePhone, setOpenModalRemovePhone] = useState(false);
@@ -107,6 +111,19 @@ export default function RegisterLegalPerson() {
   const [openModalRemoveMail, setOpenModalRemoveMail] = useState(false);
   const [openModalRemoveReference, setOpenModalRemoveReference] = useState(false);
   const [openModalRemoveBankingReference, setOpenModalRemoveBankingReference] = useState(false);
+
+  useEffect(() => {
+    (async function () {
+      try {
+        const { data } = await api.get('/banking');
+        setRegisteredBanks(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error('Não foi possível selecionar os bancos pré cadastrados.');
+        // console.log(data.datail);
+      }
+    })();
+  }, []);
 
   const handleClickOpenModalRemovePhone = (id) => {
     setOpenModalRemovePhone(true);
@@ -247,7 +264,7 @@ export default function RegisterLegalPerson() {
         neighborhood: "",
         zipCode: "",
         city: "",
-        stateAdress: ""
+        state: ""
       }
     ]);
   }
@@ -278,11 +295,11 @@ export default function RegisterLegalPerson() {
       ...bankingReferences,
       {
         id: uuidV4(),
-        idBanking: 0,
+        idBanking: '',
         situation: 1,
         agency: "",
         account: "",
-        opening: "",
+        opening: moment().format('YYYY-MM-DD'),
         type: ""
       }
     ]);
@@ -347,11 +364,30 @@ export default function RegisterLegalPerson() {
         }
       });
       toast.success('Cadastro feito com sucesso!');
-      history.pushState('/legal/person');
+      history.push('/legal/person');
     } catch (err) {
       const { data } = err.response;
       toast.error(`${data.detail}`);
     }
+  }
+
+  function searchZipCode(zipCode, e, position) {
+    cep(zipCode).then((response) => {
+      const { city, neighborhood, state, street } = response;
+      const updatedAdress = Array.from(personAddress);
+
+      updatedAdress[position].city = city;
+      updatedAdress[position].neighborhood = neighborhood;
+      updatedAdress[position].state = state;
+      updatedAdress[position].street = street;
+
+      setPersonAddress(updatedAdress);
+      setIsZipCodeValid(true);
+    }).catch((response) => {
+      const { message } = response;
+      setErrorMessageZipCode(message);
+      setIsZipCodeValid(false);
+    });
   }
 
   return (
@@ -396,7 +432,7 @@ export default function RegisterLegalPerson() {
                 <Tab label="Opções" {...a11yProps(6)} />
               </Tabs>
             </AppBar>
-            <form onSubmit={(e) => handleSubmitFormRegister(e)} >
+            <form onSubmit={(e) => handleSubmitFormRegister(e)} autoComplete="off">
               <Box
                 display="flex"
                 flexDirection="column"
@@ -538,16 +574,26 @@ export default function RegisterLegalPerson() {
                         sm={4}
                         xl={4}
                       >
-                        <TextField
-                          fullWidth
-                          required
-                          label="Tipo da empresa"
-                          name="companyType"
-                          variant="outlined"
-                          value={legalPerson.companyType}
-                          onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                        />
+                        <FormControl variant="outlined" className={classes.formControl}>
+                          <InputLabel id="select-company-type">Tipo da empresa</InputLabel>
+                          <Select
+                            labelId="select-company-type"
+                            value={legalPerson.companyType}
+                            onChange={(e) => handleChangeInputsLegalPerson(e)}
+                            label="Tipo da empresa"
+                            name="companyType"
+                          >
+                            <MenuItem value="">
+                              <em>None</em>
+                            </MenuItem>
+                            <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                            <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                            <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                            <MenuItem value="Microempreendedor Individual">Microempreendedor Individual</MenuItem>
+                            <MenuItem value="Sociedade Simples">Sociedade Simples</MenuItem>
+                            <MenuItem value="Sociedade Anônima">Sociedade Anônima</MenuItem>
+                          </Select>
+                        </FormControl>
                       </Grid>
 
                       <Grid
@@ -556,16 +602,23 @@ export default function RegisterLegalPerson() {
                         sm={3}
                         xl={3}
                       >
-                        <TextField
-                          fullWidth
-                          required
-                          label="Tributação"
-                          name="taxation"
-                          variant="outlined"
-                          value={legalPerson.taxation}
-                          onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                        />
+                        <FormControl variant="outlined" className={classes.formControl}>
+                          <InputLabel id="select-taxation">Tipo da empresa</InputLabel>
+                          <Select
+                            labelId="select-taxation"
+                            value={legalPerson.taxation}
+                            onChange={(e) => handleChangeInputsLegalPerson(e)}
+                            label="Tributação"
+                            name="taxation"
+                          >
+                            <MenuItem value={1}>
+                              <em>Não especificado</em>
+                            </MenuItem>
+                            <MenuItem value={2}>Simples Nacional</MenuItem>
+                            <MenuItem value={3}>Lucro Real</MenuItem>
+                            <MenuItem value={4}>Lucro Presumido</MenuItem>
+                          </Select>
+                        </FormControl>
                       </Grid>
 
                       <Grid
@@ -632,16 +685,22 @@ export default function RegisterLegalPerson() {
                               sm={3}
                               xl={3}
                             >
-                              <TextField
-                                fullWidth
-
-                                required
-                                label="CEP"
-                                name="zipCode"
-                                variant="outlined"
-                                value={addressValue.zipCode}
-                                onChange={(e) => handleChangeInputsAddress(e, index)}
-                              />
+                              <InputMask mask="99.999-999" value={addressValue.zipCode} onChange={(e) => handleChangeInputsAddress(e, index)}>
+                                <TextField
+                                  fullWidth
+                                  required
+                                  error={!isZipCodeValid}
+                                  autoComplete="off"
+                                  label="CEP"
+                                  name="zipCode"
+                                  variant="outlined"
+                                />
+                              </InputMask>
+                              {
+                                (!isZipCodeValid) && (
+                                  <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                                )
+                              }
                             </Grid>
                           </Grid>
                           <Grid
@@ -656,7 +715,7 @@ export default function RegisterLegalPerson() {
                             >
                               <TextField
                                 fullWidth
-
+                                onFocus={(e) => searchZipCode(addressValue.zipCode, e, index)}
                                 required
                                 label="Rua"
                                 name="street"
@@ -749,9 +808,9 @@ export default function RegisterLegalPerson() {
 
                                 required
                                 label="Estado"
-                                name="stateAdress"
+                                name="state"
                                 variant="outlined"
-                                value={addressValue.stateAdress}
+                                value={addressValue.state}
                                 onChange={(e) => handleChangeInputsAddress(e, index)}
                               />
                             </Grid>
@@ -1128,19 +1187,17 @@ export default function RegisterLegalPerson() {
                                 <Select
                                   labelId="demo-simple-select-outlined-label"
                                   id="demo-simple-select-outlined"
-                                  value={banking.id_bancos_fk}
+                                  value={banking.idBanking}
                                   onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                                   label="Banco"
                                   name="idBanking"
                                   required
-                                  autoWidth={false}
-                                  labelWidth={3}
                                 >
-                                  <MenuItem value="">
-                                    <em>None</em>
-                                  </MenuItem>
-                                  <MenuItem value={1}>Sim</MenuItem>
-                                  <MenuItem value={0}>Não</MenuItem>
+                                  {
+                                    registeredBanks.map(bank => (
+                                      <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
+                                    ))
+                                  }
                                 </Select>
                               </FormControl>
                             </Grid>
@@ -1151,16 +1208,27 @@ export default function RegisterLegalPerson() {
                               sm={4}
                               xl={4}
                             >
-                              <TextField
-                                fullWidth
-
-                                required
-                                label="Tipo"
-                                name="type"
-                                variant="outlined"
-                                value={banking.type}
-                                onChange={(e) => handleChangeInputsBankingReferences(e, index)}
-                              />
+                              <FormControl variant="outlined" className={classes.formControl}>
+                                <InputLabel id="select-type-account">Tipo</InputLabel>
+                                <Select
+                                  labelId="select-type-account"
+                                  id="type-account"
+                                  value={banking.type}
+                                  onChange={(e) => handleChangeInputsBankingReferences(e, index)}
+                                  label="Tipo"
+                                  name="type"
+                                  required
+                                >
+                                  <MenuItem value="">
+                                    <em>None</em>
+                                  </MenuItem>
+                                  <MenuItem value="Conta corrente">Conta corrente</MenuItem>
+                                  <MenuItem value="Conta poupança">Conta poupança</MenuItem>
+                                  <MenuItem value="Conta salário">Conta salário</MenuItem>
+                                  <MenuItem value="Conta digital">Conta digital</MenuItem>
+                                  <MenuItem value="Conta universitária">Conta universitária</MenuItem>
+                                </Select>
+                              </FormControl>
                             </Grid>
                           </Grid>
 
@@ -1212,7 +1280,7 @@ export default function RegisterLegalPerson() {
                             >
                               <TextField
                                 fullWidth
-
+                                type="date"
                                 required
                                 label="Abertura"
                                 name="opening"

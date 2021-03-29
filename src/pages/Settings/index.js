@@ -24,6 +24,7 @@ import getCookie from '../../utils/functions';
 import { Context } from '../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -169,7 +170,7 @@ export default function Settings() {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
-        if (status === 403) {
+        if (status === 401) {
           handleLogout();
         }
       }, 7000);
