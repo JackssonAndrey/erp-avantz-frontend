@@ -86,6 +86,13 @@ export default function RegisterLegalPerson() {
 
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
 
   // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
@@ -124,6 +131,28 @@ export default function RegisterLegalPerson() {
       }
     })();
   }, []);
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
 
   const handleClickOpenModalRemovePhone = (id) => {
     setOpenModalRemovePhone(true);
@@ -363,11 +392,19 @@ export default function RegisterLegalPerson() {
           'X-CSRFToken': csrftoken
         }
       });
-      toast.success('Cadastro feito com sucesso!');
-      history.push('/legal/person');
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Cadastro feito com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        history.push('/legal/person');
+      }, 7000);
     } catch (err) {
       const { data } = err.response;
-      toast.error(`${data.detail}`);
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
     }
   }
 
@@ -603,7 +640,7 @@ export default function RegisterLegalPerson() {
                         xl={3}
                       >
                         <FormControl variant="outlined" className={classes.formControl}>
-                          <InputLabel id="select-taxation">Tipo da empresa</InputLabel>
+                          <InputLabel id="select-taxation">Tributação</InputLabel>
                           <Select
                             labelId="select-taxation"
                             value={legalPerson.taxation}
@@ -1446,8 +1483,8 @@ export default function RegisterLegalPerson() {
                         color="primary"
                         variant="contained"
                         type="submit"
-                      // className={buttonClassname}
-                      // disabled={loading}
+                        className={buttonClassname}
+                        disabled={loading}
                       >
                         Salvar
                         {loading && <CircularProgress size={24} className={classes.buttonProgress} />}

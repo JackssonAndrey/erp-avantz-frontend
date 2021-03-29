@@ -6,9 +6,14 @@ import { red } from '@material-ui/core/colors';
 import {
   Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel, OutlinedInput, InputAdornment
+  InputLabel, OutlinedInput, InputAdornment, FormHelperText
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
+import { v4 as uuidV4 } from 'uuid';
+import moment from 'moment';
+import InputMask from 'react-input-mask';
+import cep from 'cep-promise';
+
 
 import { ArrowBack, Delete } from '@material-ui/icons';
 
@@ -120,36 +125,48 @@ export default function EditLegalPerson(props) {
 
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [successAddress, setSuccessAddress] = useState(false);
   const [errorAddress, setErrorAddress] = useState(false);
   const [loadingRemoveAddress, setLoadingRemoveAddress] = useState(false);
   const [successRemoveAddress, setSuccessRemoveAddress] = useState(false);
   const [errorRemoveAddress, setErrorRemoveAddress] = useState(false);
+  const [defaultButtonAddress, setDefaultButtonAddress] = useState(true);
+
   const [loadingPhone, setLoadingPhone] = useState(false);
   const [successPhone, setSuccessPhone] = useState(false);
   const [errorPhone, setErrorPhone] = useState(false);
+  const [defaultButtonPhone, setDefaultButtonPhone] = useState(true);
   const [loadingRemovePhone, setLoadingRemovePhone] = useState(false);
   const [successRemovePhone, setSuccessRemovePhone] = useState(false);
   const [errorRemovePhone, setErrorRemovePhone] = useState(false);
+
   const [loadingRemoveMail, setLoadingRemoveMail] = useState(false);
   const [successRemoveMail, setSuccessRemoveMail] = useState(false);
   const [errorRemoveMail, setErrorRemoveMail] = useState(false);
   const [loadingMail, setLoadingMail] = useState(false);
   const [successMail, setSuccessMail] = useState(false);
   const [errorMail, setErrorMail] = useState(false);
+  const [defaultButtonMail, setDefaultButtonMail] = useState(true);
+
   const [loadingReference, setLoadingReference] = useState(false);
   const [successReference, setSuccessReference] = useState(false);
   const [errorReference, setErrorReference] = useState(false);
   const [loadingRemoveReference, setLoadingRemoveReference] = useState(false);
   const [successRemoveReference, setSuccessRemoveReference] = useState(false);
   const [errorRemoveReference, setErrorRemoveReference] = useState(false);
+  const [defaultButtonReference, setDefaultButtonReference] = useState(true);
+
   const [loadingBankingReference, setLoadingBankingReference] = useState(false);
   const [successBankingReference, setSuccessBankingReference] = useState(false);
   const [errorBankingReference, setErrorBankingReference] = useState(false);
   const [loadingRemoveBankingReference, setLoadingRemoveBankingReference] = useState(false);
   const [successRemoveBankingReference, setSuccessRemoveBankingReference] = useState(false);
   const [errorRemoveBankingReference, setErrorRemoveBankingReference] = useState(false);
+  const [defaultButtonBankingReference, setDefaultButtonBankingReference] = useState(true);
 
   // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
@@ -165,6 +182,9 @@ export default function EditLegalPerson(props) {
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
   const [personReferenceId, setPersonReferenceId] = useState(0);
+  const [isZipCodeValid, setIsZipCodeValid] = useState(true);
+  const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
+  const [registeredBanks, setRegisteredBanks] = useState([]);
 
   // MODALS STATES
   const [openModalPhone, setOpenModalPhone] = useState(false);
@@ -192,6 +212,7 @@ export default function EditLegalPerson(props) {
   const handleCloseModalPhone = () => {
     setOpenModalPhone(false);
     setPhoneNumber('');
+    setDefaultButtonPhone(true);
   };
 
   const handleClickOpenModalRemovePhone = (id) => {
@@ -199,8 +220,9 @@ export default function EditLegalPerson(props) {
     setPhoneId(id);
   };
 
-  const handleCloseModaRemovelPhone = () => {
+  const handleCloseModaRemovePhone = () => {
     setOpenModalRemovePhone(false);
+    setDefaultButtonPhone(true);
   };
 
   const handleClickOpenModalRemoveMail = (id) => {
@@ -210,6 +232,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalRemoveMail = () => {
     setOpenModalRemoveMail(false);
+    setDefaultButtonMail(true);
   };
 
   const handleClickOpenModalRemoveReference = (id) => {
@@ -219,6 +242,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalRemoveReference = () => {
     setOpenModalRemoveReference(false);
+    setDefaultButtonReference(true);
   };
 
   const handleClickOpenModalRemoveBankingReference = (id) => {
@@ -228,6 +252,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalRemoveBankingReference = () => {
     setOpenModalRemoveBankingReference(false);
+    setDefaultButtonReference(true);
   };
 
   const handleClickOpenModalMail = () => {
@@ -237,6 +262,7 @@ export default function EditLegalPerson(props) {
   const handleCloseModalMail = () => {
     setOpenModalMail(false);
     setMail('');
+    setDefaultButtonMail(true);
   };
 
   const handleClickOpenModalBankingReference = () => {
@@ -245,6 +271,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalBankingReference = () => {
     setOpenModalBankingReference(false);
+    setDefaultButtonBankingReference(true);
   };
 
   const handleClickOpenModalAddress = () => {
@@ -253,6 +280,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalAddress = () => {
     setOpenModalAddress(false);
+    setDefaultButtonAddress(true);
   };
 
   const handleClickOpenModalRemoveAddress = (id) => {
@@ -262,6 +290,7 @@ export default function EditLegalPerson(props) {
 
   const handleCloseModalRemoveAddress = () => {
     setOpenModalRemoveAddress(false);
+    setDefaultButtonAddress(true);
   };
 
   const handleClickOpenModalReference = () => {
@@ -276,54 +305,69 @@ export default function EditLegalPerson(props) {
     setValueTab(newValue);
   };
 
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
   const buttonClassnameAddress = clsx({
     [classes.buttonSuccessAddress]: successAddress,
     [classes.buttonErrorAddress]: errorAddress,
+    [classes.buttonDefault]: defaultButtonAddress
   });
 
   const buttonClassnameRemoveAddress = clsx({
     [classes.buttonSuccessRemoveAddress]: successRemoveAddress,
     [classes.buttonErrorRemoveAddress]: errorRemoveAddress,
+    [classes.buttonDefault]: defaultButtonAddress
   });
 
   const buttonClassnameRemoveMail = clsx({
     [classes.buttonSuccessRemoveMail]: successRemoveMail,
     [classes.buttonErrorRemoveMail]: errorRemoveMail,
+    [classes.buttonDefault]: defaultButtonMail
   });
 
   const buttonClassnameRemoveReference = clsx({
     [classes.buttonSuccessRemoveReference]: successRemoveReference,
     [classes.buttonErrorRemoveReference]: errorRemoveReference,
+    [classes.buttonDefault]: defaultButtonReference
   });
 
   const buttonClassnamePhone = clsx({
     [classes.buttonSuccessPhone]: successPhone,
     [classes.buttonErrorPhone]: errorPhone,
+    [classes.buttonDefault]: defaultButtonPhone
   });
 
   const buttonClassnameRemovePhone = clsx({
     [classes.buttonSuccessRemovePhone]: successRemovePhone,
     [classes.buttonErrorRemovePhone]: errorRemovePhone,
+    [classes.buttonDefault]: defaultButtonPhone
   });
 
   const buttonClassnameMail = clsx({
     [classes.buttonSuccessMail]: successMail,
     [classes.buttonErrorMail]: errorMail,
+    [classes.buttonDefault]: defaultButtonMail
   });
 
   const buttonClassnameReference = clsx({
     [classes.buttonSuccessReference]: successReference,
     [classes.buttonErrorReference]: errorReference,
+    [classes.buttonDefault]: defaultButtonReference
   });
 
   const buttonClassnameBankingReference = clsx({
     [classes.buttonSuccessBankingReference]: successBankingReference,
     [classes.buttonErrorBankingReference]: errorBankingReference,
+    [classes.buttonDefault]: defaultButtonBankingReference
   });
 
   const buttonClassnameRemoveBankingReference = clsx({
     [classes.buttonSuccessRemoveBankingReference]: successRemoveBankingReference,
     [classes.buttonErrorRemoveBankingReference]: errorRemoveBankingReference,
+    [classes.buttonDefault]: defaultButtonBankingReference
   });
 
   useEffect(() => {
@@ -352,6 +396,19 @@ export default function EditLegalPerson(props) {
     });
   }, [idPerson]);
 
+  useEffect(() => {
+    (async function () {
+      try {
+        const { data } = await api.get('/banking');
+        setRegisteredBanks(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error('Não foi possível selecionar os bancos pré cadastrados.');
+        // console.log(data.datail);
+      }
+    })();
+  }, []);
+
   // FUNCTION FOR THE INPUTS CHANGE
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
@@ -363,29 +420,59 @@ export default function EditLegalPerson(props) {
     setLegalPerson({ ...legalPerson, [name]: value });
   }
 
-  function handleChangeInputsAddress(e) {
+  function handleChangeInputsAddress(e, position) {
     const { name, value } = e.target;
-    setPersonAddress([{ ...personAddress, [name]: value }]);
+    const updatedPersonAddress = personAddress.map((addressValue, index) => {
+      if (index === position) {
+        return { ...addressValue, [name]: value }
+      }
+      return addressValue;
+    });
+    setPersonAddress(updatedPersonAddress);
   }
 
-  function handleChangeInputsPhone(e) {
+  function handleChangeInputsPhone(e, position) {
     const { name, value } = e.target;
-    setPersonPhone([{ ...personPhone, [name]: value }]);
+    const updatedPersonPhone = personPhone.map((phone, index) => {
+      if (index === position) {
+        return { ...phone, [name]: value }
+      }
+      return phone;
+    });
+    setPersonPhone(updatedPersonPhone);
   }
 
-  function handleChangeInputsMails(e) {
+  function handleChangeInputsMails(e, position) {
     const { name, value } = e.target;
-    setPersonMail([{ ...personMail, [name]: value }]);
+    const updatedPersonMail = personMail.map((mail, index) => {
+      if (index === position) {
+        return { ...mail, [name]: value }
+      }
+      return mail;
+    });
+    setPersonMail(updatedPersonMail);
   }
 
-  function handleChangeInputsReferences(e) {
+  function handleChangeInputsReferences(e, position) {
     const { name, value } = e.target;
-    setPersonReferences([{ ...personReferences, [name]: value }]);
+    const updatedPersonReferences = personReferences.map((reference, index) => {
+      if (index === position) {
+        return { ...reference, [name]: value }
+      }
+      return reference;
+    });
+    setPersonReferences(updatedPersonReferences);
   }
 
-  function handleChangeInputsBankingReferences(e) {
+  function handleChangeInputsBankingReferences(e, position) {
     const { name, value } = e.target;
-    setBankingReferences([{ ...bankingReferences, [name]: value }]);
+    const updatedBankingReference = bankingReferences.map((banking, index) => {
+      if (index === position) {
+        return { ...banking, [name]: value }
+      }
+      return banking;
+    });
+    setBankingReferences(updatedBankingReference);
   }
 
   function handleChangeInputsBanking(e) {
@@ -404,34 +491,41 @@ export default function EditLegalPerson(props) {
   }
 
   // FUNCTIONS FOR THE ADD PERSON DATA
-  function handleAddNewPhone(e) {
+  async function handleAddNewPhone(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
 
     let phones = [
       {
-        "idPerson": Number(idPerson),
-        "phoneSituation": 1,
+        idPerson: Number(idPerson),
+        phoneSituation: 1,
         phoneNumber
       }
     ];
 
-    api.post(`/phones/create`, { phones }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      const { data } = await api.post(`/phones/create`, { phones }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+
       handleButtonClickProgressPhone();
       setTimeout(() => {
         toast.success('Telefone cadastrado com sucesso!');
       }, 2000);
-    }).catch(reject => {
+      setTimeout(() => {
+        handleCloseModalPhone();
+        setPersonPhone(data);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorPhone();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
+
   }
 
   function handleAddNewAddress(e) {
@@ -461,34 +555,39 @@ export default function EditLegalPerson(props) {
     });
   }
 
-  function handleAddNewMail(e) {
+  async function handleAddNewMail(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
 
     let mails = [
       {
-        "idPerson": Number(idPerson),
-        "situation": 1,
-        "userMail": mail
+        idPerson: Number(idPerson),
+        situation: 1,
+        userMail: mail
       }
     ];
 
-    api.post(`/mails/create`, { mails }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      const { data } = await api.post(`/mails/create`, { mails }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressMail();
       setTimeout(() => {
         toast.success('E-mail cadastrado com sucesso!');
       }, 2000);
-    }).catch(reject => {
+      setTimeout(() => {
+        handleCloseModalMail();
+        setPersonMail(data);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorMail();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
   function handleAddNewReference(e) {
@@ -541,7 +640,7 @@ export default function EditLegalPerson(props) {
     });
   }
 
-  // FUNCTIONS FOR THE BUTTONS ANIMATIONS
+  // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
   function handleButtonClickProgressErrorAddress() {
     if (!errorAddress) {
       setSuccessAddress(false);
@@ -762,6 +861,30 @@ export default function EditLegalPerson(props) {
     }
   };
 
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
+
   // REMOVE PERSON DATA
   function handleRemoveAddress(id) {
     const csrfToken = getCookie('csrftoken');
@@ -790,58 +913,64 @@ export default function EditLegalPerson(props) {
     });
   }
 
-  function handleRemovePhone(id) {
+  async function handleRemovePhone(id) {
     const csrfToken = getCookie('csrftoken');
 
-    api.put(`/phones/delete/${id}`, { phoneId }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      await api.put(`/phones/delete/${id}`, { phoneId }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressRemovePhone();
       setTimeout(() => {
         toast.success('Registro apagado com sucesso!');
       }, 2000);
       setTimeout(() => {
-        handleCloseModalRemoveReference();
+        handleCloseModaRemovePhone();
+        const arrayPhoneUpdated = personPhone.filter((phone) => phone.id_telefone !== id);
+        setPersonPhone(arrayPhoneUpdated);
       }, 2400);
-    }).catch(reject => {
+    } catch (err) {
       handleButtonClickProgressErrorRemovePhone();
-      const { data } = reject.response;
+      const { data } = errorRemoveBankingReference.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
-        handleCloseModaRemovelPhone();
+        handleCloseModaRemovePhone();
       }, 2400);
-    });
+    }
   }
 
-  function handleRemoveMail(id) {
+  async function handleRemoveMail(id) {
     const csrfToken = getCookie('csrftoken');
 
-    api.put(`/mails/delete/${id}`, { personMailId }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      await api.put(`/mails/delete/${id}`, { personMailId }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressRemoveMail();
       setTimeout(() => {
         toast.success('Registro apagado com sucesso!');
       }, 2000);
       setTimeout(() => {
+        const arrayMailUpdated = personMail.filter((mail) => mail.id_mails !== id);
+        setPersonMail(arrayMailUpdated);
         handleCloseModalRemoveMail();
       }, 2400)
-    }).catch(reject => {
+    } catch (err) {
       handleButtonClickProgressErrorRemoveMail();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveMail();
       }, 2400);
-    });
+    }
   }
 
   function handleRemoveReference(id) {
@@ -1006,16 +1135,15 @@ export default function EditLegalPerson(props) {
                     sm={4}
                     xl={4}
                   >
-                    <TextField
-                      fullWidth
-                      required
-                      label="CNPJ"
-                      name="cpfcnpj"
-                      variant="outlined"
-                      value={person.cpfcnpj}
-                      onChange={(e) => handleChangeInputsPerson(e)}
-
-                    />
+                    <InputMask value={person.cpfcnpj} onChange={(e) => handleChangeInputsPerson(e)}>
+                      <TextField
+                        fullWidth
+                        required
+                        label="CNPJ"
+                        name="cpfcnpj"
+                        variant="outlined"
+                      />
+                    </InputMask>
                   </Grid>
 
                   <Grid
@@ -1063,6 +1191,7 @@ export default function EditLegalPerson(props) {
                     <TextField
                       fullWidth
                       required
+                      type="date"
                       label="Data de abertura"
                       name="data_abertura"
                       variant="outlined"
@@ -1096,16 +1225,26 @@ export default function EditLegalPerson(props) {
                     sm={4}
                     xl={4}
                   >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Tipo da empresa"
-                      name="tipo_empresa"
-                      variant="outlined"
-                      value={legalPerson.tipo_empresa}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-company-type">Tipo da empresa</InputLabel>
+                      <Select
+                        labelId="select-company-type"
+                        value={legalPerson.tipo_empresa}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        label="Tipo da empresa"
+                        name="tipo_empresa"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                        <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                        <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                        <MenuItem value="Microempreendedor Individual">Microempreendedor Individual</MenuItem>
+                        <MenuItem value="Sociedade Simples">Sociedade Simples</MenuItem>
+                        <MenuItem value="Sociedade Anônima">Sociedade Anônima</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -1114,16 +1253,23 @@ export default function EditLegalPerson(props) {
                     sm={3}
                     xl={3}
                   >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Tributação"
-                      name="tribut"
-                      variant="outlined"
-                      value={legalPerson.tribut}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-taxation">Tributação</InputLabel>
+                      <Select
+                        labelId="select-taxation"
+                        value={legalPerson.tribut}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        label="Tributação"
+                        name="tribut"
+                      >
+                        <MenuItem value={1}>
+                          <em>Não especificado</em>
+                        </MenuItem>
+                        <MenuItem value={2}>Simples Nacional</MenuItem>
+                        <MenuItem value={3}>Lucro Real</MenuItem>
+                        <MenuItem value={4}>Lucro Presumido</MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -1355,7 +1501,7 @@ export default function EditLegalPerson(props) {
                           onClick={handleClickOpenModalPhone}
                         >
                           Adicionar Telefone
-                      </Button>
+                        </Button>
                       </Tooltip>
                     </Grid>
                   </Grid>
@@ -1431,8 +1577,8 @@ export default function EditLegalPerson(props) {
                           size="small"
                           onClick={handleClickOpenModalMail}
                         >
-                          Adicionar Telefone
-                      </Button>
+                          Adicionar E-mail
+                        </Button>
                       </Tooltip>
                     </Grid>
                   </Grid>
@@ -1676,23 +1822,20 @@ export default function EditLegalPerson(props) {
                           xl={4}
                         >
                           <FormControl variant="outlined" className={classes.formControl}>
-                            <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
+                            <InputLabel id="select-banks-registered">Banco</InputLabel>
                             <Select
-                              labelId="demo-simple-select-outlined-label"
-                              id="demo-simple-select-outlined"
+                              labelId="select-banks-registered"
                               value={banking.id_bancos_fk}
                               onChange={(e) => handleChangeInputsBankingReferences(e)}
                               label="Banco"
                               name="id_bancos_fk"
                               required
-                              autoWidth={false}
-                              labelWidth={3}
                             >
-                              <MenuItem value="">
-                                <em>None</em>
-                              </MenuItem>
-                              <MenuItem value={1}>Sim</MenuItem>
-                              <MenuItem value={0}>Não</MenuItem>
+                              {
+                                registeredBanks.map(bank => (
+                                  <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
+                                ))
+                              }
                             </Select>
                           </FormControl>
                         </Grid>
@@ -1703,16 +1846,27 @@ export default function EditLegalPerson(props) {
                           sm={4}
                           xl={4}
                         >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Tipo"
-                            name="tipo"
-                            variant="outlined"
-                            value={banking.tipo}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
-                          />
+                          <FormControl variant="outlined" className={classes.formControl}>
+                            <InputLabel id="select-type-account">Tipo</InputLabel>
+                            <Select
+                              labelId="select-type-account"
+                              id="type-account"
+                              value={banking.tipo}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
+                              label="Tipo"
+                              name="tipo"
+                              required
+                            >
+                              <MenuItem value="">
+                                <em>None</em>
+                              </MenuItem>
+                              <MenuItem value="Conta corrente">Conta corrente</MenuItem>
+                              <MenuItem value="Conta poupança">Conta poupança</MenuItem>
+                              <MenuItem value="Conta salário">Conta salário</MenuItem>
+                              <MenuItem value="Conta digital">Conta digital</MenuItem>
+                              <MenuItem value="Conta universitária">Conta universitária</MenuItem>
+                            </Select>
+                          </FormControl>
                         </Grid>
                       </Grid>
 
@@ -1764,7 +1918,7 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
+                            type="date"
                             required
                             label="Abertura"
                             name="abertura"
@@ -1926,8 +2080,8 @@ export default function EditLegalPerson(props) {
                     color="primary"
                     variant="contained"
                     type="submit"
-                  // className={buttonClassname}
-                  // disabled={loading}
+                    className={buttonClassname}
+                    disabled={loading}
                   >
                     Salvar
                     {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
@@ -1990,7 +2144,7 @@ export default function EditLegalPerson(props) {
                   disabled={loadingPhone}
                 >
                   Salvar
-                {loadingPhone && <CircularProgress size={24} className={classes.buttonProgressPhone} />}
+                  {loadingPhone && <CircularProgress size={24} className={classes.buttonProgressPhone} />}
                 </Button>
               </Box>
             </DialogActions>
@@ -2050,7 +2204,7 @@ export default function EditLegalPerson(props) {
                   disabled={loadingMail}
                 >
                   Salvar
-                {loadingMail && <CircularProgress size={24} className={classes.buttonProgressMail} />}
+                  {loadingMail && <CircularProgress size={24} className={classes.buttonProgressMail} />}
                 </Button>
               </Box>
             </DialogActions>
@@ -2489,7 +2643,7 @@ export default function EditLegalPerson(props) {
                   disabled={loadingReference}
                 >
                   Salvar
-                {loadingReference && <CircularProgress size={24} className={classes.buttonProgressReference} />}
+                  {loadingReference && <CircularProgress size={24} className={classes.buttonProgressReference} />}
                 </Button>
               </Box>
             </DialogActions>
@@ -2499,7 +2653,7 @@ export default function EditLegalPerson(props) {
         {/* REMOVE REGISTER PHONE */}
         <Dialog
           open={openModalRemovePhone}
-          onClose={handleCloseModaRemovelPhone}
+          onClose={handleCloseModaRemovePhone}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
           maxWidth="md"
@@ -2509,7 +2663,7 @@ export default function EditLegalPerson(props) {
 
             <Typography>
               Deseja realmente excluir este registro de telefone?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -2519,9 +2673,9 @@ export default function EditLegalPerson(props) {
               alignItems="flex-end"
               padding="15px"
             >
-              <Button onClick={handleCloseModaRemovelPhone} style={{ color: red[300], marginRight: '10px' }}>
+              <Button onClick={handleCloseModaRemovePhone} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -2532,7 +2686,7 @@ export default function EditLegalPerson(props) {
                 onClick={() => handleRemovePhone(phoneId)}
               >
                 Excluir
-                  {loadingRemovePhone && <CircularProgress size={24} className={classes.buttonProgressRemovePhone} />}
+                {loadingRemovePhone && <CircularProgress size={24} className={classes.buttonProgressRemovePhone} />}
               </Button>
             </Box>
           </DialogActions>
@@ -2550,7 +2704,7 @@ export default function EditLegalPerson(props) {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de endereço?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -2562,7 +2716,7 @@ export default function EditLegalPerson(props) {
             >
               <Button onClick={handleCloseModalRemoveAddress} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -2573,7 +2727,7 @@ export default function EditLegalPerson(props) {
                 onClick={() => handleRemoveAddress(addressId)}
               >
                 Excluir
-                  {loadingRemoveAddress && <CircularProgress size={24} className={classes.buttonProgressRemoveAddress} />}
+                {loadingRemoveAddress && <CircularProgress size={24} className={classes.buttonProgressRemoveAddress} />}
               </Button>
             </Box>
           </DialogActions>
@@ -2591,7 +2745,7 @@ export default function EditLegalPerson(props) {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de e-mail?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -2603,7 +2757,7 @@ export default function EditLegalPerson(props) {
             >
               <Button onClick={handleCloseModalRemoveMail} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -2614,7 +2768,7 @@ export default function EditLegalPerson(props) {
                 onClick={() => handleRemoveMail(personMailId)}
               >
                 Excluir
-                  {loadingRemoveMail && <CircularProgress size={24} className={classes.buttonProgressRemoveMail} />}
+                {loadingRemoveMail && <CircularProgress size={24} className={classes.buttonProgressRemoveMail} />}
               </Button>
             </Box>
           </DialogActions>
@@ -2632,7 +2786,7 @@ export default function EditLegalPerson(props) {
           <DialogContent>
             <Typography>
               Deseja realmente excluir este registro de referência pessoal?
-              </Typography>
+            </Typography>
           </DialogContent>
           <Divider style={{ marginTop: '20px' }} />
           <DialogActions>
@@ -2644,7 +2798,7 @@ export default function EditLegalPerson(props) {
             >
               <Button onClick={handleCloseModalRemoveReference} style={{ color: red[300], marginRight: '10px' }}>
                 Cancelar
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 color="primary"
@@ -2655,7 +2809,7 @@ export default function EditLegalPerson(props) {
                 onClick={() => handleRemoveReference(personReferenceId)}
               >
                 Excluir
-                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveReference} />}
+                {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveReference} />}
               </Button>
             </Box>
           </DialogActions>
@@ -2696,7 +2850,7 @@ export default function EditLegalPerson(props) {
                 onClick={() => handleRemoveBankingReference(bankingReferenceId)}
               >
                 Excluir
-                  {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
+                {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
               </Button>
             </Box>
           </DialogActions>

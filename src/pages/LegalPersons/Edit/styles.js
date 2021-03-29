@@ -254,6 +254,13 @@ const useStyles = makeStyles((theme) => ({
   },
   inputList: {
     marginTop: theme.spacing(2)
+  },
+  buttonDefault: {
+    background: '#3f51b5',
+    color: '#FFF',
+    '&:hover': {
+      backgroundColor: '#002984'
+    }
   }
 }));
 

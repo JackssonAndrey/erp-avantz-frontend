@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
 import { green, orange } from '@material-ui/core/colors';
 import {
@@ -164,6 +164,7 @@ export default function LegalPersonDetails(props) {
   const [personPhone, setPersonPhone] = useState([{}]);
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
+  const [registeredBanks, setRegisteredBanks] = useState([]);
 
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
@@ -188,6 +189,19 @@ export default function LegalPersonDetails(props) {
       console.log(reject);
     });
   }, [idPerson]);
+
+  useEffect(() => {
+    (async function () {
+      try {
+        const { data } = await api.get('/banking');
+        setRegisteredBanks(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error('Não foi possível selecionar os bancos pré cadastrados.');
+        // console.log(data.datail);
+      }
+    })();
+  }, []);
 
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
@@ -761,16 +775,24 @@ export default function LegalPersonDetails(props) {
                         sm={4}
                         xl={4}
                       >
-                        <TextField
-                          fullWidth
-                          disabled
-                          required
-                          label="Banco"
-                          name="id_bancos_fk"
-                          variant="outlined"
-                          value={banking.id_bancos_fk}
-                          onChange={(e) => handleChangeInputsBankingReferences(e)}
-                        />
+
+                        {
+                          registeredBanks.map((bank) => (
+                            bank.id_bancos === banking.id_bancos_fk && (
+                              <TextField
+                                key={bank.id_bancos}
+                                fullWidth
+                                disabled
+                                required
+                                label="Banco"
+                                name="id_bancos_fk"
+                                variant="outlined"
+                                value={bank.banco}
+                                onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              />
+                            )
+                          ))
+                        }
                       </Grid>
 
                       <Grid
