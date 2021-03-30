@@ -27,6 +27,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
+import { Badge } from '@material-ui/core';
 
 import api from '../../services/api';
 import getCookie from '../../utils/functions';
@@ -188,6 +189,13 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  buttonDefault: {
+    background: '#f44336',
+    color: '#FFF',
+    '&:hover': {
+      backgroundColor: '#ba000d'
+    }
+  }
 }));
 
 export default function EnhancedTable() {
@@ -204,10 +212,12 @@ export default function EnhancedTable() {
   const [legalPersons, setLegalPersons] = useState([]);
   const [personId, setPersonId] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [defaultButton, setDefaultButton] = useState(true);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
+    [classes.buttonDefault]: defaultButton
   });
 
   useEffect(() => {
@@ -224,6 +234,7 @@ export default function EnhancedTable() {
   const handleCloseModal = () => {
     setPersonId(0);
     setOpenModal(false);
+    setDefaultButton();
   };
 
   function handleButtonClickProgressError() {
@@ -292,28 +303,30 @@ export default function EnhancedTable() {
     history.push(`/legal/person/edit/${id}`);
   }
 
-  function handleDeletePerson(id) {
+  async function handleDeletePerson(id) {
     const csrftoken = getCookie('csrftoken');
 
-    api.put(`/persons/delete/${id}`, { personId }, {
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    }).then(result => {
+    try {
+      const { data } = await api.put(`/persons/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Registro da pessoa deletado com sucesso!');
       }, 2000);
       setTimeout(() => {
         handleCloseModal();
-      }, 7000);
-    }).catch(reject => {
-      const { data } = reject.response;
+        setLegalPersons(data);
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, legalPersons.length - page * rowsPerPage);
@@ -355,7 +368,15 @@ export default function EnhancedTable() {
                         {person.nomeorrazaosocial}
                       </TableCell>
                       <TableCell padding="none" align="left">{person.cpfcnpj}</TableCell>
-                      <TableCell padding="none" align="left">{person.forn}</TableCell>
+                      <TableCell padding="none" align="left">
+                        {
+                          person.forn === 1 ? (
+                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                          ) : (
+                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                          )
+                        }
+                      </TableCell>
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
                           <IconButton onClick={() => handleEditPerson(person.id_pessoa_cod)} aria-label="Editar">
@@ -395,6 +416,7 @@ export default function EnhancedTable() {
           labelRowsPerPage="Linhas por página"
         />
       </Paper>
+
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
@@ -404,20 +426,21 @@ export default function EnhancedTable() {
         <DialogTitle id="alert-dialog-title">Deletar Pessoa</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Você realmente deseja deletar este registro?
+            Você realmente deseja deletar este registro? Esta operação não pode ser desfeita.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() => handleDeletePerson(personId)}
             color="secondary"
+            variant="contained"
             className={buttonClassname}
             disabled={loading}
           >
             Deletar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
-          <Button onClick={handleCloseModal} color="primary" autoFocus>
+          <Button onClick={handleCloseModal} color="primary" variant="contained" autoFocus>
             Cancelar
           </Button>
         </DialogActions>
