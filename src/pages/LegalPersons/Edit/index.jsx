@@ -8,18 +8,17 @@ import {
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
   InputLabel, OutlinedInput, InputAdornment, FormHelperText
 } from '@material-ui/core';
+import { ArrowBack, Delete } from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import { v4 as uuidV4 } from 'uuid';
 import moment from 'moment';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
 
-
-import { ArrowBack, Delete } from '@material-ui/icons';
-
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
@@ -88,15 +87,14 @@ const initialStateLegalPerson = {
 }
 
 const initialStateAdress = {
-  "idAddress": 0,
-  "origin": 1,
-  "street": "",
-  "numberHouse": "",
-  "complement": "",
-  "neighborhood": "",
-  "zipCode": "",
-  "city": "",
-  "stateAdress": ""
+  origin: 1,
+  street: "",
+  numberHouse: "",
+  complement: "",
+  neighborhood: "",
+  zipCode: "",
+  city: "",
+  state: ""
 }
 
 const initialStateReference = {
@@ -109,13 +107,13 @@ const initialStateReference = {
 }
 
 const initialStateBankingReference = {
-  "idPerson": 0,
-  "idBanking": 0,
-  "situation": 1,
-  "agency": "",
-  "account": "",
-  "opening": "",
-  "type": ""
+  idPerson: 0,
+  idBanking: 0,
+  situation: 1,
+  agency: "",
+  account: "",
+  opening: moment().format('YYYY-MM-DD'),
+  type: ""
 }
 
 export default function EditLegalPerson(props) {
@@ -389,7 +387,7 @@ export default function EditLegalPerson(props) {
       setPersonAddress(data.personAdress);
       setPersonMail(data.personMail);
       setPersonPhone(data.personPhone);
-      setLegalPerson(data.personPhysical);
+      setLegalPerson(data.legalPerson);
       setPersonReferences(data.personReferences);
     }).catch(reject => {
       console.log(reject);
@@ -528,31 +526,34 @@ export default function EditLegalPerson(props) {
 
   }
 
-  function handleAddNewAddress(e) {
+  async function handleAddNewAddress(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
 
     let adresses = [{ ...address, idPerson: Number(idPerson) }];
 
-    api.post(`/adresses/create`, { adresses }, {
-      headers: {
+    try {
+      const { data } = await api.post(`/addresses/create`, { adresses }, {
         headers: {
           'X-CSRFToken': csrfToken
         }
-      }
-    }).then(response => {
+      });
       handleButtonClickProgressAddress();
       setTimeout(() => {
         toast.success('Endereço cadastrado com sucesso!');
       }, 2000);
-    }).catch(reject => {
+      setTimeout(() => {
+        handleCloseModalAddress();
+        setPersonAddress(data);
+      }, 2500);
+    } catch (err) {
       // const { data } = reject.response;
-      console.log(reject);
+      console.log(err);
       handleButtonClickProgressErrorAddress();
       setTimeout(() => {
-        toast.error(`erro`);
+        toast.error(`Não foi possível adicionar o endereço.`);
       }, 2000);
-    });
+    }
   }
 
   async function handleAddNewMail(e) {
@@ -590,54 +591,63 @@ export default function EditLegalPerson(props) {
     }
   }
 
-  function handleAddNewReference(e) {
+  async function handleAddNewReference(e) {
     e.preventDefault();
     const csrfToken = getCookie('csrftoken');
 
     let personReferences = [{
-      ...reference, "idPerson": Number(idPerson)
+      ...reference, idPerson: Number(idPerson)
     }];
 
-    api.post('/persons_references/create', { personReferences }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      const { data } = await api.post('/persons_references/create', { personReferences }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressReference();
       setTimeout(() => {
         toast.success('Registro de referência cadastrado com sucesso!');
       }, 2000);
-    }).catch(reject => {
+      setTimeout(() => {
+        handleCloseModalReference();
+        setPersonReferences(data);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorReference();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
-  function handleAddNewBankingReference(e) {
+  async function handleAddNewBankingReference(e) {
     e.preventDefault();
-
     const csrfToken = getCookie('csrftoken');
+    const bankData = [{ ...banking, idPerson: Number(idPerson) }];
 
-    api.post('/banking_references/create', { bankingReferences }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      const { data } = await api.post('/banking_references/create', { bankingReferences: bankData }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressBanking();
       setTimeout(() => {
         toast.success('Registro de banco cadastrado com sucesso!');
       }, 2000);
-      handleCloseModalBankingReference();
-    }).catch(reject => {
+      setTimeout(() => {
+        handleCloseModalBankingReference();
+        setBankingReferences(data);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorBanking();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
@@ -886,31 +896,34 @@ export default function EditLegalPerson(props) {
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
 
   // ----------------- REMOVE PERSON DATA -----------------
-  function handleRemoveAddress(id) {
+  async function handleRemoveAddress(id) {
     const csrfToken = getCookie('csrftoken');
 
-    api.put(`/adresses/delete/${id}`, { addressId }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      await api.put(`/addresses/delete/${id}`, { addressId }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressRemoveAddress();
       setTimeout(() => {
         toast.success('Registro apagado com sucesso!');
       }, 2000);
       setTimeout(() => {
-        handleCloseModalRemoveReference();
-      }, 2400);
-    }).catch(reject => {
+        handleCloseModalRemoveAddress();
+        const arrayAddressUpdated = personAddress.filter((address) => address.id_enderecos !== id);
+        setPersonAddress(arrayAddressUpdated);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorRemoveAddress();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveAddress();
-      }, 2400);
-    });
+      }, 2500);
+    }
   }
 
   async function handleRemovePhone(id) {
@@ -933,7 +946,7 @@ export default function EditLegalPerson(props) {
       }, 2400);
     } catch (err) {
       handleButtonClickProgressErrorRemovePhone();
-      const { data } = errorRemoveBankingReference.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
@@ -973,64 +986,71 @@ export default function EditLegalPerson(props) {
     }
   }
 
-  function handleRemoveReference(id) {
+  async function handleRemoveReference(id) {
     const csrfToken = getCookie('csrftoken');
 
-    api.put(`/persons_references/delete/${id}`, { personReferenceId }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      await api.put(`/persons_references/delete/${id}`, { personReferenceId }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+
       handleButtonClickProgressRemoveReference();
       setTimeout(() => {
         toast.success('Registro apagado com sucesso!');
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveReference();
-      }, 2400);
-    }).catch(reject => {
+        const arrayReferenceUpdated = personReferences.filter((reference) => reference.id_referencia !== id);
+        setPersonReferences(arrayReferenceUpdated);
+      }, 2500);
+    } catch (err) {
       handleButtonClickProgressErrorRemoveReference();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveReference();
       }, 2400);
-    });
+    }
   }
 
-  function handleRemoveBankingReference(id) {
+  async function handleRemoveBankingReference(id) {
     const csrfToken = getCookie('csrftoken');
 
-    api.put(`/banking_references/delete/${id}`, { bankingReferenceId }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    try {
+      await api.put(`/banking_references/delete/${id}`, { bankingReferenceId }, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgressRemoveBankingReference();
       setTimeout(() => {
         toast.success('Registro apagado com sucesso!');
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveBankingReference();
+        const arrayBankingReference = bankingReferences.filter((reference) => reference.id_banco !== id);
+        setBankingReferences(arrayBankingReference);
       }, 2400);
-    }).catch(reject => {
+    } catch (err) {
       handleButtonClickProgressErrorRemoveBankingReference();
-      const { data } = reject.response;
+      const { data } = err.response;
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
       setTimeout(() => {
         handleCloseModalRemoveBankingReference();
       }, 2400);
-    });
+    }
   }
 
   // SUBMIT EDIT FORM
-  function handleSubmitFormEdit(e) {
+  async function handleSubmitFormEdit(e) {
     e.preventDefault();
-
+    const csrftoken = getCookie('csrftoken');
     const data = {
       ...person,
       ...legalPerson,
@@ -1041,7 +1061,67 @@ export default function EditLegalPerson(props) {
       bankingReferences
     }
 
-    console.log(data);
+    try {
+      await api.put(`/persons/legal/edit/${idPerson}`, data, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Registro atualizado com sucesso.');
+      }, 2000);
+      setTimeout(() => {
+        history.push('/legal/persons');
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  function searchZipCode(zipCode, e, position) {
+    cep(zipCode).then((response) => {
+      const { city, neighborhood, state, street } = response;
+      const updatedAdress = Array.from(personAddress);
+
+      updatedAdress[position].city = city;
+      updatedAdress[position].neighborhood = neighborhood;
+      updatedAdress[position].state = state;
+      updatedAdress[position].street = street;
+
+      setPersonAddress(updatedAdress);
+      setIsZipCodeValid(true);
+    }).catch((response) => {
+      const { message } = response;
+      setErrorMessageZipCode(message);
+      setIsZipCodeValid(false);
+    });
+  }
+
+  function searchZipCodeModal(zipCode) {
+    cep(zipCode).then((response) => {
+      const { city, neighborhood, state, street } = response;
+      setAddress({
+        origin: 1,
+        street,
+        numberHouse: "",
+        complement: "",
+        neighborhood,
+        zipCode,
+        city,
+        state
+      });
+
+      setIsZipCodeValid(true);
+    }).catch((response) => {
+      const { message } = response;
+      setErrorMessageZipCode(message);
+      setIsZipCodeValid(false);
+    });
   }
 
   return (
@@ -1329,16 +1409,22 @@ export default function EditLegalPerson(props) {
                           sm={3}
                           xl={3}
                         >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="CEP"
-                            name="cep"
-                            variant="outlined"
-                            value={address.cep}
-                            onChange={(e) => handleChangeInputsAddress(e)}
-                          />
+                          <InputMask mask="99.999-999" value={address.cep} onChange={(e) => handleChangeInputsAddress(e, index)}>
+                            <TextField
+                              fullWidth
+                              required
+                              error={!isZipCodeValid}
+                              autoComplete="off"
+                              label="CEP"
+                              name="cep"
+                              variant="outlined"
+                            />
+                          </InputMask>
+                          {
+                            (!isZipCodeValid) && (
+                              <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                            )
+                          }
                         </Grid>
                       </Grid>
                       <Grid
@@ -1353,13 +1439,13 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
+                            onFocus={(e) => searchZipCode(address.cep, e, index)}
                             required
                             label="Rua"
                             name="rua"
                             variant="outlined"
                             value={address.rua}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
 
@@ -1371,13 +1457,12 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
                             required
                             label="Bairro"
                             name="bairro"
                             variant="outlined"
                             value={address.bairro}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
 
@@ -1389,13 +1474,12 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
                             required
                             label="Número"
                             name="numero"
                             variant="outlined"
                             value={address.numero}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
 
@@ -1407,13 +1491,12 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
                             required
                             label="Complemento"
                             name="complemento"
                             variant="outlined"
                             value={address.complemento === null ? 'Não informado' : address.complemento}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
 
@@ -1425,13 +1508,12 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
                             required
                             label="Cidade"
                             name="cidade"
                             variant="outlined"
                             value={address.cidade}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
 
@@ -1443,13 +1525,12 @@ export default function EditLegalPerson(props) {
                         >
                           <TextField
                             fullWidth
-
                             required
                             label="Estado"
                             name="estado_endereco"
                             variant="outlined"
                             value={address.estado_endereco}
-                            onChange={(e) => handleChangeInputsAddress(e)}
+                            onChange={(e) => handleChangeInputsAddress(e, index)}
                           />
                         </Grid>
                       </Grid>
@@ -1923,7 +2004,7 @@ export default function EditLegalPerson(props) {
                             label="Abertura"
                             name="abertura"
                             variant="outlined"
-                            value={banking.abertura}
+                            value={moment(banking.abertura).format('YYYY-MM-DD')}
                             onChange={(e) => handleChangeInputsBankingReferences(e)}
                           />
                         </Grid>
@@ -2232,15 +2313,22 @@ export default function EditLegalPerson(props) {
                   sm={3}
                   xl={3}
                 >
-                  <TextField
-                    fullWidth
-                    required
-                    label="CEP"
-                    name="zipCode"
-                    variant="outlined"
-                    value={address.zipCode}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
+                  <InputMask mask="99.999-999" value={address.zipCode} onChange={(e) => handleChangeAddress(e)}>
+                    <TextField
+                      fullWidth
+                      required
+                      error={!isZipCodeValid}
+                      autoComplete="off"
+                      label="CEP"
+                      name="zipCode"
+                      variant="outlined"
+                    />
+                  </InputMask>
+                  {
+                    (!isZipCodeValid) && (
+                      <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                    )
+                  }
                 </Grid>
               </Grid>
               <Grid
@@ -2256,6 +2344,7 @@ export default function EditLegalPerson(props) {
                   <TextField
                     fullWidth
                     required
+                    onFocus={(e) => searchZipCodeModal(address.zipCode)}
                     label="Rua"
                     name="street"
                     variant="outlined"
@@ -2343,9 +2432,9 @@ export default function EditLegalPerson(props) {
                     fullWidth
                     required
                     label="Estado"
-                    name="stateAdress"
+                    name="state"
                     variant="outlined"
-                    value={address.stateAdress}
+                    value={address.state}
                     onChange={(e) => handleChangeAddress(e)}
                   />
                 </Grid>
@@ -2400,23 +2489,20 @@ export default function EditLegalPerson(props) {
                   xl={4}
                 >
                   <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
+                    <InputLabel id="select-banks-registered-modal">Banco</InputLabel>
                     <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
+                      labelId="select-banks-registered-modal"
                       value={banking.idBanking}
                       onChange={(e) => handleChangeInputsBanking(e)}
                       label="Banco"
                       name="idBanking"
                       required
-                      autoWidth={false}
-                      labelWidth={3}
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value={1}>Sim</MenuItem>
-                      <MenuItem value={0}>Não</MenuItem>
+                      {
+                        registeredBanks.map(bank => (
+                          <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
+                        ))
+                      }
                     </Select>
                   </FormControl>
                 </Grid>
@@ -2443,8 +2529,11 @@ export default function EditLegalPerson(props) {
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
-                      <MenuItem value="conta corrente">Conta Corrente</MenuItem>
-                      <MenuItem value="conta poupança">Conta Poupança</MenuItem>
+                      <MenuItem value="Conta corrente">Conta corrente</MenuItem>
+                      <MenuItem value="Conta poupança">Conta poupança</MenuItem>
+                      <MenuItem value="Conta salário">Conta salário</MenuItem>
+                      <MenuItem value="Conta digital">Conta digital</MenuItem>
+                      <MenuItem value="Conta universitária">Conta universitária</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -2498,7 +2587,7 @@ export default function EditLegalPerson(props) {
                 >
                   <TextField
                     fullWidth
-
+                    type="date"
                     required
                     label="Abertura"
                     name="opening"

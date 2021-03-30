@@ -183,7 +183,7 @@ export default function LegalPersonDetails(props) {
       setPersonAddress(data.personAdress);
       setPersonMail(data.personMail);
       setPersonPhone(data.personPhone);
-      setLegalPerson(data.personPhysical);
+      setLegalPerson(data.legalPerson);
       setPersonReferences(data.personReferences);
     }).catch(reject => {
       console.log(reject);
@@ -282,7 +282,8 @@ export default function LegalPersonDetails(props) {
                 <Tab label="Contatos" {...a11yProps(2)} />
                 <Tab label="Referências" {...a11yProps(3)} />
                 <Tab label="Dados bancários" {...a11yProps(4)} />
-                <Tab label="Opções" {...a11yProps(5)} />
+                <Tab label="Financeiro" {...a11yProps(5)} />
+                <Tab label="Opções" {...a11yProps(6)} />
               </Tabs>
             </AppBar>
             {/* DADOS PESSOAIS */}
@@ -876,8 +877,83 @@ export default function LegalPersonDetails(props) {
                 ))
               }
             </TabPanel>
-            {/* OPÇÕES */}
+            {/* FINANCEIRO */}
             <TabPanel value={valueTab} index={5}>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Limite"
+                    name="limite"
+                    variant="outlined"
+                    value={person.limite}
+                    onChange={(e) => handleChangeInputsPerson(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Saldo"
+                    name="saldo"
+                    variant="outlined"
+                    value={person.saldo}
+                    onChange={(e) => handleChangeInputsPerson(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Capital"
+                    name="capsocial"
+                    variant="outlined"
+                    value={legalPerson.capsocial}
+                    onChange={(e) => handleChangeInputsLegalPerson(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Receitas"
+                    name="faturamento"
+                    variant="outlined"
+                    value={legalPerson.faturamento}
+                    onChange={(e) => handleChangeInputsLegalPerson(e)}
+                  />
+                </Grid>
+              </Grid>
+            </TabPanel>
+            {/* OPÇÕES */}
+            <TabPanel value={valueTab} index={6}>
               <Grid
                 container
                 spacing={3}

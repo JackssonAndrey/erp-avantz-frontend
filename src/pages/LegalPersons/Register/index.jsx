@@ -397,7 +397,7 @@ export default function RegisterLegalPerson() {
         toast.success('Cadastro feito com sucesso!');
       }, 2000);
       setTimeout(() => {
-        history.push('/legal/person');
+        history.push('/legal/persons');
       }, 7000);
     } catch (err) {
       const { data } = err.response;
