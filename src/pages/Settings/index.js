@@ -24,7 +24,6 @@ import getCookie from '../../utils/functions';
 import { Context } from '../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
-import Cookies from 'js-cookie';
 
 const useStyles = makeStyles((theme) => ({
   root: {

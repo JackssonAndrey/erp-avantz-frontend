@@ -126,6 +126,7 @@ export default function Users(props) {
       if (userGroup.id_grupo === group) {
         setNameGroup(userGroup.grupo);
       }
+      return true;
     });
   }, [userGroups, group]);
 

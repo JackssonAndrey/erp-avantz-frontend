@@ -125,7 +125,7 @@ export default function RegisterLegalPerson() {
         const { data } = await api.get('/banking');
         setRegisteredBanks(data);
       } catch (err) {
-        const { data } = err.response;
+        // const { data } = err.response;
         toast.error('Não foi possível selecionar os bancos pré cadastrados.');
         // console.log(data.datail);
       }

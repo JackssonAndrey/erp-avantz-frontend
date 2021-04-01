@@ -10,7 +10,6 @@ import {
 } from '@material-ui/core';
 import { ArrowBack, Delete } from '@material-ui/icons';
 import PropTypes from 'prop-types';
-import { v4 as uuidV4 } from 'uuid';
 import moment from 'moment';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
@@ -400,7 +399,7 @@ export default function EditLegalPerson(props) {
         const { data } = await api.get('/banking');
         setRegisteredBanks(data);
       } catch (err) {
-        const { data } = err.response;
+        // const { data } = err.response;
         toast.error('Não foi possível selecionar os bancos pré cadastrados.');
         // console.log(data.datail);
       }

@@ -80,24 +80,24 @@ export default function useAuth() {
     document.cookie = cookieName + " = " + cookieValue + "; expires = " + date.toGMTString();
   }
 
-  function setCookie(name, value, options = {}) {
+  // function setCookie(name, value, options = {}) {
 
-    if (options.expires instanceof Date) {
-      options.expires = options.expires.toUTCString();
-    }
+  //   if (options.expires instanceof Date) {
+  //     options.expires = options.expires.toUTCString();
+  //   }
 
-    let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+  //   let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
 
-    for (let optionKey in options) {
-      updatedCookie += "; " + optionKey;
-      let optionValue = options[optionKey];
-      if (optionValue !== true) {
-        updatedCookie += "=" + optionValue;
-      }
-    }
+  //   for (let optionKey in options) {
+  //     updatedCookie += "; " + optionKey;
+  //     let optionValue = options[optionKey];
+  //     if (optionValue !== true) {
+  //       updatedCookie += "=" + optionValue;
+  //     }
+  //   }
 
-    document.cookie = updatedCookie;
-  }
+  //   document.cookie = updatedCookie;
+  // }
 
   return { authenticated, loading, handleLogin, handleLogout, errors };
 }
