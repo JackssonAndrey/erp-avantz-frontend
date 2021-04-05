@@ -82,7 +82,7 @@ export default function LegalPersons() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
-          <PageHeader />
+          {/* <PageHeader /> */}
 
           <EnhancedTable />
         </Container>

@@ -9,6 +9,7 @@ import {
   TextField,
   InputAdornment,
   SvgIcon,
+  Grid,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -67,38 +68,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PageHeader = ({ className, ...rest }) => {
-  const classes = useStyles();
-
+const PageHeader = () => {
   return (
-    <div
-      className={clsx(classes.root, className)}
-      {...rest}
-    >
-      <Box
-        display="flex"
-        justifyContent="flex-end"
-      >
-        {/* <Button className={classes.importButton}>
-          Import
-        </Button>
-        */}
-
-        <Link to="/legal/person/register" className="link" >
-          <Button
-            color="primary"
-            variant="contained"
+    <Box>
+      <Card>
+        <CardContent>
+          <Grid
+            container
+            spacing={3}
           >
-            Adicionar Pessoa
-          </Button>
-        </Link>
-      </Box>
-      <Box mt={3}>
-        <Card>
-          <CardContent>
-            <Box maxWidth={600}>
+            <Grid
+              item
+              xl={6}
+              xs={6}
+              sm={6}
+            >
               <TextField
                 fullWidth
+                size="small"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -114,12 +101,32 @@ const PageHeader = ({ className, ...rest }) => {
                 placeholder="Pesquisar pessoa"
                 variant="outlined"
               />
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
+            </Grid>
+            <Grid
+              item
+              xs={6}
+              xl={6}
+              sm={6}
+            >
+              <Box
+                display="flex"
+                justifyContent="flex-end"
+              >
 
-    </div>
+                <Link to="/legal/person/register" className="link" >
+                  <Button
+                    color="primary"
+                    variant="contained"
+                  >
+                    Adicionar Pessoa
+                  </Button>
+                </Link>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

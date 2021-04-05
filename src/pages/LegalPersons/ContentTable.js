@@ -27,7 +27,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
-import { Badge } from '@material-ui/core';
+import { Badge, InputAdornment, Box, Grid, Card, CardContent, FormControl, InputLabel, OutlinedInput } from '@material-ui/core';
+import { Search as SearchIcon } from '@material-ui/icons';
+import { Link } from 'react-router-dom';
 
 import api from '../../services/api';
 import getCookie from '../../utils/functions';
@@ -213,6 +215,7 @@ export default function EnhancedTable() {
   const [personId, setPersonId] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [defaultButton, setDefaultButton] = useState(true);
+  const [personSearch, setPersonSearch] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -329,10 +332,105 @@ export default function EnhancedTable() {
     }
   }
 
+  async function handleSearchPerson(e) {
+    e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      if (personSearch !== '') {
+        const { data } = await api.get(`/persons/legal/${personSearch}`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setLegalPersons(data);
+      } else {
+        const { data } = await api.get(`/persons/legal`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setLegalPersons(data);
+      }
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, legalPersons.length - page * rowsPerPage);
 
   return (
     <div className={classes.root}>
+      <Box>
+        <Card>
+          <CardContent>
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xl={6}
+                xs={6}
+                sm={6}
+              >
+                <form onSubmit={(e) => handleSearchPerson(e)}>
+                  <FormControl variant="outlined" fullWidth size="small" >
+                    <InputLabel>Pesquisar</InputLabel>
+                    <OutlinedInput
+                      value={personSearch}
+                      onChange={(e) => setPersonSearch(e.target.value)}
+                      fullWidth
+                      label="Pesquisar"
+                      name="searchPerson"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Tooltip title="Pesquisar">
+                            <IconButton
+                              aria-label="Pesquisar"
+                              edge="end"
+                              type="submit"
+                            >
+                              <SearchIcon size={8} color="primary" />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      }
+                      labelWidth={70}
+                    />
+                  </FormControl>
+                </form>
+              </Grid>
+              <Grid
+                item
+                xs={6}
+                xl={6}
+                sm={6}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
+                >
+
+                  <Link to="/legal/person/register" className="link" >
+                    <Button
+                      color="primary"
+                      variant="contained"
+                    >
+                      Adicionar Pessoa
+                    </Button>
+                  </Link>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Box>
+
       <Paper className={classes.paper}>
         <EnhancedTableToolbar />
         <TableContainer>
