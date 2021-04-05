@@ -1127,7 +1127,7 @@ export default function EditLegalPerson(props) {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Detalhes da pessoa" />
+      <Menus title="Editar registro" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
@@ -2129,12 +2129,8 @@ export default function EditLegalPerson(props) {
                         value={person.forn}
                         onChange={(e) => handleChangeInputsPerson(e)}
                         label="Fornecedor"
-                        autoWidth={false}
-                        labelWidth={3}
+                        name="forn"
                       >
-                        <MenuItem value="">
-                          <em>None</em>
-                        </MenuItem>
                         <MenuItem value={1}>Sim</MenuItem>
                         <MenuItem value={0}>Não</MenuItem>
                       </Select>

@@ -63,12 +63,12 @@ export default function RegisterLegalPerson() {
   const timer = useRef();
 
   const initialStatePerson = {
-    "personIsProvider": 0,
-    "personCNPJ": "",
-    "companyName": "",
-    "personPhoto": "",
-    "personLimit": 0,
-    "personBalance": 0,
+    personIsProvider: 0,
+    personCNPJ: "",
+    companyName: "",
+    personPhoto: "",
+    personLimit: 0,
+    personBalance: 0,
   }
 
   const initialStateLegalPerson = {
@@ -398,7 +398,7 @@ export default function RegisterLegalPerson() {
       }, 2000);
       setTimeout(() => {
         history.push('/legal/persons');
-      }, 7000);
+      }, 3000);
     } catch (err) {
       const { data } = err.response;
       handleButtonClickProgressError();
@@ -1442,19 +1442,15 @@ export default function RegisterLegalPerson() {
                         xl={3}
                       >
                         <FormControl variant="outlined" className={classes.formControl}>
-                          <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
+                          <InputLabel id="select-provider-label">Fornecedor</InputLabel>
                           <Select
-                            labelId="demo-simple-select-outlined-label"
-                            id="demo-simple-select-outlined"
+                            labelId="select-provider-label"
+                            id="select-provider"
                             value={person.personIsProvider}
                             onChange={(e) => handleChangeInputsPerson(e)}
                             label="Fornecedor"
-                            autoWidth={false}
-                            labelWidth={3}
+                            name="personIsProvider"
                           >
-                            <MenuItem value="">
-                              <em>None</em>
-                            </MenuItem>
                             <MenuItem value={1}>Sim</MenuItem>
                             <MenuItem value={0}>Não</MenuItem>
                           </Select>
