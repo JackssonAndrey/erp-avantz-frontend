@@ -1,17 +1,7 @@
 import React from 'react';
-import { ToastContainer } from 'react-toastify';
 import { makeStyles } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
 import { green } from '@material-ui/core/colors';
-import Box from '@material-ui/core/Box';
-import Container from '@material-ui/core/Container';
 
-import PageHeader from './PageHeader';
-import EnhancedTable from './ContentTable';
-import Menus from '../../components/Menus';
-import Copyright from '../../components/Copyright';
-
-import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -63,33 +53,25 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  cardActions: {
-    justifyContent: 'center'
-  },
-  cardTable: {
+  cardContent: {
     marginTop: theme.spacing(3)
   },
+  avatarLarge: {
+    width: theme.spacing(10),
+    height: theme.spacing(10)
+  },
+  tabArea: {
+    marginTop: theme.spacing(3),
+    boxShadow: '0 3px 3px #9e9e9e',
+    minHeight: '400px',
+    backgroundColor: '#FFF'
+  },
+  appBar: {
+    backgroundColor: '#FFF'
+  },
+  formControl: {
+    width: '100%'
+  }
 }));
 
-export default function LegalPersons() {
-  const classes = useStyles();
-
-  return (
-    <div className={classes.root}>
-      <ToastContainer />
-      <CssBaseline />
-      <Menus title="Pessoas Físicas" />
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container className={classes.container} maxWidth="lg">
-          {/* <PageHeader /> */}
-
-          <EnhancedTable />
-        </Container>
-        <Box pt={4}>
-          <Copyright />
-        </Box>
-      </main>
-    </div>
-  );
-}
+export default useStyles;

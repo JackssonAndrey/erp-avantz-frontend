@@ -965,14 +965,15 @@ export default function LegalPersonDetails(props) {
                   xl={3}
                 >
                   <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
+                    <InputLabel id="select-provider-label">Fornecedor</InputLabel>
                     <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
+                      labelId="select-provider-label"
+                      id="select-provider"
                       value={person.forn}
                       onChange={(e) => handleChangeInputsPerson(e)}
                       label="Fornecedor"
                       disabled
+                      name="forn"
                     >
                       <MenuItem value="">
                         <em>None</em>

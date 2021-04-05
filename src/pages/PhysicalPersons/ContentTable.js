@@ -27,6 +27,19 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Button from '@material-ui/core/Button';
+import {
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  InputAdornment,
+  SvgIcon,
+  Grid,
+  Badge
+} from '@material-ui/core';
+
+import { Search as SearchIcon } from '@material-ui/icons';
+import { Link } from 'react-router-dom';
 
 import api from '../../services/api';
 import getCookie from '../../utils/functions';
@@ -321,6 +334,63 @@ export default function EnhancedTable() {
 
   return (
     <div className={classes.root}>
+      <Box>
+        <Card>
+          <CardContent>
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xl={6}
+                xs={6}
+                sm={6}
+              >
+                <TextField
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SvgIcon
+                          fontSize="small"
+                          color="action"
+                        >
+                          <SearchIcon />
+                        </SvgIcon>
+                      </InputAdornment>
+                    )
+                  }}
+                  placeholder="Pesquisar pessoa por nome"
+                  variant="outlined"
+                />
+              </Grid>
+              <Grid
+                item
+                xs={6}
+                xl={6}
+                sm={6}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
+                >
+
+                  <Link to="/physical/person/register" className="link" >
+                    <Button
+                      color="primary"
+                      variant="contained"
+                    >
+                      Adicionar Pessoa
+                    </Button>
+                  </Link>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Box>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar />
         <TableContainer>
@@ -356,7 +426,15 @@ export default function EnhancedTable() {
                         {person.nomeorrazaosocial}
                       </TableCell>
                       <TableCell padding="none" align="left">{person.cpfcnpj}</TableCell>
-                      <TableCell padding="none" align="left">{person.forn}</TableCell>
+                      <TableCell padding="none" align="left">
+                        {
+                          person.forn === 1 ? (
+                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                          ) : (
+                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                          )
+                        }
+                      </TableCell>
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
                           <IconButton onClick={() => handleEditPerson(person.id_pessoa_cod)} aria-label="Editar">
