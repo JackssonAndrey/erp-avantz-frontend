@@ -22,6 +22,7 @@ import LegalPersonDetails from '../pages/LegalPersons/Details';
 import EditLegalPerson from '../pages/LegalPersons/Edit';
 import RegisterLegalPerson from '../pages/LegalPersons/Register';
 import PhysicalPersonDetails from '../pages/PhysicalPersons/Details';
+import EditPhysicalPerson from '../pages/PhysicalPersons/Edit';
 
 export default function Routes() {
   return (
@@ -50,6 +51,8 @@ export default function Routes() {
 
       <CustomRoute isPrivate exact path="/physical/persons/" component={PhysicalPersons} />
       <CustomRoute isPrivate exact path="/physical/person/details/:id" component={PhysicalPersonDetails} />
+      <CustomRoute isPrivate exact path="/physical/person/edit/:id" component={EditPhysicalPerson} />
+
     </Switch>
   );
 }
