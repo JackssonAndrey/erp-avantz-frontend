@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem, FormControl, InputLabel
+  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem,
+  FormControl, InputLabel, Divider
 } from '@material-ui/core';
 import { ArrowBack, Edit } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
@@ -17,6 +18,7 @@ import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
+import moment from 'moment';
 
 const initialStatePerson = {
   "id_pessoa_cod": 0,
@@ -118,6 +120,7 @@ export default function PhysicalPersonDetails(props) {
   const [physicalPerson, setPhysicalPerson] = useState(initialStatePhysicalPerson);
   const [personReferences, setPersonReferences] = useState([{}]);
   const [registeredBanks, setRegisteredBanks] = useState([]);
+  const [counties, setCounties] = useState([{}]);
 
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
@@ -160,6 +163,18 @@ export default function PhysicalPersonDetails(props) {
         // const { data } = err.response;
         toast.error('Não foi possível selecionar os bancos pré cadastrados.');
         // console.log(data.datail);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/counties');
+        setCounties(data);
+      } catch (err) {
+        // const { data } = err.response;
+        toast.error('Não foi possível pesquisar os dados dos municípios.');
       }
     })();
   }, []);
@@ -230,21 +245,25 @@ export default function PhysicalPersonDetails(props) {
           </Card>
 
           <div className={classes.tabArea}>
-            <AppBar position="static" className={classes.appBar}>
+            <AppBar position="static" color="default">
               <Tabs
                 value={valueTab}
                 onChange={handleChangeTab}
                 aria-label="simple tabs example"
                 indicatorColor="primary"
                 textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
               >
                 <Tab label="Dados pessoais" {...a11yProps(0)} />
-                <Tab label="Endereço" {...a11yProps(1)} />
-                <Tab label="Contatos" {...a11yProps(2)} />
-                <Tab label="Referências" {...a11yProps(3)} />
-                <Tab label="Dados bancários" {...a11yProps(4)} />
-                <Tab label="Financeiro" {...a11yProps(5)} />
-                <Tab label="Opções" {...a11yProps(6)} />
+                <Tab label="Dados profissionais" {...a11yProps(1)} />
+                <Tab label="Estado civil" {...a11yProps(2)} />
+                <Tab label="Endereço" {...a11yProps(3)} />
+                <Tab label="Contatos" {...a11yProps(4)} />
+                <Tab label="Referências" {...a11yProps(5)} />
+                <Tab label="Dados bancários" {...a11yProps(6)} />
+                <Tab label="Financeiro" {...a11yProps(7)} />
+                <Tab label="Opções" {...a11yProps(8)} />
               </Tabs>
             </AppBar>
             <SwipeableViews
@@ -341,17 +360,20 @@ export default function PhysicalPersonDetails(props) {
                         fullWidth
                         labelId="select-orgao-emissor-label"
                         id="select-orgao-emissor"
-                        value=""
+                        value={physicalPerson.id_uf_municipio_fk}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                         label="Órgão Emissor/UF"
                         disabled
-                        name=""
+                        name="id_uf_municipio_fk"
                       >
                         <MenuItem value="">
                           <em>None</em>
                         </MenuItem>
-                        <MenuItem value="Masculino">Masculino</MenuItem>
-                        <MenuItem value="Feminino">Feminino</MenuItem>
+                        {
+                          counties.map(countie => (
+                            <MenuItem value={countie.id_municipios}>{countie.uf_sigla}</MenuItem>
+                          ))
+                        }
                       </Select>
                     </FormControl>
                   </Grid>
@@ -412,14 +434,20 @@ export default function PhysicalPersonDetails(props) {
                       <Select
                         labelId="select-naturalidade-label"
                         id="select-naturalidade"
-                        value=""
+                        value={physicalPerson.id_municipio_fk}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                         label="Naturalidade"
                         disabled
+                        name="id_municipio_fk"
                       >
                         <MenuItem value="">
                           <em>None</em>
                         </MenuItem>
+                        {
+                          counties.map(countie => (
+                            <MenuItem value={countie.id_municipios}>{countie.descr}</MenuItem>
+                          ))
+                        }
                       </Select>
                     </FormControl>
                   </Grid>
@@ -441,10 +469,469 @@ export default function PhysicalPersonDetails(props) {
                       disabled
                     />
                   </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Nome do pai"
+                      name="pai"
+                      variant="outlined"
+                      value={physicalPerson.pai === null ? 'Não informado' : physicalPerson.pai}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Nome da mãe"
+                      name="mae"
+                      variant="outlined"
+                      value={physicalPerson.mae === null ? 'Não informado' : physicalPerson.mae}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+                </Grid>
+              </TabPanel>
+              {/* DADOS PROFISSIONAIS */}
+              <TabPanel value={valueTab} index={1}>
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      label="Profissão"
+                      name="profissao"
+                      variant="outlined"
+                      value={physicalPerson.profissao === null ? 'Não informado' : physicalPerson.profissao}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      label="CTPS"
+                      name="ctps"
+                      variant="outlined"
+                      value={physicalPerson.ctps === null ? 'Não informado' : physicalPerson.ctps}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={2}
+                    sm={2}
+                    xl={2}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Salário"
+                      name="salario"
+                      variant="outlined"
+                      value={physicalPerson.salario === null ? 'Não informado' : physicalPerson.salario}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Nome da empresa"
+                      name="empresa"
+                      variant="outlined"
+                      value={physicalPerson.empresa === null ? 'Não informado' : physicalPerson.empresa}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={6}
+                    sm={6}
+                    xl={6}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Reponsável empresa"
+                      name="resp"
+                      variant="outlined"
+                      value={physicalPerson.resp === null ? 'Não informado' : physicalPerson.resp}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="CNPJ"
+                      name="cnpj"
+                      variant="outlined"
+                      value={physicalPerson.cnpj === null ? 'Não informado' : physicalPerson.cnpj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Inscrição Municipal"
+                      name="imun"
+                      variant="outlined"
+                      value={physicalPerson.imun === null ? 'Não informado' : physicalPerson.imun}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Inscrição Estadual"
+                      name="iest"
+                      variant="outlined"
+                      value={physicalPerson.iest === null ? 'Não informado' : physicalPerson.iest}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={12}
+                    sm={12}
+                    xl={12}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Endereço da empresa"
+                      name="emprend"
+                      variant="outlined"
+                      value={physicalPerson.emprend === null ? 'Não informado' : physicalPerson.emprend}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Outras rendas"
+                      name="orendas"
+                      variant="outlined"
+                      value={physicalPerson.orendas === null ? 'Não informado' : physicalPerson.orendas}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={2}
+                    sm={2}
+                    xl={2}
+                  >
+                    <TextField
+                      fullWidth
+                      required
+                      label="Valor rendas"
+                      name="vrendas"
+                      variant="outlined"
+                      value={physicalPerson.vrendas === null ? 'Não informado' : physicalPerson.vrendas}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                      disabled
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={2}
+                    sm={2}
+                    xl={2}
+                  >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-irpf-label">Declara IRPF</InputLabel>
+                      <Select
+                        labelId="select-irpf-label"
+                        id="select-irpf"
+                        value={physicalPerson.irpf}
+                        onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                        label="Declara IRPF"
+                        disabled
+                        name="rpf"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Sim</MenuItem>
+                        <MenuItem value={0}>Não</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </TabPanel>
+              {/* ESTADO CIVIL */}
+              <TabPanel value={valueTab} index={2} >
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xl={3}
+                    xs={3}
+                    sm={3}
+                  >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-estcivil-label">Estado Civil</InputLabel>
+                      <Select
+                        labelId="select-estcivil-label"
+                        id="select-estcivil"
+                        value={physicalPerson.estcivil}
+                        onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                        label="Estado Civil"
+                        disabled
+                        name="estcivil"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Solteiro(a)</MenuItem>
+                        <MenuItem value={2}>Casado(a)</MenuItem>
+                        <MenuItem value={2}>Divorciado(a)</MenuItem>
+                        <MenuItem value={2}>Viúvo(a)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+                <Grid
+                  container
+                  spacing={3}
+                  style={{ marginTop: '20px' }}
+                >
+                  <Grid
+                    item
+                    xl={8}
+                    xs={8}
+                    sm={8}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="conjuge"
+                      label="Nome do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.conjuge === null ? 'Não informado' : physicalPerson.conjuge}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={2}
+                    xs={2}
+                    sm={2}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="depend"
+                      label="Núm. de dependentes"
+                      variant="outlined"
+                      type="number"
+                      value={physicalPerson.depend === null ? 'Não informado' : physicalPerson.depend}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={2}
+                    xs={2}
+                    sm={2}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="pensao"
+                      label="Pensão"
+                      variant="outlined"
+                      value={physicalPerson.pensao}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={3}
+                    xs={3}
+                    sm={3}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="cpfconj"
+                      label="CPF do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.cpfconj === null ? 'Não informado' : physicalPerson.cpfconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={3}
+                    xs={3}
+                    sm={3}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="telconj"
+                      label="Telefone do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.telconj === null ? 'Não informado' : physicalPerson.telconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={3}
+                    xs={3}
+                    sm={3}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="mailconj"
+                      label="E-mail do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.mailconj === null ? 'Não informado' : physicalPerson.mailconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={3}
+                    xs={3}
+                    sm={3}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="rendaconj"
+                      label="Renda do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.rendaconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={6}
+                    xs={6}
+                    sm={6}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="profconj"
+                      label="Profissão do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.profconj === null ? 'Não informado' : physicalPerson.profconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={6}
+                    xs={6}
+                    sm={6}
+                  >
+                    <TextField
+                      fullWidth
+                      disabled
+                      name="emprconj"
+                      label="Empresa do cônjugue"
+                      variant="outlined"
+                      value={physicalPerson.emprconj === null ? 'Não informado' : physicalPerson.emprconj}
+                      onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                    />
+                  </Grid>
                 </Grid>
               </TabPanel>
               {/* ENDEREÇOS */}
-              <TabPanel value={valueTab} index={1}>
+              <TabPanel value={valueTab} index={3}>
                 {
                   personAddress.map((address, index) => (
                     <Typography component="div" key={index}>
@@ -582,90 +1069,124 @@ export default function PhysicalPersonDetails(props) {
                           />
                         </Grid>
                       </Grid>
+                      <Divider className={classes.divider} />
                     </Typography>
                   ))
                 }
 
               </TabPanel>
               {/* CONTATOS */}
-              <TabPanel value={valueTab} index={2}>
-                <Typography component="div" className={classes.containerInput}>
-                  {
-                    personPhone.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações sobre telefones
-                      </Typography>
-                    )
-                  }
-                  {
-                    personPhone.map((phone, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={3}
-                            sm={3}
-                            xl={3}
-                          >
-                            <TextField
-                              fullWidth
-                              disabled
-                              required
-                              label="Telefone"
-                              name="tel"
-                              variant="outlined"
-                              value={phone.tel}
-                              onChange={(e) => handleChangeInputsPhone(e)}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
-                </Typography>
-                <Typography component="div" className={classes.containerInput}>
-                  {
-                    personMail.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações sobre email
-                      </Typography>
-                    )
-                  }
-                  {
-                    personMail.map((mail, index) => (
-                      <Typography component="div" key={index}>
-                        <Grid
-                          container
-                          spacing={3}
-                        >
-                          <Grid
-                            item
-                            xs={4}
-                            sm={4}
-                            xl={4}
-                          >
-                            <TextField
-                              fullWidth
-                              disabled
-                              required
-                              label="E-mail"
-                              name="email"
-                              variant="outlined"
-                              value={mail.email}
-                              onChange={(e) => handleChangeInputsMails(e)}
-                            />
-                          </Grid>
-                        </Grid>
-                      </Typography>
-                    ))
-                  }
-                </Typography>
+              <TabPanel value={valueTab} index={4}>
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xs={5}
+                    xl={5}
+                    sm={5}
+                  >
+                    <Typography component="div" className={classes.containerInput}>
+                      <p>Telefones</p>
+                      {
+                        personPhone.length === 0 && (
+                          <Typography component="h3" align="center" color="textSecondary">
+                            Este registro não contém informações sobre telefones
+                          </Typography>
+                        )
+                      }
+                      {
+                        personPhone.map((phone, index) => (
+                          <Typography component="div" key={index}>
+                            <Grid
+                              container
+                              spacing={3}
+                            >
+                              <Grid
+                                item
+                                xs={8}
+                                sm={8}
+                                xl={8}
+                              >
+                                <TextField
+                                  fullWidth
+                                  disabled
+                                  required
+                                  label="Telefone"
+                                  name="tel"
+                                  variant="outlined"
+                                  value={phone.tel}
+                                  onChange={(e) => handleChangeInputsPhone(e)}
+                                />
+                              </Grid>
+                            </Grid>
+                            <Divider className={classes.divider} />
+                          </Typography>
+                        ))
+                      }
+                    </Typography>
+                  </Grid>
+                  <Grid
+                    item
+                    xl={2}
+                    xs={2}
+                    sm={2}
+                    alignContent="center"
+                    alignItems="center"
+                  >
+                    <Divider className={classes.dividerVertical} orientation="vertical" />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={5}
+                    xl={5}
+                    sm={5}
+                  >
+                    <Typography component="div" className={classes.containerInput}>
+                      <p>E-mails</p>
+                      {
+                        personMail.length === 0 && (
+                          <Typography component="h3" align="center" color="textSecondary">
+                            Este registro não contém informações sobre email
+                          </Typography>
+                        )
+                      }
+                      {
+                        personMail.map((mail, index) => (
+                          <Typography component="div" key={index}>
+                            <Grid
+                              container
+                              spacing={3}
+                            >
+                              <Grid
+                                item
+                                xs={12}
+                                sm={12}
+                                xl={12}
+                              >
+                                <TextField
+                                  fullWidth
+                                  disabled
+                                  required
+                                  label="E-mail"
+                                  name="email"
+                                  variant="outlined"
+                                  value={mail.email}
+                                  onChange={(e) => handleChangeInputsMails(e)}
+                                />
+                              </Grid>
+                            </Grid>
+                            <Divider className={classes.divider} />
+                          </Typography>
+                        ))
+                      }
+                    </Typography>
+                  </Grid>
+                </Grid>
               </TabPanel>
               {/* REFERÊNCIAS */}
-              <TabPanel value={valueTab} index={3}>
+              <TabPanel value={valueTab} index={5}>
                 {
                   personReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -755,13 +1276,14 @@ export default function PhysicalPersonDetails(props) {
                           />
                         </Grid>
                       </Grid>
+                      <Divider className={classes.divider} />
                     </Typography>
                   ))
                 }
 
               </TabPanel>
               {/* DADOS BANCÁRIOS */}
-              <TabPanel value={valueTab} index={4}>
+              <TabPanel value={valueTab} index={6}>
                 {
                   bankingReferences.length === 0 && (
                     <Typography component="h3" align="center" color="textSecondary">
@@ -871,20 +1393,22 @@ export default function PhysicalPersonDetails(props) {
                             fullWidth
                             disabled
                             required
+                            type="date"
                             label="Abertura"
                             name="abertura"
                             variant="outlined"
-                            value={banking.abertura}
+                            value={moment(banking.abertura).format('YYYY-MM-DD')}
                             onChange={(e) => handleChangeInputsBankingReferences(e)}
                           />
                         </Grid>
                       </Grid>
+                      <Divider className={classes.divider} />
                     </Typography>
                   ))
                 }
               </TabPanel>
               {/* FINANCEIRO */}
-              <TabPanel value={valueTab} index={5}>
+              <TabPanel value={valueTab} index={7}>
                 <Grid
                   container
                   spacing={3}
@@ -959,7 +1483,7 @@ export default function PhysicalPersonDetails(props) {
                 </Grid>
               </TabPanel>
               {/* OPÇÕES */}
-              <TabPanel value={valueTab} index={6}>
+              <TabPanel value={valueTab} index={8}>
                 <Grid
                   container
                   spacing={3}

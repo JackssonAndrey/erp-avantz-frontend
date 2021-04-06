@@ -71,6 +71,14 @@ const useStyles = makeStyles((theme) => ({
   },
   formControl: {
     width: '100%'
+  },
+  divider: {
+    width: '100%',
+    marginTop: '25px',
+    marginBottom: '25px',
+  },
+  dividerVertical: {
+    margin: 'auto'
   }
 }));
 

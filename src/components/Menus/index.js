@@ -119,7 +119,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Menus(props) {
   const classes = useStyles();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const { handleLogout } = useContext(Context);
   const [anchorEl, setAnchorEl] = useState(null);
