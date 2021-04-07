@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { useTheme } from '@material-ui/core/styles';
-import { green, red } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import {
@@ -10,6 +10,7 @@ import {
   FormControl, InputLabel, Divider, Button, CircularProgress, Tooltip, Dialog, DialogContent, DialogTitle, DialogActions,
   FormHelperText, OutlinedInput, InputAdornment
 } from '@material-ui/core';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 import { ArrowBack, Delete } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
 import InputMask from 'react-input-mask';
@@ -19,6 +20,7 @@ import moment from 'moment';
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
@@ -209,6 +211,7 @@ export default function EditPhysicalPerson(props) {
   const [registeredBanks, setRegisteredBanks] = useState([]);
   const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
   const [counties, setCounties] = useState([{}]);
+  const [ufs, setUfs] = useState();
 
   // MODALS STATES
   const [openModalPhone, setOpenModalPhone] = useState(false);
@@ -452,6 +455,15 @@ export default function EditPhysicalPerson(props) {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const ufsMinimized = counties.filter((elem, index) => {
+      if (counties.find((countie) => countie.uf_sigla !== elem.uf_sigla) != 0) {
+        return elem;
+      }
+    });
+    console.log(ufsMinimized)
+  }, [counties]);
 
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
@@ -1136,6 +1148,7 @@ export default function EditPhysicalPerson(props) {
 
   async function handleSubmitFormEdit(e) {
     e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
 
     const data = {
       ...person,
@@ -1147,7 +1160,28 @@ export default function EditPhysicalPerson(props) {
       bankingReferences
     };
 
-    console.log(data);
+    try {
+      await api.put(`/persons/physical/edit/${idPerson}`, data, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Registro atualizado com sucesso.');
+      }, 2000);
+      setTimeout(() => {
+        history.push('/physical/persons');
+      }, 4000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+
   }
 
   return (
@@ -1285,7 +1319,22 @@ export default function EditPhysicalPerson(props) {
                       sm={3}
                       xl={3}
                     >
-                      <FormControl variant="outlined" className={classes.formControl}>
+                      <Autocomplete
+                        id="combo-box-demo"
+                        options={counties}
+                        getOptionLabel={(option) => option.uf_sigla}
+                        renderInput={(params) => <TextField
+                          {...params}
+                          name="id_uf_municipio_fk"
+                          onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                          value={physicalPerson.id_uf_municipio_fk}
+                          label="Órgão Emissor/UF"
+                          variant="outlined"
+                        />
+                        }
+                      />
+
+                      {/* <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-orgao-emissor-label">Órgão Emissor/UF</InputLabel>
                         <Select
                           fullWidth
@@ -1306,7 +1355,7 @@ export default function EditPhysicalPerson(props) {
                             ))
                           }
                         </Select>
-                      </FormControl>
+                      </FormControl> */}
                     </Grid>
 
                     <Grid
@@ -1360,6 +1409,21 @@ export default function EditPhysicalPerson(props) {
                       sm={3}
                       xl={3}
                     >
+                      <Autocomplete
+                        id="combo-box-demo"
+                        options={counties}
+                        getOptionLabel={(option) => `${option.descr}, ${option.uf_sigla}`}
+                        renderInput={(params) => <TextField
+                          {...params}
+                          name="id_municipio_fk"
+                          onChange={(e) => handleChangeInputsPhysicalPerson(e)}
+                          value={physicalPerson.id_municipio_fk}
+                          label="Naturalidade"
+                          variant="outlined"
+                        />
+                        }
+                      />
+                      {/* 
                       <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-naturalidade-label">Naturalidade</InputLabel>
                         <Select
@@ -1380,7 +1444,7 @@ export default function EditPhysicalPerson(props) {
                             ))
                           }
                         </Select>
-                      </FormControl>
+                      </FormControl> */}
                     </Grid>
 
                     <Grid
