@@ -31,11 +31,12 @@ import {
   Box,
   Card,
   CardContent,
-  TextField,
   InputAdornment,
-  SvgIcon,
   Grid,
-  Badge
+  Badge,
+  FormControl,
+  InputLabel,
+  OutlinedInput
 } from '@material-ui/core';
 
 import { Search as SearchIcon } from '@material-ui/icons';
@@ -217,6 +218,7 @@ export default function EnhancedTable() {
   const [physicalPersons, setPhysicalPersons] = useState([]);
   const [personId, setPersonId] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [personSearch, setPersonSearch] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -306,28 +308,60 @@ export default function EnhancedTable() {
     history.push(`/physical/person/edit/${id}`);
   }
 
-  function handleDeletePerson(id) {
+  async function handleDeletePerson(id) {
     const csrftoken = getCookie('csrftoken');
 
-    api.put(`/persons/delete/${id}`, { personId }, {
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    }).then(result => {
+    try {
+      const { data } = await api.put(`/persons/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Registro da pessoa deletado com sucesso!');
       }, 2000);
       setTimeout(() => {
         handleCloseModal();
-      }, 7000);
-    }).catch(reject => {
-      const { data } = reject.response;
+        setPhysicalPersons(data);
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
+  }
+
+
+  async function handleSearchPerson(e) {
+    e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      if (personSearch !== '') {
+        const { data } = await api.get(`/persons/physical/${personSearch}`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setPhysicalPersons(data);
+      } else {
+        const { data } = await api.get(`/persons/physical`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setPhysicalPersons(data);
+      }
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, physicalPersons.length - page * rowsPerPage);
@@ -347,24 +381,32 @@ export default function EnhancedTable() {
                 xs={6}
                 sm={6}
               >
-                <TextField
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SvgIcon
-                          fontSize="small"
-                          color="action"
-                        >
-                          <SearchIcon />
-                        </SvgIcon>
-                      </InputAdornment>
-                    )
-                  }}
-                  placeholder="Pesquisar pessoa por nome"
-                  variant="outlined"
-                />
+                <form onSubmit={(e) => handleSearchPerson(e)}>
+                  <FormControl variant="outlined" fullWidth size="small" >
+                    <InputLabel>Pesquisar</InputLabel>
+                    <OutlinedInput
+                      value={personSearch}
+                      onChange={(e) => setPersonSearch(e.target.value)}
+                      fullWidth
+                      label="Pesquisar"
+                      name="searchPerson"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Tooltip title="Pesquisar">
+                            <IconButton
+                              aria-label="Pesquisar"
+                              edge="end"
+                              type="submit"
+                            >
+                              <SearchIcon size={8} color="primary" />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      }
+                      labelWidth={70}
+                    />
+                  </FormControl>
+                </form>
               </Grid>
               <Grid
                 item
