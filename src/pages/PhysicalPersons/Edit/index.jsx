@@ -211,7 +211,7 @@ export default function EditPhysicalPerson(props) {
   const [registeredBanks, setRegisteredBanks] = useState([]);
   const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
   const [counties, setCounties] = useState([{}]);
-  const [ufs, setUfs] = useState();
+  const [ufs, setUfs] = useState([{}]);
 
   // MODALS STATES
   const [openModalPhone, setOpenModalPhone] = useState(false);
@@ -457,12 +457,14 @@ export default function EditPhysicalPerson(props) {
   }, []);
 
   useEffect(() => {
-    const ufsMinimized = counties.filter((elem, index) => {
-      if (counties.find((countie) => countie.uf_sigla !== elem.uf_sigla) != 0) {
-        return elem;
+    (async () => {
+      try {
+        const { data } = await api.get('/counties/ufs');
+        setUfs(data);
+      } catch (err) {
+        toast.error('Não foi possível pesquisar as UFs');
       }
-    });
-    console.log(ufsMinimized)
+    })();
   }, [counties]);
 
   function handleChangeInputsPerson(e) {
@@ -1319,22 +1321,28 @@ export default function EditPhysicalPerson(props) {
                       sm={3}
                       xl={3}
                     >
-                      <Autocomplete
-                        id="combo-box-demo"
-                        options={counties}
-                        getOptionLabel={(option) => option.uf_sigla}
+                      {/* <Autocomplete
+                        options={ufs}
+                        getOptionLabel={(uf) => uf.uf_sigla}
+                        getOptionSelected={(option, value) => option.id_municipios === value.id_municipios}
+                        defaultValue={{ id_municipios: physicalPerson.id_uf_municipio_fk, uf_sigla: 'CE' }}
+                        onChange={(e, value) => {
+                          if (value == null) {
+                            setPhysicalPerson({ ...physicalPerson, ['id_uf_municipio_fk']: '' });
+                          } else {
+                            setPhysicalPerson({ ...physicalPerson, ['id_uf_municipio_fk']: value.id_municipios });
+                          }
+                        }}
                         renderInput={(params) => <TextField
                           {...params}
                           name="id_uf_municipio_fk"
-                          onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-                          value={physicalPerson.id_uf_municipio_fk}
                           label="Órgão Emissor/UF"
                           variant="outlined"
                         />
                         }
-                      />
+                      /> */}
 
-                      {/* <FormControl variant="outlined" className={classes.formControl}>
+                      <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-orgao-emissor-label">Órgão Emissor/UF</InputLabel>
                         <Select
                           fullWidth
@@ -1343,19 +1351,18 @@ export default function EditPhysicalPerson(props) {
                           value={physicalPerson.id_uf_municipio_fk}
                           onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                           label="Órgão Emissor/UF"
-
                           name="id_uf_municipio_fk"
                         >
                           <MenuItem value="">
                             <em>None</em>
                           </MenuItem>
                           {
-                            counties.map(countie => (
-                              <MenuItem value={countie.id_municipios}>{countie.uf_sigla}</MenuItem>
+                            ufs.map(uf => (
+                              <MenuItem value={uf.id_municipios}>{uf.uf_sigla}</MenuItem>
                             ))
                           }
                         </Select>
-                      </FormControl> */}
+                      </FormControl>
                     </Grid>
 
                     <Grid
@@ -1410,14 +1417,19 @@ export default function EditPhysicalPerson(props) {
                       xl={3}
                     >
                       <Autocomplete
-                        id="combo-box-demo"
                         options={counties}
                         getOptionLabel={(option) => `${option.descr}, ${option.uf_sigla}`}
+                        getOptionSelected={(option, value) => option.id_municipios === value.id_municipios}
+                        onChange={(e, value) => {
+                          if (value == null) {
+                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: '' });
+                          } else {
+                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: value.id_municipios });
+                          }
+                        }}
                         renderInput={(params) => <TextField
                           {...params}
                           name="id_municipio_fk"
-                          onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-                          value={physicalPerson.id_municipio_fk}
                           label="Naturalidade"
                           variant="outlined"
                         />
