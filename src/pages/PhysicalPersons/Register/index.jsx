@@ -16,6 +16,7 @@ import SwipeableViews from 'react-swipeable-views';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
 import moment from 'moment';
+import { v4 as uuidV4 } from 'uuid';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -46,8 +47,8 @@ const initialStatePhysicalPerson = {
   "identidade": "",
   "emissor_identidade": "",
   "id_municipio_fk": 0,
-  "id_uf_municipio_fk": 7,
-  "data_de_nascimento": "",
+  "id_uf_municipio_fk": 0,
+  "data_de_nascimento": moment().format('YYYY-MM-DD'),
   "tratam": 0,
   "apelido": "",
   "sexo": "",
@@ -55,7 +56,7 @@ const initialStatePhysicalPerson = {
   "mae": null,
   "profissao": null,
   "ctps": null,
-  "salario": "0.00",
+  "salario": "",
   "empresa": null,
   "resp": null,
   "cnpj": null,
@@ -63,50 +64,20 @@ const initialStatePhysicalPerson = {
   "imun": null,
   "emprend": "",
   "orendas": null,
-  "vrendas": "0.00",
+  "vrendas": "",
   "irpf": 0,
-  "estcivil": 0,
+  "estcivil": "",
   "depend": 0,
-  "pensao": "0.00",
+  "pensao": "",
   "conjuge": null,
   "cpfconj": null,
   "profconj": null,
   "emprconj": null,
-  "rendaconj": "0.00",
+  "rendaconj": "",
   "telconj": null,
   "mailconj": null,
   "data_criacao": "",
   "data_atualizacao": ""
-}
-
-const initialStateAddress = {
-  origin: 1,
-  street: "",
-  numberHouse: "",
-  complement: "",
-  neighborhood: "",
-  zipCode: "",
-  city: "",
-  state: ""
-}
-
-const initialStateReference = {
-  idPerson: 0,
-  referenceSituation: 1,
-  referenceType: "",
-  referenceName: "",
-  referencePhone: "",
-  referenceAddress: ""
-}
-
-const initialStateBankingReference = {
-  idPerson: 0,
-  idBanking: 0,
-  situation: 1,
-  agency: "",
-  account: "",
-  opening: moment().format('YYYY-MM-DD'),
-  type: ""
 }
 
 function TabPanel(props) {
@@ -143,69 +114,29 @@ function a11yProps(index) {
 }
 
 
-export default function EditPhysicalPerson(props) {
+export default function RegisterPhysicalPerson(props) {
   const classes = useStyles();
   const theme = useTheme();
   const timer = useRef();
-  const idPerson = props.match.params.id;
+
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
 
-  const [loadingAddress, setLoadingAddress] = useState(false);
-  const [successAddress, setSuccessAddress] = useState(false);
-  const [errorAddress, setErrorAddress] = useState(false);
-  const [loadingRemoveAddress, setLoadingRemoveAddress] = useState(false);
-  const [successRemoveAddress, setSuccessRemoveAddress] = useState(false);
-  const [errorRemoveAddress, setErrorRemoveAddress] = useState(false);
-  const [defaultButtonAddress, setDefaultButtonAddress] = useState(true);
-
-  const [loadingPhone, setLoadingPhone] = useState(false);
-  const [successPhone, setSuccessPhone] = useState(false);
-  const [errorPhone, setErrorPhone] = useState(false);
-  const [defaultButtonPhone, setDefaultButtonPhone] = useState(true);
-  const [loadingRemovePhone, setLoadingRemovePhone] = useState(false);
-  const [successRemovePhone, setSuccessRemovePhone] = useState(false);
-  const [errorRemovePhone, setErrorRemovePhone] = useState(false);
-
-  const [loadingRemoveMail, setLoadingRemoveMail] = useState(false);
-  const [successRemoveMail, setSuccessRemoveMail] = useState(false);
-  const [errorRemoveMail, setErrorRemoveMail] = useState(false);
-  const [loadingMail, setLoadingMail] = useState(false);
-  const [successMail, setSuccessMail] = useState(false);
-  const [errorMail, setErrorMail] = useState(false);
-  const [defaultButtonMail, setDefaultButtonMail] = useState(true);
-
-  const [loadingReference, setLoadingReference] = useState(false);
-  const [successReference, setSuccessReference] = useState(false);
-  const [errorReference, setErrorReference] = useState(false);
-  const [loadingRemoveReference, setLoadingRemoveReference] = useState(false);
-  const [successRemoveReference, setSuccessRemoveReference] = useState(false);
-  const [errorRemoveReference, setErrorRemoveReference] = useState(false);
-  const [defaultButtonReference, setDefaultButtonReference] = useState(true);
-
-  const [loadingBankingReference, setLoadingBankingReference] = useState(false);
-  const [successBankingReference, setSuccessBankingReference] = useState(false);
-  const [errorBankingReference, setErrorBankingReference] = useState(false);
-  const [loadingRemoveBankingReference, setLoadingRemoveBankingReference] = useState(false);
-  const [successRemoveBankingReference, setSuccessRemoveBankingReference] = useState(false);
-  const [errorRemoveBankingReference, setErrorRemoveBankingReference] = useState(false);
-  const [defaultButtonBankingReference, setDefaultButtonBankingReference] = useState(true);
-
   // PERSON STATE
   const [valueTab, setValueTab] = useState(0);
-  const [bankingReferences, setBankingReferences] = useState([{}]);
+  const [bankingReferences, setBankingReferences] = useState([]);
   const [bankingReferenceId, setBankingReferenceId] = useState(0);
   const [person, setPerson] = useState(initialStatePerson);
-  const [personAddress, setPersonAddress] = useState([{}]);
+  const [personAddress, setPersonAddress] = useState([]);
   const [addressId, setAddressId] = useState(0);
-  const [personMail, setPersonMail] = useState([{}]);
+  const [personMail, setPersonMail] = useState([]);
   const [personMailId, setPersonMailId] = useState(0);
-  const [personPhone, setPersonPhone] = useState([{}]);
+  const [personPhone, setPersonPhone] = useState([]);
   const [phoneId, setPhoneId] = useState(0);
   const [physicalPerson, setPhysicalPerson] = useState(initialStatePhysicalPerson);
-  const [personReferences, setPersonReferences] = useState([{}]);
+  const [personReferences, setPersonReferences] = useState([]);
   const [personReferenceId, setPersonReferenceId] = useState(0);
   const [isZipCodeValid, setIsZipCodeValid] = useState(true);
   const [registeredBanks, setRegisteredBanks] = useState([]);
@@ -214,87 +145,15 @@ export default function EditPhysicalPerson(props) {
   const [ufs, setUfs] = useState([{}]);
 
   // MODALS STATES
-  const [openModalPhone, setOpenModalPhone] = useState(false);
   const [openModalRemovePhone, setOpenModalRemovePhone] = useState(false);
-  const [openModalMail, setOpenModalMail] = useState(false);
-  const [openModalAddress, setOpenModalAddress] = useState(false);
   const [openModalRemoveAddress, setOpenModalRemoveAddress] = useState(false);
   const [openModalRemoveMail, setOpenModalRemoveMail] = useState(false);
-  const [openModalReference, setOpenModalReference] = useState(false);
   const [openModalRemoveReference, setOpenModalRemoveReference] = useState(false);
-  const [openModalBankingReference, setOpenModalBankingReference] = useState(false);
   const [openModalRemoveBankingReference, setOpenModalRemoveBankingReference] = useState(false);
-
-  // REGISTER STATE
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [mail, setMail] = useState('');
-  const [address, setAddress] = useState(initialStateAddress);
-  const [reference, setReference] = useState(initialStateReference);
-  const [banking, setBanking] = useState(initialStateBankingReference);
 
   const buttonClassName = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
-  });
-
-  const buttonClassnameAddress = clsx({
-    [classes.buttonSuccessAddress]: successAddress,
-    [classes.buttonErrorAddress]: errorAddress,
-    [classes.buttonDefault]: defaultButtonAddress
-  });
-
-  const buttonClassnameRemoveAddress = clsx({
-    [classes.buttonSuccessRemoveAddress]: successRemoveAddress,
-    [classes.buttonErrorRemoveAddress]: errorRemoveAddress,
-    [classes.buttonDefault]: defaultButtonAddress
-  });
-
-  const buttonClassnameRemoveMail = clsx({
-    [classes.buttonSuccessRemoveMail]: successRemoveMail,
-    [classes.buttonErrorRemoveMail]: errorRemoveMail,
-    [classes.buttonDefault]: defaultButtonMail
-  });
-
-  const buttonClassnameRemoveReference = clsx({
-    [classes.buttonSuccessRemoveReference]: successRemoveReference,
-    [classes.buttonErrorRemoveReference]: errorRemoveReference,
-    [classes.buttonDefault]: defaultButtonReference
-  });
-
-  const buttonClassnamePhone = clsx({
-    [classes.buttonSuccessPhone]: successPhone,
-    [classes.buttonErrorPhone]: errorPhone,
-    [classes.buttonDefault]: defaultButtonPhone
-  });
-
-  const buttonClassnameRemovePhone = clsx({
-    [classes.buttonSuccessRemovePhone]: successRemovePhone,
-    [classes.buttonErrorRemovePhone]: errorRemovePhone,
-    [classes.buttonDefault]: defaultButtonPhone
-  });
-
-  const buttonClassnameMail = clsx({
-    [classes.buttonSuccessMail]: successMail,
-    [classes.buttonErrorMail]: errorMail,
-    [classes.buttonDefault]: defaultButtonMail
-  });
-
-  const buttonClassnameReference = clsx({
-    [classes.buttonSuccessReference]: successReference,
-    [classes.buttonErrorReference]: errorReference,
-    [classes.buttonDefault]: defaultButtonReference
-  });
-
-  const buttonClassnameBankingReference = clsx({
-    [classes.buttonSuccessBankingReference]: successBankingReference,
-    [classes.buttonErrorBankingReference]: errorBankingReference,
-    [classes.buttonDefault]: defaultButtonBankingReference
-  });
-
-  const buttonClassnameRemoveBankingReference = clsx({
-    [classes.buttonSuccessRemoveBankingReference]: successRemoveBankingReference,
-    [classes.buttonErrorRemoveBankingReference]: errorRemoveBankingReference,
-    [classes.buttonDefault]: defaultButtonBankingReference
   });
 
   const handleChangeTab = (event, newValue) => {
@@ -305,15 +164,6 @@ export default function EditPhysicalPerson(props) {
     setValueTab(index);
   };
 
-  const handleClickOpenModalPhone = () => {
-    setOpenModalPhone(true);
-  };
-
-  const handleCloseModalPhone = () => {
-    setOpenModalPhone(false);
-    setPhoneNumber('');
-    setDefaultButtonPhone(true);
-  };
 
   const handleClickOpenModalRemovePhone = (id) => {
     setOpenModalRemovePhone(true);
@@ -322,7 +172,6 @@ export default function EditPhysicalPerson(props) {
 
   const handleCloseModaRemovePhone = () => {
     setOpenModalRemovePhone(false);
-    setDefaultButtonPhone(true);
   };
 
   const handleClickOpenModalRemoveMail = (id) => {
@@ -332,7 +181,6 @@ export default function EditPhysicalPerson(props) {
 
   const handleCloseModalRemoveMail = () => {
     setOpenModalRemoveMail(false);
-    setDefaultButtonMail(true);
   };
 
   const handleClickOpenModalRemoveReference = (id) => {
@@ -342,7 +190,6 @@ export default function EditPhysicalPerson(props) {
 
   const handleCloseModalRemoveReference = () => {
     setOpenModalRemoveReference(false);
-    setDefaultButtonReference(true);
   };
 
   const handleClickOpenModalRemoveBankingReference = (id) => {
@@ -352,35 +199,6 @@ export default function EditPhysicalPerson(props) {
 
   const handleCloseModalRemoveBankingReference = () => {
     setOpenModalRemoveBankingReference(false);
-    setDefaultButtonReference(true);
-  };
-
-  const handleClickOpenModalMail = () => {
-    setOpenModalMail(true);
-  };
-
-  const handleCloseModalMail = () => {
-    setOpenModalMail(false);
-    setMail('');
-    setDefaultButtonMail(true);
-  };
-
-  const handleClickOpenModalBankingReference = () => {
-    setOpenModalBankingReference(true);
-  };
-
-  const handleCloseModalBankingReference = () => {
-    setOpenModalBankingReference(false);
-    setDefaultButtonBankingReference(true);
-  };
-
-  const handleClickOpenModalAddress = () => {
-    setOpenModalAddress(true);
-  };
-
-  const handleCloseModalAddress = () => {
-    setOpenModalAddress(false);
-    setDefaultButtonAddress(true);
   };
 
   const handleClickOpenModalRemoveAddress = (id) => {
@@ -390,15 +208,6 @@ export default function EditPhysicalPerson(props) {
 
   const handleCloseModalRemoveAddress = () => {
     setOpenModalRemoveAddress(false);
-    setDefaultButtonAddress(true);
-  };
-
-  const handleClickOpenModalReference = () => {
-    setOpenModalReference(true);
-  };
-
-  const handleCloseModalReference = () => {
-    setOpenModalReference(false);
   };
 
   useEffect(() => {
@@ -406,30 +215,6 @@ export default function EditPhysicalPerson(props) {
       clearTimeout(timer.current);
     };
   }, []);
-
-  useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-
-    (async () => {
-      try {
-        const { data } = await api.get(`/persons/physical/details/${idPerson}`, {
-          headers: {
-            'X-CSRFToken': csrfToken
-          }
-        });
-        setPerson(data.person);
-        setPhysicalPerson(data.personPhysical);
-        setBankingReferences(data.bankingReferences);
-        setPersonAddress(data.personAdress);
-        setPersonMail(data.personMail);
-        setPersonPhone(data.personPhone);
-        setPersonReferences(data.personReferences);
-      } catch (err) {
-        // const { data } = err.response;
-        toast.error('Não foi possível carregar os dados do registro.');
-      }
-    })();
-  }, [idPerson]);
 
   useEffect(() => {
     (async function () {
@@ -532,404 +317,68 @@ export default function EditPhysicalPerson(props) {
     setBankingReferences(updatedBankingReference);
   }
 
-  function handleChangeInputsBanking(e) {
-    const { name, value } = e.target;
-    setBanking({ ...banking, [name]: value });
-  }
-
-  function handleChangeReference(e) {
-    const { name, value } = e.target;
-    setReference({ ...reference, [name]: value });
-  }
-
-  function handleChangeAddress(e) {
-    const { name, value } = e.target;
-    setAddress({ ...address, [name]: value });
-  }
-
   // FUNCTIONS FOR THE ADD PERSON DATA
-  async function handleAddNewPhone(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
+  function handleAddNewPhone() {
+    setPersonPhone([
+      ...personPhone,
+      { phoneNumber: '' }
+    ]);
+  }
 
-    let phones = [
+  function handleAddNewAddress() {
+    setPersonAddress([
+      ...personAddress,
       {
-        idPerson: Number(idPerson),
-        phoneSituation: 1,
-        phoneNumber
+        id: uuidV4(),
+        origin: 1,
+        street: "",
+        numberHouse: "",
+        complement: "",
+        neighborhood: "",
+        zipCode: "",
+        city: "",
+        state: ""
       }
-    ];
-
-    try {
-      const { data } = await api.post(`/phones/create`, { phones }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-
-      handleButtonClickProgressPhone();
-      setTimeout(() => {
-        toast.success('Telefone cadastrado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalPhone();
-        setPersonPhone(data);
-      }, 2500);
-    } catch (err) {
-      handleButtonClickProgressErrorPhone();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    }
-
+    ]);
   }
 
-  async function handleAddNewAddress(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let adresses = [{ ...address, idPerson: Number(idPerson) }];
-
-    try {
-      const { data } = await api.post(`/addresses/create`, { adresses }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressAddress();
-      setTimeout(() => {
-        toast.success('Endereço cadastrado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalAddress();
-        setPersonAddress(data);
-      }, 2500);
-    } catch (err) {
-      // const { data } = reject.response;
-      console.log(err);
-      handleButtonClickProgressErrorAddress();
-      setTimeout(() => {
-        toast.error(`Não foi possível adicionar o endereço.`);
-      }, 2000);
-    }
+  function handleAddNewMail() {
+    setPersonMail([
+      ...personMail,
+      { userMail: '' }
+    ]);
   }
 
-  async function handleAddNewMail(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let mails = [
+  function handleAddNewReference() {
+    setPersonReferences([
+      ...personReferences,
       {
-        idPerson: Number(idPerson),
+        id: uuidV4(),
+        referenceSituation: 1,
+        referenceType: "",
+        referenceName: "",
+        referencePhone: "",
+        referenceAdress: ""
+      }
+    ]);
+  }
+
+  function handleAddNewBankingReference() {
+    setBankingReferences([
+      ...bankingReferences,
+      {
+        id: uuidV4(),
+        idBanking: '',
         situation: 1,
-        userMail: mail
+        agency: "",
+        account: "",
+        opening: moment().format('YYYY-MM-DD'),
+        type: ""
       }
-    ];
-
-    try {
-      const { data } = await api.post(`/mails/create`, { mails }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressMail();
-      setTimeout(() => {
-        toast.success('E-mail cadastrado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalMail();
-        setPersonMail(data);
-      }, 2500);
-    } catch (err) {
-      handleButtonClickProgressErrorMail();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    }
-  }
-
-  async function handleAddNewReference(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-
-    let personReferences = [{
-      ...reference, idPerson: Number(idPerson)
-    }];
-
-    try {
-      const { data } = await api.post('/persons_references/create', { personReferences }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressReference();
-      setTimeout(() => {
-        toast.success('Registro de referência cadastrado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalReference();
-        setPersonReferences(data);
-      }, 3000);
-    } catch (err) {
-      handleButtonClickProgressErrorReference();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    }
-  }
-
-  async function handleAddNewBankingReference(e) {
-    e.preventDefault();
-    const csrfToken = getCookie('csrftoken');
-    const bankData = [{ ...banking, idPerson: Number(idPerson) }];
-
-    try {
-      const { data } = await api.post('/banking_references/create', { bankingReferences: bankData }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressBanking();
-      setTimeout(() => {
-        toast.success('Registro de banco cadastrado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalBankingReference();
-        setBankingReferences(data);
-      }, 2500);
-    } catch (err) {
-      handleButtonClickProgressErrorBanking();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    }
+    ]);
   }
 
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
-  function handleButtonClickProgressErrorAddress() {
-    if (!errorAddress) {
-      setSuccessAddress(false);
-      setLoadingAddress(true);
-      timer.current = window.setTimeout(() => {
-        setErrorAddress(true);
-        setLoadingAddress(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressAddress() {
-    if (!loadingAddress) {
-      setSuccessAddress(false);
-      setLoadingAddress(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessAddress(true);
-        setLoadingAddress(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveAddress() {
-    if (!loadingRemoveAddress) {
-      setSuccessRemoveAddress(false);
-      setLoadingRemoveAddress(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveAddress(true);
-        setLoadingRemoveAddress(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveAddress() {
-    if (!loadingRemoveAddress) {
-      setSuccessRemoveAddress(false);
-      setLoadingRemoveAddress(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveAddress(true);
-        setLoadingRemoveAddress(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemovePhone() {
-    if (!loadingRemovePhone) {
-      setSuccessRemovePhone(false);
-      setLoadingRemovePhone(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemovePhone(true);
-        setLoadingRemovePhone(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemovePhone() {
-    if (!loadingRemovePhone) {
-      setSuccessRemovePhone(false);
-      setLoadingRemovePhone(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemovePhone(true);
-        setLoadingRemovePhone(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveMail() {
-    if (!loadingRemoveMail) {
-      setSuccessRemoveMail(false);
-      setLoadingRemoveMail(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveMail(true);
-        setLoadingRemoveMail(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveMail() {
-    if (!loadingRemoveMail) {
-      setSuccessRemoveMail(false);
-      setLoadingRemoveMail(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveMail(true);
-        setLoadingRemoveMail(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveReference() {
-    if (!loadingRemoveReference) {
-      setSuccessRemoveReference(false);
-      setLoadingRemoveReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveReference(true);
-        setLoadingRemoveReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveReference() {
-    if (!loadingRemoveReference) {
-      setSuccessRemoveReference(false);
-      setLoadingRemoveReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveReference(true);
-        setLoadingRemoveReference(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorRemoveBankingReference() {
-    if (!loadingRemoveBankingReference) {
-      setSuccessRemoveBankingReference(false);
-      setLoadingRemoveBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorRemoveBankingReference(true);
-        setLoadingRemoveBankingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressRemoveBankingReference() {
-    if (!loadingRemoveBankingReference) {
-      setSuccessRemoveBankingReference(false);
-      setLoadingRemoveBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessRemoveBankingReference(true);
-        setLoadingRemoveBankingReference(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorPhone() {
-    if (!errorPhone) {
-      setSuccessPhone(false);
-      setLoadingPhone(true);
-      timer.current = window.setTimeout(() => {
-        setErrorPhone(true);
-        setLoadingPhone(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressPhone() {
-    if (!loadingPhone) {
-      setSuccessPhone(false);
-      setLoadingPhone(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessPhone(true);
-        setLoadingPhone(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorMail() {
-    if (!errorMail) {
-      setSuccessMail(false);
-      setLoadingMail(true);
-      timer.current = window.setTimeout(() => {
-        setErrorMail(true);
-        setLoadingMail(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressMail() {
-    if (!loadingMail) {
-      setSuccessMail(false);
-      setLoadingMail(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessMail(true);
-        setLoadingMail(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorBanking() {
-    if (!errorBankingReference) {
-      setSuccessBankingReference(false);
-      setLoadingBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorBankingReference(true);
-        setLoadingBankingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressBanking() {
-    if (!loadingBankingReference) {
-      setSuccessBankingReference(false);
-      setLoadingBankingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessBankingReference(true);
-        setLoadingBankingReference(false);
-      }, 2000);
-    }
-  };
-
-  function handleButtonClickProgressErrorReference() {
-    if (!errorReference) {
-      setSuccessReference(false);
-      setLoadingReference(true);
-      timer.current = window.setTimeout(() => {
-        setErrorReference(true);
-        setLoadingReference(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressReference() {
-    if (!loadingReference) {
-      setSuccessReference(false);
-      setLoadingReference(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessReference(true);
-        setLoadingReference(false);
-      }, 2000);
-    }
-  };
-
   function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
@@ -955,155 +404,39 @@ export default function EditPhysicalPerson(props) {
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
 
   // ----------------- REMOVE PERSON DATA -----------------
-  async function handleRemoveAddress(id) {
-    const csrfToken = getCookie('csrftoken');
+  function handleRemoveAddress(index) {
+    const newArrayAddresses = personAddress.filter((address) => address.id !== index);
 
-    try {
-      await api.put(`/addresses/delete/${id}`, { addressId }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressRemoveAddress();
-      setTimeout(() => {
-        toast.success('Registro apagado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveAddress();
-        const arrayAddressUpdated = personAddress.filter((address) => address.id_enderecos !== id);
-        setPersonAddress(arrayAddressUpdated);
-      }, 2500);
-    } catch (err) {
-      handleButtonClickProgressErrorRemoveAddress();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveAddress();
-      }, 2500);
-    }
+    setPersonAddress(newArrayAddresses);
+    handleCloseModalRemoveAddress();
   }
 
-  async function handleRemovePhone(id) {
-    const csrfToken = getCookie('csrftoken');
+  function handleRemovePhone(index) {
+    const newArrayPhone = personPhone.filter((phone) => phone.phoneNumber !== index);
 
-    try {
-      await api.put(`/phones/delete/${id}`, { phoneId }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressRemovePhone();
-      setTimeout(() => {
-        toast.success('Registro apagado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModaRemovePhone();
-        const arrayPhoneUpdated = personPhone.filter((phone) => phone.id_telefone !== id);
-        setPersonPhone(arrayPhoneUpdated);
-      }, 2400);
-    } catch (err) {
-      handleButtonClickProgressErrorRemovePhone();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModaRemovePhone();
-      }, 2400);
-    }
+    setPersonPhone(newArrayPhone);
+    handleCloseModaRemovePhone();
   }
 
-  async function handleRemoveMail(id) {
-    const csrfToken = getCookie('csrftoken');
+  function handleRemoveMail(index) {
+    const newArrayMails = personMail.filter((mail) => mail.userMail !== index);
 
-    try {
-      await api.put(`/mails/delete/${id}`, { personMailId }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressRemoveMail();
-      setTimeout(() => {
-        toast.success('Registro apagado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        const arrayMailUpdated = personMail.filter((mail) => mail.id_mails !== id);
-        setPersonMail(arrayMailUpdated);
-        handleCloseModalRemoveMail();
-      }, 2400)
-    } catch (err) {
-      handleButtonClickProgressErrorRemoveMail();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveMail();
-      }, 2400);
-    }
+    setPersonMail(newArrayMails);
+    handleCloseModalRemoveMail();
   }
 
-  async function handleRemoveReference(id) {
-    const csrfToken = getCookie('csrftoken');
+  function handleRemoveReference(index) {
+    const newArrayReferences = personReferences.filter((reference) => reference.id !== index);
 
-    try {
-      await api.put(`/persons_references/delete/${id}`, { personReferenceId }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-
-      handleButtonClickProgressRemoveReference();
-      setTimeout(() => {
-        toast.success('Registro apagado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveReference();
-        const arrayReferenceUpdated = personReferences.filter((reference) => reference.id_referencia !== id);
-        setPersonReferences(arrayReferenceUpdated);
-      }, 2500);
-    } catch (err) {
-      handleButtonClickProgressErrorRemoveReference();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveReference();
-      }, 2400);
-    }
+    setPersonReferences(newArrayReferences);
+    handleCloseModalRemoveReference();
   }
 
-  async function handleRemoveBankingReference(id) {
-    const csrfToken = getCookie('csrftoken');
+  function handleRemoveBankingReference(index) {
+    const newArrayBankingReference = bankingReferences.filter((value) => value.id !== index);
 
-    try {
-      await api.put(`/banking_references/delete/${id}`, { bankingReferenceId }, {
-        headers: {
-          'X-CSRFToken': csrfToken
-        }
-      });
-      handleButtonClickProgressRemoveBankingReference();
-      setTimeout(() => {
-        toast.success('Registro apagado com sucesso!');
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveBankingReference();
-        const arrayBankingReference = bankingReferences.filter((reference) => reference.id_banco !== id);
-        setBankingReferences(arrayBankingReference);
-      }, 2400);
-    } catch (err) {
-      handleButtonClickProgressErrorRemoveBankingReference();
-      const { data } = err.response;
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-      setTimeout(() => {
-        handleCloseModalRemoveBankingReference();
-      }, 2400);
-    }
+    setBankingReferences(newArrayBankingReference);
+    handleCloseModalRemoveBankingReference();
   }
 
 
@@ -1126,36 +459,14 @@ export default function EditPhysicalPerson(props) {
     });
   }
 
-  function searchZipCodeModal(zipCode) {
-    cep(zipCode).then((response) => {
-      const { city, neighborhood, state, street } = response;
-      setAddress({
-        origin: 1,
-        street,
-        numberHouse: "",
-        complement: "",
-        neighborhood,
-        zipCode,
-        city,
-        state
-      });
-
-      setIsZipCodeValid(true);
-    }).catch((response) => {
-      const { message } = response;
-      setErrorMessageZipCode(message);
-      setIsZipCodeValid(false);
-    });
-  }
-
-  async function handleSubmitFormEdit(e) {
+  async function handleSubmitFormRegister(e) {
     e.preventDefault();
     const csrftoken = getCookie('csrftoken');
 
     const data = {
       ...person,
       ...physicalPerson,
-      adresses: personAddress,
+      addresses: personAddress,
       phones: personPhone,
       mails: personMail,
       personReferences,
@@ -1163,7 +474,7 @@ export default function EditPhysicalPerson(props) {
     };
 
     try {
-      await api.put(`/persons/physical/edit/${idPerson}`, data, {
+      await api.post(`/persons/physical/register`, data, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -1171,7 +482,7 @@ export default function EditPhysicalPerson(props) {
 
       handleButtonClickProgress();
       setTimeout(() => {
-        toast.success('Registro atualizado com sucesso.');
+        toast.success('Registro cadastrado com sucesso.');
       }, 2000);
       setTimeout(() => {
         history.push('/physical/persons');
@@ -1190,7 +501,7 @@ export default function EditPhysicalPerson(props) {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Editar registro" />
+      <Menus title="Cadastrar Pessoa" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
@@ -1232,7 +543,7 @@ export default function EditPhysicalPerson(props) {
                 <Tab label="Opções" {...a11yProps(8)} />
               </Tabs>
             </AppBar>
-            <form onSubmit={(e) => handleSubmitFormEdit(e)} autoComplete="off">
+            <form onSubmit={(e) => handleSubmitFormRegister(e)} autoComplete="off">
               <SwipeableViews
                 axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
                 index={valueTab}
@@ -1268,16 +579,15 @@ export default function EditPhysicalPerson(props) {
                       sm={3}
                       xl={3}
                     >
-                      <TextField
-                        fullWidth
-                        required
-                        label="CPF"
-                        name="cpfcnpj"
-                        variant="outlined"
-                        value={person.cpfcnpj}
-                        onChange={(e) => handleChangeInputsPerson(e)}
-
-                      />
+                      <InputMask mask="999.999.999-99" value={person.cpfcnpj} onChange={(e) => handleChangeInputsPerson(e)}>
+                        <TextField
+                          fullWidth
+                          required
+                          label="CPF"
+                          name="cpfcnpj"
+                          variant="outlined"
+                        />
+                      </InputMask>
                     </Grid>
 
                     <Grid
@@ -1291,7 +601,7 @@ export default function EditPhysicalPerson(props) {
                         label="Identidade"
                         name="identidade"
                         variant="outlined"
-                        value={physicalPerson.identidade === null ? 'Não informado' : physicalPerson.identidade}
+                        value={physicalPerson.identidade}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1309,7 +619,7 @@ export default function EditPhysicalPerson(props) {
                         label="Órgão Emissor"
                         name="emissor_identidade"
                         variant="outlined"
-                        value={physicalPerson.emissor_identidade === null ? 'Não informado' : physicalPerson.emissor_identidade}
+                        value={physicalPerson.emissor_identidade}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1321,27 +631,6 @@ export default function EditPhysicalPerson(props) {
                       sm={3}
                       xl={3}
                     >
-                      {/* <Autocomplete
-                        options={ufs}
-                        getOptionLabel={(uf) => uf.uf_sigla}
-                        getOptionSelected={(option, value) => option.id_municipios === value.id_municipios}
-                        defaultValue={{ id_municipios: physicalPerson.id_uf_municipio_fk, uf_sigla: 'CE' }}
-                        onChange={(e, value) => {
-                          if (value == null) {
-                            setPhysicalPerson({ ...physicalPerson, ['id_uf_municipio_fk']: '' });
-                          } else {
-                            setPhysicalPerson({ ...physicalPerson, ['id_uf_municipio_fk']: value.id_municipios });
-                          }
-                        }}
-                        renderInput={(params) => <TextField
-                          {...params}
-                          name="id_uf_municipio_fk"
-                          label="Órgão Emissor/UF"
-                          variant="outlined"
-                        />
-                        }
-                      /> */}
-
                       <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-orgao-emissor-label">Órgão Emissor/UF</InputLabel>
                         <Select
@@ -1353,7 +642,7 @@ export default function EditPhysicalPerson(props) {
                           label="Órgão Emissor/UF"
                           name="id_uf_municipio_fk"
                         >
-                          <MenuItem value="">
+                          <MenuItem value={0}>
                             <em>None</em>
                           </MenuItem>
                           {
@@ -1489,7 +778,7 @@ export default function EditPhysicalPerson(props) {
                         label="Nome do pai"
                         name="pai"
                         variant="outlined"
-                        value={physicalPerson.pai === null ? 'Não informado' : physicalPerson.pai}
+                        value={physicalPerson.pai}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1507,7 +796,7 @@ export default function EditPhysicalPerson(props) {
                         label="Nome da mãe"
                         name="mae"
                         variant="outlined"
-                        value={physicalPerson.mae === null ? 'Não informado' : physicalPerson.mae}
+                        value={physicalPerson.mae}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1531,7 +820,7 @@ export default function EditPhysicalPerson(props) {
                         label="Profissão"
                         name="profissao"
                         variant="outlined"
-                        value={physicalPerson.profissao === null ? 'Não informado' : physicalPerson.profissao}
+                        value={physicalPerson.profissao}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1548,7 +837,7 @@ export default function EditPhysicalPerson(props) {
                         label="CTPS"
                         name="ctps"
                         variant="outlined"
-                        value={physicalPerson.ctps === null ? 'Não informado' : physicalPerson.ctps}
+                        value={physicalPerson.ctps}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1566,7 +855,7 @@ export default function EditPhysicalPerson(props) {
                         label="Salário"
                         name="salario"
                         variant="outlined"
-                        value={physicalPerson.salario === null ? 'Não informado' : physicalPerson.salario}
+                        value={physicalPerson.salario}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1584,7 +873,7 @@ export default function EditPhysicalPerson(props) {
                         label="Nome da empresa"
                         name="empresa"
                         variant="outlined"
-                        value={physicalPerson.empresa === null ? 'Não informado' : physicalPerson.empresa}
+                        value={physicalPerson.empresa}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1602,7 +891,7 @@ export default function EditPhysicalPerson(props) {
                         label="Reponsável empresa"
                         name="resp"
                         variant="outlined"
-                        value={physicalPerson.resp === null ? 'Não informado' : physicalPerson.resp}
+                        value={physicalPerson.resp}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1620,7 +909,7 @@ export default function EditPhysicalPerson(props) {
                         label="CNPJ"
                         name="cnpj"
                         variant="outlined"
-                        value={physicalPerson.cnpj === null ? 'Não informado' : physicalPerson.cnpj}
+                        value={physicalPerson.cnpj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1638,7 +927,7 @@ export default function EditPhysicalPerson(props) {
                         label="Inscrição Municipal"
                         name="imun"
                         variant="outlined"
-                        value={physicalPerson.imun === null ? 'Não informado' : physicalPerson.imun}
+                        value={physicalPerson.imun}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1656,7 +945,7 @@ export default function EditPhysicalPerson(props) {
                         label="Inscrição Estadual"
                         name="iest"
                         variant="outlined"
-                        value={physicalPerson.iest === null ? 'Não informado' : physicalPerson.iest}
+                        value={physicalPerson.iest}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1674,7 +963,7 @@ export default function EditPhysicalPerson(props) {
                         label="Endereço da empresa"
                         name="emprend"
                         variant="outlined"
-                        value={physicalPerson.emprend === null ? 'Não informado' : physicalPerson.emprend}
+                        value={physicalPerson.emprend}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1692,7 +981,7 @@ export default function EditPhysicalPerson(props) {
                         label="Outras rendas"
                         name="orendas"
                         variant="outlined"
-                        value={physicalPerson.orendas === null ? 'Não informado' : physicalPerson.orendas}
+                        value={physicalPerson.orendas}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1710,7 +999,7 @@ export default function EditPhysicalPerson(props) {
                         label="Valor rendas"
                         name="vrendas"
                         variant="outlined"
-                        value={physicalPerson.vrendas === null ? 'Não informado' : physicalPerson.vrendas}
+                        value={physicalPerson.vrendas}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
 
                       />
@@ -1731,7 +1020,7 @@ export default function EditPhysicalPerson(props) {
                           onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                           label="Declara IRPF"
 
-                          name="rpf"
+                          name="irpf"
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -1794,7 +1083,7 @@ export default function EditPhysicalPerson(props) {
                         name="conjuge"
                         label="Nome do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.conjuge === null ? 'Não informado' : physicalPerson.conjuge}
+                        value={physicalPerson.conjuge}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1812,7 +1101,7 @@ export default function EditPhysicalPerson(props) {
                         label="Núm. de dependentes"
                         variant="outlined"
                         type="number"
-                        value={physicalPerson.depend === null ? 'Não informado' : physicalPerson.depend}
+                        value={physicalPerson.depend}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1846,7 +1135,7 @@ export default function EditPhysicalPerson(props) {
                         name="cpfconj"
                         label="CPF do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.cpfconj === null ? 'Não informado' : physicalPerson.cpfconj}
+                        value={physicalPerson.cpfconj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1863,7 +1152,7 @@ export default function EditPhysicalPerson(props) {
                         name="telconj"
                         label="Telefone do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.telconj === null ? 'Não informado' : physicalPerson.telconj}
+                        value={physicalPerson.telconj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1880,7 +1169,7 @@ export default function EditPhysicalPerson(props) {
                         name="mailconj"
                         label="E-mail do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.mailconj === null ? 'Não informado' : physicalPerson.mailconj}
+                        value={physicalPerson.mailconj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1914,7 +1203,7 @@ export default function EditPhysicalPerson(props) {
                         name="profconj"
                         label="Profissão do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.profconj === null ? 'Não informado' : physicalPerson.profconj}
+                        value={physicalPerson.profconj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1931,7 +1220,7 @@ export default function EditPhysicalPerson(props) {
                         name="emprconj"
                         label="Empresa do cônjugue"
                         variant="outlined"
-                        value={physicalPerson.emprconj === null ? 'Não informado' : physicalPerson.emprconj}
+                        value={physicalPerson.emprconj}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                       />
                     </Grid>
@@ -1950,7 +1239,7 @@ export default function EditPhysicalPerson(props) {
                         color="primary"
                         variant="contained"
                         size="small"
-                        onClick={handleClickOpenModalAddress}
+                        onClick={handleAddNewAddress}
                       >
                         Adicionar
                       </Button>
@@ -2001,14 +1290,14 @@ export default function EditPhysicalPerson(props) {
                             sm={3}
                             xl={3}
                           >
-                            <InputMask mask="99.999-999" value={address.cep} onChange={(e) => handleChangeInputsAddress(e, index)}>
+                            <InputMask mask="99.999-999" value={address.zipCode} onChange={(e) => handleChangeInputsAddress(e, index)}>
                               <TextField
                                 fullWidth
                                 required
                                 error={!isZipCodeValid}
                                 autoComplete="off"
                                 label="CEP"
-                                name="cep"
+                                name="zipCode"
                                 variant="outlined"
                               />
                             </InputMask>
@@ -2031,12 +1320,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
+                              onFocus={(e) => searchZipCode(address.zipCode, e, index)}
                               required
                               label="Rua"
-                              name="rua"
+                              name="street"
                               variant="outlined"
-                              value={address.rua}
+                              value={address.street}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2049,12 +1338,11 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Bairro"
-                              name="bairro"
+                              name="neighborhood"
                               variant="outlined"
-                              value={address.bairro}
+                              value={address.neighborhood}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2067,12 +1355,11 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Número"
-                              name="numero"
+                              name="numberHouse"
                               variant="outlined"
-                              value={address.numero}
+                              value={address.numberHouse}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2085,12 +1372,11 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Complemento"
-                              name="complemento"
+                              name="complement"
                               variant="outlined"
-                              value={address.complemento === null ? 'Não informado' : address.complemento}
+                              value={address.complement}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2106,9 +1392,9 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Cidade"
-                              name="cidade"
+                              name="city"
                               variant="outlined"
-                              value={address.cidade}
+                              value={address.city}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2124,9 +1410,9 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Estado"
-                              name="estado_endereco"
+                              name="state"
                               variant="outlined"
-                              value={address.estado_endereco}
+                              value={address.state}
                               onChange={(e) => handleChangeInputsAddress(e)}
                             />
                           </Grid>
@@ -2164,7 +1450,7 @@ export default function EditPhysicalPerson(props) {
                               color="primary"
                               variant="contained"
                               size="small"
-                              onClick={handleClickOpenModalPhone}
+                              onClick={handleAddNewPhone}
                             >
                               Adicionar Telefone
                             </Button>
@@ -2244,7 +1530,7 @@ export default function EditPhysicalPerson(props) {
                               color="primary"
                               variant="contained"
                               size="small"
-                              onClick={handleClickOpenModalMail}
+                              onClick={handleAddNewMail}
                             >
                               Adicionar E-mail
                             </Button>
@@ -2312,7 +1598,7 @@ export default function EditPhysicalPerson(props) {
                           color="primary"
                           variant="contained"
                           size="small"
-                          onClick={handleClickOpenModalReference}
+                          onClick={handleAddNewReference}
                         >
                           Adicionar
                         </Button>
@@ -2372,7 +1658,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Nome"
-                              name="nome"
+                              name="referenceName"
                               variant="outlined"
                               value={reference.nome}
                               onChange={(e) => handleChangeInputsReferences(e)}
@@ -2390,7 +1676,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Tipo"
-                              name="tipo"
+                              name="referenceType"
                               variant="outlined"
                               value={reference.tipo}
                               onChange={(e) => handleChangeInputsReferences(e)}
@@ -2408,7 +1694,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Telefone"
-                              name="tel"
+                              name="referencePhone"
                               variant="outlined"
                               value={reference.tel}
                               onChange={(e) => handleChangeInputsReferences(e)}
@@ -2426,7 +1712,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Endereço"
-                              name="endereco"
+                              name="referenceAdress"
                               variant="outlined"
                               value={reference.endereco}
                               onChange={(e) => handleChangeInputsReferences(e)}
@@ -2456,7 +1742,7 @@ export default function EditPhysicalPerson(props) {
                           color="primary"
                           variant="contained"
                           size="small"
-                          onClick={handleClickOpenModalBankingReference}
+                          onClick={handleAddNewBankingReference}
                         >
                           Adicionar
                         </Button>
@@ -2513,10 +1799,10 @@ export default function EditPhysicalPerson(props) {
                               <Select
                                 labelId="select-banco-label"
                                 id="select-banco"
-                                value={banking.id_bancos_fk}
+                                value={banking.idBanking}
                                 onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                                 label="Banco"
-                                name="id_bancos_fk"
+                                name="idBanking"
                                 required
                               >
                                 {
@@ -2542,7 +1828,7 @@ export default function EditPhysicalPerson(props) {
                                 value={banking.tipo}
                                 onChange={(e) => handleChangeInputsBankingReferences(e)}
                                 label="Tipo"
-                                name="tipo"
+                                name="typo"
                                 required
                                 autoWidth={false}
                                 labelWidth={3}
@@ -2575,7 +1861,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Conta"
-                              name="conta"
+                              name="account"
                               variant="outlined"
                               value={banking.conta}
                               onChange={(e) => handleChangeInputsBankingReferences(e)}
@@ -2593,7 +1879,7 @@ export default function EditPhysicalPerson(props) {
 
                               required
                               label="Agência"
-                              name="agencia"
+                              name="agency"
                               variant="outlined"
                               value={banking.agencia}
                               onChange={(e) => handleChangeInputsBankingReferences(e)}
@@ -2612,7 +1898,7 @@ export default function EditPhysicalPerson(props) {
                               required
                               type="date"
                               label="Abertura"
-                              name="abertura"
+                              name="opening"
                               variant="outlined"
                               value={moment(banking.abertura).format('YYYY-MM-DD')}
                               onChange={(e) => handleChangeInputsBankingReferences(e)}
@@ -2763,572 +2049,6 @@ export default function EditPhysicalPerson(props) {
         </Container>
 
 
-        {/* REGISTER PHONE MODAL */}
-        <Dialog
-          open={openModalPhone}
-          onClose={handleCloseModalPhone}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar número de telefone</DialogTitle>
-          <form onSubmit={(e) => handleAddNewPhone(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Telefone"
-                    name="tel"
-                    variant="outlined"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalPhone} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnamePhone}
-                  disabled={loadingPhone}
-                >
-                  Salvar
-                  {loadingPhone && <CircularProgress size={24} className={classes.buttonProgressPhone} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER MAIL MODAL */}
-        <Dialog
-          open={openModalMail}
-          onClose={handleCloseModalMail}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="sm"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar um novo endereço de e-mail</DialogTitle>
-          <form onSubmit={(e) => handleAddNewMail(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="E-mail"
-                    name="mail"
-                    variant="outlined"
-                    value={mail}
-                    onChange={(e) => setMail(e.target.value)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalMail} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameMail}
-                  disabled={loadingMail}
-                >
-                  Salvar
-                  {loadingMail && <CircularProgress size={24} className={classes.buttonProgressMail} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER ADDRESS MODAL */}
-        <Dialog
-          open={openModalAddress}
-          onClose={handleCloseModalAddress}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <form onSubmit={(e) => handleAddNewAddress(e)} autoComplete="false">
-            <DialogTitle id="alert-dialog-title">Adicionar um novo endereço</DialogTitle>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <InputMask mask="99.999-999" value={address.zipCode} onChange={(e) => handleChangeAddress(e)}>
-                    <TextField
-                      fullWidth
-                      required
-                      error={!isZipCodeValid}
-                      autoComplete="off"
-                      label="CEP"
-                      name="zipCode"
-                      variant="outlined"
-                    />
-                  </InputMask>
-                  {
-                    (!isZipCodeValid) && (
-                      <FormHelperText error >{errorMessageZipCode}</FormHelperText>
-                    )
-                  }
-                </Grid>
-              </Grid>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    onFocus={(e) => searchZipCodeModal(address.zipCode)}
-                    label="Rua"
-                    name="street"
-                    variant="outlined"
-                    value={address.street}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Bairro"
-                    name="neighborhood"
-                    variant="outlined"
-                    value={address.neighborhood}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={2}
-                  sm={2}
-                  xl={2}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Número"
-                    name="numberHouse"
-                    variant="outlined"
-                    value={address.numberHouse}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Complemento"
-                    name="complement"
-                    variant="outlined"
-                    value={address.complement}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Cidade"
-                    name="city"
-                    variant="outlined"
-                    value={address.city}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Estado"
-                    name="state"
-                    variant="outlined"
-                    value={address.state}
-                    onChange={(e) => handleChangeAddress(e)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalAddress} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameAddress}
-                  disabled={loadingAddress}
-                >
-                  Salvar
-                  {loadingAddress && <CircularProgress size={24} className={classes.buttonProgressAddress} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER BANKING REFERENCE MODAL */}
-        <Dialog
-          open={openModalBankingReference}
-          onClose={handleCloseModalBankingReference}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <form onSubmit={(e) => handleAddNewBankingReference(e)} autoComplete="false">
-            <DialogTitle id="alert-dialog-title">Adicionar uma nova conta</DialogTitle>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="select-banks-registered-modal">Banco</InputLabel>
-                    <Select
-                      labelId="select-banks-registered-modal"
-                      value={banking.idBanking}
-                      onChange={(e) => handleChangeInputsBanking(e)}
-                      label="Banco"
-                      name="idBanking"
-                      required
-                    >
-                      {
-                        registeredBanks.map(bank => (
-                          <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
-                        ))
-                      }
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <FormControl variant="outlined" className={classes.formControl}>
-                    <InputLabel id="demo-simple-select-outlined-label">Tipo</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-outlined-label"
-                      id="demo-simple-select-outlined"
-                      value={banking.type}
-                      onChange={(e) => handleChangeInputsBanking(e)}
-                      label="Tipo"
-                      name="type"
-                      required
-                      autoWidth={false}
-                      labelWidth={3}
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="Conta corrente">Conta corrente</MenuItem>
-                      <MenuItem value="Conta poupança">Conta poupança</MenuItem>
-                      <MenuItem value="Conta salário">Conta salário</MenuItem>
-                      <MenuItem value="Conta digital">Conta digital</MenuItem>
-                      <MenuItem value="Conta universitária">Conta universitária</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Conta"
-                    name="account"
-                    variant="outlined"
-                    value={banking.account}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={2}
-                  sm={2}
-                  xl={2}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Agência"
-                    name="agency"
-                    variant="outlined"
-                    value={banking.agency}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={4}
-                  sm={4}
-                  xl={4}
-                >
-                  <TextField
-                    fullWidth
-                    type="date"
-                    required
-                    label="Abertura"
-                    name="opening"
-                    variant="outlined"
-                    value={banking.opening}
-                    onChange={(e) => handleChangeInputsBanking(e)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalBankingReference} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameBankingReference}
-                  disabled={loadingBankingReference}
-                >
-                  Salvar
-                  {loadingBankingReference && <CircularProgress size={24} className={classes.buttonProgressBankingReference} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
-        {/* REGISTER REFERENCES MODAL */}
-        <Dialog
-          open={openModalReference}
-          onClose={handleCloseModalReference}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          maxWidth="md"
-        >
-          <DialogTitle id="alert-dialog-title">Adicionar um registro para referência</DialogTitle>
-          <form onSubmit={(e) => handleAddNewReference(e)}>
-            <DialogContent>
-              <Grid
-                container
-                spacing={3}
-              >
-                <Grid
-                  item
-                  xs={6}
-                  sm={6}
-                  xl={6}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Nome"
-                    name="referenceName"
-                    variant="outlined"
-                    value={reference.referenceName}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Tipo"
-                    name="referenceType"
-                    variant="outlined"
-                    value={reference.referenceType}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={3}
-                  sm={3}
-                  xl={3}
-                >
-                  <TextField
-                    fullWidth
-                    required
-                    label="Telefone"
-                    name="referencePhone"
-                    variant="outlined"
-                    value={reference.referencePhone}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-
-                <Grid
-                  item
-                  xs={8}
-                  sm={8}
-                  xl={8}
-                >
-                  <TextField
-                    fullWidth
-
-                    required
-                    label="Endereço"
-                    name="referenceAddress"
-                    variant="outlined"
-                    value={reference.referenceAddress}
-                    onChange={(e) => handleChangeReference(e)}
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <Divider style={{ marginTop: '20px' }} />
-            <DialogActions>
-              <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="flex-end"
-                padding="15px"
-              >
-                <Button onClick={handleCloseModalReference} style={{ color: red[300], marginRight: '10px' }}>
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                  autoFocus
-                  className={buttonClassnameReference}
-                  disabled={loadingReference}
-                >
-                  Salvar
-                  {loadingReference && <CircularProgress size={24} className={classes.buttonProgressReference} />}
-                </Button>
-              </Box>
-            </DialogActions>
-          </form>
-        </Dialog>
-
         {/* REMOVE REGISTER PHONE */}
         <Dialog
           open={openModalRemovePhone}
@@ -3360,12 +2080,9 @@ export default function EditPhysicalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemovePhone}
-                disabled={loadingRemovePhone}
                 onClick={() => handleRemovePhone(phoneId)}
               >
                 Excluir
-                {loadingRemovePhone && <CircularProgress size={24} className={classes.buttonProgressRemovePhone} />}
               </Button>
             </Box>
           </DialogActions>
@@ -3401,12 +2118,9 @@ export default function EditPhysicalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveAddress}
-                disabled={loadingRemoveAddress}
                 onClick={() => handleRemoveAddress(addressId)}
               >
                 Excluir
-                {loadingRemoveAddress && <CircularProgress size={24} className={classes.buttonProgressRemoveAddress} />}
               </Button>
             </Box>
           </DialogActions>
@@ -3442,12 +2156,9 @@ export default function EditPhysicalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveMail}
-                disabled={loadingRemoveMail}
                 onClick={() => handleRemoveMail(personMailId)}
               >
                 Excluir
-                {loadingRemoveMail && <CircularProgress size={24} className={classes.buttonProgressRemoveMail} />}
               </Button>
             </Box>
           </DialogActions>
@@ -3483,12 +2194,9 @@ export default function EditPhysicalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveReference}
-                disabled={loadingRemoveReference}
                 onClick={() => handleRemoveReference(personReferenceId)}
               >
                 Excluir
-                {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveReference} />}
               </Button>
             </Box>
           </DialogActions>
@@ -3524,12 +2232,9 @@ export default function EditPhysicalPerson(props) {
                 color="primary"
                 variant="contained"
                 autoFocus
-                className={buttonClassnameRemoveBankingReference}
-                disabled={loadingRemoveBankingReference}
                 onClick={() => handleRemoveBankingReference(bankingReferenceId)}
               >
                 Excluir
-                {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
               </Button>
             </Box>
           </DialogActions>

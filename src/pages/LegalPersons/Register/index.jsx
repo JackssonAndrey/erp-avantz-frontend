@@ -1220,10 +1220,10 @@ export default function RegisterLegalPerson() {
                               xl={4}
                             >
                               <FormControl variant="outlined" className={classes.formControl}>
-                                <InputLabel id="demo-simple-select-outlined-label">Banco</InputLabel>
+                                <InputLabel id="select-banco-label">Banco</InputLabel>
                                 <Select
-                                  labelId="demo-simple-select-outlined-label"
-                                  id="demo-simple-select-outlined"
+                                  labelId="select-banco-label"
+                                  id="select-banco"
                                   value={banking.idBanking}
                                   onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                                   label="Banco"

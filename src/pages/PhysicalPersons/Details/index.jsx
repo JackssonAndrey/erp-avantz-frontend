@@ -933,6 +933,13 @@ export default function PhysicalPersonDetails(props) {
               {/* ENDEREÇOS */}
               <TabPanel value={valueTab} index={3}>
                 {
+                  personAddress.length === 0 && (
+                    <Typography component="h3" align="center" color="textSecondary">
+                      Este registro não contém informações de endereço.
+                    </Typography>
+                  )
+                }
+                {
                   personAddress.map((address, index) => (
                     <Typography component="div" key={index}>
                       <Grid
