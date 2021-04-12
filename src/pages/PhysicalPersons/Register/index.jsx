@@ -52,30 +52,30 @@ const initialStatePhysicalPerson = {
   "tratam": 0,
   "apelido": "",
   "sexo": "",
-  "pai": null,
-  "mae": null,
-  "profissao": null,
-  "ctps": null,
+  "pai": "",
+  "mae": "",
+  "profissao": "",
+  "ctps": "",
   "salario": "",
-  "empresa": null,
-  "resp": null,
-  "cnpj": null,
-  "iest": null,
-  "imun": null,
+  "empresa": "",
+  "resp": "",
+  "cnpj": "",
+  "iest": "",
+  "imun": "",
   "emprend": "",
-  "orendas": null,
+  "orendas": "",
   "vrendas": "",
   "irpf": 0,
   "estcivil": "",
   "depend": 0,
   "pensao": "",
-  "conjuge": null,
-  "cpfconj": null,
-  "profconj": null,
-  "emprconj": null,
+  "conjuge": "",
+  "cpfconj": "",
+  "profconj": "",
+  "emprconj": "",
   "rendaconj": "",
-  "telconj": null,
-  "mailconj": null,
+  "telconj": "",
+  "mailconj": "",
   "data_criacao": "",
   "data_atualizacao": ""
 }
@@ -646,8 +646,8 @@ export default function RegisterPhysicalPerson(props) {
                             <em>None</em>
                           </MenuItem>
                           {
-                            ufs.map(uf => (
-                              <MenuItem value={uf.id_municipios}>{uf.uf_sigla}</MenuItem>
+                            ufs.map((uf, index) => (
+                              <MenuItem value={uf.id_municipios} key={index}>{uf.uf_sigla}</MenuItem>
                             ))
                           }
                         </Select>
@@ -1504,8 +1504,6 @@ export default function RegisterPhysicalPerson(props) {
                       xl={1}
                       xs={1}
                       sm={1}
-                      alignContent="center"
-                      alignItems="center"
                     >
                       <Divider className={classes.dividerVertical} orientation="vertical" />
                     </Grid>
@@ -1605,11 +1603,10 @@ export default function RegisterPhysicalPerson(props) {
                       </Tooltip>
                     </Grid>
                   </Grid>
-                  <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                   {
                     personReferences.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações sobre referências
+                      <Typography component="h3" align="center" style={{ marginTop: '30px' }} color="textSecondary">
+                        Este registro não contém informações sobre referências.
                       </Typography>
                     )
                   }
@@ -1619,6 +1616,8 @@ export default function RegisterPhysicalPerson(props) {
                         component="div"
                         key={index}
                       >
+                        <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+
                         <Grid
                           container
                           spacing={3}
@@ -1635,7 +1634,7 @@ export default function RegisterPhysicalPerson(props) {
                                 style={{ background: red[300], color: '#FFF' }}
                                 variant="contained"
                                 size="small"
-                                onClick={() => handleClickOpenModalRemoveReference(reference.id_referencia)}
+                                onClick={() => handleClickOpenModalRemoveReference(reference.id)}
                                 startIcon={<Delete />}
                               >
                                 Remover
@@ -1660,7 +1659,7 @@ export default function RegisterPhysicalPerson(props) {
                               label="Nome"
                               name="referenceName"
                               variant="outlined"
-                              value={reference.nome}
+                              value={reference.referenceName}
                               onChange={(e) => handleChangeInputsReferences(e)}
                             />
                           </Grid>
@@ -1678,7 +1677,7 @@ export default function RegisterPhysicalPerson(props) {
                               label="Tipo"
                               name="referenceType"
                               variant="outlined"
-                              value={reference.tipo}
+                              value={reference.referenceType}
                               onChange={(e) => handleChangeInputsReferences(e)}
                             />
                           </Grid>
@@ -1696,7 +1695,7 @@ export default function RegisterPhysicalPerson(props) {
                               label="Telefone"
                               name="referencePhone"
                               variant="outlined"
-                              value={reference.tel}
+                              value={reference.referencePhone}
                               onChange={(e) => handleChangeInputsReferences(e)}
                             />
                           </Grid>
@@ -1714,12 +1713,11 @@ export default function RegisterPhysicalPerson(props) {
                               label="Endereço"
                               name="referenceAdress"
                               variant="outlined"
-                              value={reference.endereco}
+                              value={reference.referenceAdress}
                               onChange={(e) => handleChangeInputsReferences(e)}
                             />
                           </Grid>
                         </Grid>
-                        <Divider className={classes.divider} />
                       </Typography>
                     ))
                   }
@@ -1749,17 +1747,17 @@ export default function RegisterPhysicalPerson(props) {
                       </Tooltip>
                     </Grid>
                   </Grid>
-                  <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                   {
                     bankingReferences.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações bancárias
+                      <Typography component="h3" align="center" style={{ marginTop: '30px' }} color="textSecondary">
+                        Este registro não contém informações bancárias.
                       </Typography>
                     )
                   }
                   {
                     bankingReferences.map((banking, index) => (
                       <Typography component="div" key={index}>
+                        <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                         <Grid
                           container
                           spacing={3}
@@ -1776,7 +1774,7 @@ export default function RegisterPhysicalPerson(props) {
                                 style={{ background: red[300], color: '#FFF' }}
                                 variant="contained"
                                 size="small"
-                                onClick={() => handleClickOpenModalRemoveBankingReference(banking.id_banco)}
+                                onClick={() => handleClickOpenModalRemoveBankingReference(banking.id)}
                                 startIcon={<Delete />}
                               >
                                 Remover
@@ -1825,13 +1823,11 @@ export default function RegisterPhysicalPerson(props) {
                               <Select
                                 labelId="select-ref-banco-label"
                                 id="select-ref-banco"
-                                value={banking.tipo}
+                                value={banking.type}
                                 onChange={(e) => handleChangeInputsBankingReferences(e)}
                                 label="Tipo"
-                                name="typo"
+                                name="type"
                                 required
-                                autoWidth={false}
-                                labelWidth={3}
                               >
                                 <MenuItem value="">
                                   <em>None</em>
@@ -1905,7 +1901,6 @@ export default function RegisterPhysicalPerson(props) {
                             />
                           </Grid>
                         </Grid>
-                        <Divider className={classes.divider} />
                       </Typography>
                     ))
                   }

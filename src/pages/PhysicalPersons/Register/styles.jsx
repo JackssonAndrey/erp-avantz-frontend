@@ -258,6 +258,9 @@ const useStyles = makeStyles((theme) => ({
   divFooter: {
     position: 'absolute',
     bottom: 0
+  },
+  dividerVertical: {
+    margin: 'auto'
   }
 }));
 

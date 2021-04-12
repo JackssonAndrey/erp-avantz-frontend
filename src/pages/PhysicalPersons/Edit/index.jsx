@@ -1110,6 +1110,7 @@ export default function EditPhysicalPerson(props) {
   function searchZipCode(zipCode, e, position) {
     cep(zipCode).then((response) => {
       const { city, neighborhood, state, street } = response;
+      console.log(response);
       const updatedAdress = Array.from(personAddress);
 
       updatedAdress[position].city = city;
@@ -2031,7 +2032,7 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
+                              onFocus={(e) => searchZipCode(address.cep, e, index)}
                               required
                               label="Rua"
                               name="rua"
