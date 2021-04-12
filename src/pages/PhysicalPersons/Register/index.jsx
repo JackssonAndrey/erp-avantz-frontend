@@ -474,7 +474,7 @@ export default function RegisterPhysicalPerson(props) {
     };
 
     try {
-      await api.post(`/persons/physical/register`, data, {
+      await api.post(`/persons/physical/create/`, data, {
         headers: {
           'X-CSRFToken': csrftoken
         }

@@ -8,6 +8,8 @@ import {
   Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
   InputLabel, OutlinedInput, InputAdornment, FormHelperText
 } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
+import SwipeableViews from 'react-swipeable-views';
 import PropTypes from 'prop-types';
 import { v4 as uuidV4 } from 'uuid';
 import moment from 'moment';
@@ -61,6 +63,7 @@ function a11yProps(index) {
 export default function RegisterLegalPerson() {
   const classes = useStyles();
   const timer = useRef();
+  const theme = useTheme();
 
   const initialStatePerson = {
     personIsProvider: 0,
@@ -131,6 +134,11 @@ export default function RegisterLegalPerson() {
       }
     })();
   }, []);
+
+
+  const handleChangeIndex = (index) => {
+    setValueTab(index);
+  };
 
   function handleButtonClickProgress() {
     if (!loading) {
@@ -387,7 +395,7 @@ export default function RegisterLegalPerson() {
     }
 
     try {
-      await api.post('/persons/legal/create', personData, {
+      await api.post('/persons/legal/create/', personData, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -452,13 +460,15 @@ export default function RegisterLegalPerson() {
           </Card>
 
           <div className={classes.tabArea}>
-            <AppBar position="static" className={classes.appBar}>
+            <AppBar position="static" color="default">
               <Tabs
                 value={valueTab}
                 onChange={handleChangeTab}
                 aria-label="simple tabs example"
                 indicatorColor="primary"
                 textColor="primary"
+                variant="scrollable"
+                scrollButtons="auto"
               >
                 <Tab label="Dados pessoais" {...a11yProps(0)} />
                 <Tab label="Endereço" {...a11yProps(1)} />
@@ -474,7 +484,11 @@ export default function RegisterLegalPerson() {
                 display="flex"
                 flexDirection="column"
               >
-                <Box flexGrow={1}>
+                <SwipeableViews
+                  axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+                  index={valueTab}
+                  onChangeIndex={handleChangeIndex}
+                >
                   {/* DADOS PESSOAIS */}
                   <TabPanel value={valueTab} index={0}>
                     <Grid
@@ -881,159 +895,161 @@ export default function RegisterLegalPerson() {
                   </TabPanel>
                   {/* CONTATOS */}
                   <TabPanel value={valueTab} index={2}>
-                    <Typography component="div" className={classes.containerInput}>
+                    <Grid
+                      container
+                      spacing={3}
+                    >
                       <Grid
-                        container
-                        spacing={3}
+                        item
+                        xs={5}
+                        xl={5}
+                        sm={5}
                       >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <Tooltip title="Adicionar novo telefone">
-                            <Button
-                              color="primary"
-                              variant="contained"
-                              size="small"
-                              onClick={handleAddNewPhone}
-                            >
-                              Adicionar Telefone
-                            </Button>
-                          </Tooltip>
-                        </Grid>
-                      </Grid>
-                      <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                      {
-                        personPhone.length === 0 && (
-                          <Typography component="h3" align="center" color="textSecondary">
-                            Este registro não contém informações sobre telefones.
-                          </Typography>
-                        )
-                      }
-                      <Typography component="div">
                         <Grid
                           container
                           spacing={3}
                         >
                           <Grid
                             item
-                            xs={3}
-                            sm={3}
-                            xl={3}
+                            xs={5}
+                            sm={5}
+                            xl={5}
                           >
-
-                            {
-                              personPhone.map((phone, index) => (
-                                <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
-                                  <InputLabel>Telefone</InputLabel>
-                                  <OutlinedInput
-                                    value={phone.phoneNumber}
-                                    onChange={(e) => handleChangeInputsPhone(e, index)}
-                                    fullWidth
-                                    required
-                                    label="Telefone"
-                                    name="phoneNumber"
-                                    endAdornment={
-                                      <InputAdornment position="end">
-                                        <Tooltip title="Deletar">
-                                          <IconButton
-                                            aria-label="Deletar"
-                                            onClick={() => handleClickOpenModalRemovePhone(phone.phoneNumber)}
-                                            edge="end"
-                                          >
-                                            <Delete size={8} style={{ color: red[300] }} />
-                                          </IconButton>
-                                        </Tooltip>
-                                      </InputAdornment>
-                                    }
-                                    labelWidth={70}
-                                  />
-                                </FormControl>
-                              ))
-                            }
+                            <Tooltip title="Adicionar novo telefone">
+                              <Button
+                                color="primary"
+                                variant="contained"
+                                size="small"
+                                onClick={handleAddNewPhone}
+                              >
+                                Adicionar Telefone
+                              </Button>
+                            </Tooltip>
                           </Grid>
                         </Grid>
-                      </Typography>
-                    </Typography>
-                    <Typography component="div" style={{ marginTop: '20px' }} className={classes.containerInput}>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <Tooltip title="Adicionar novo email">
-                            <Button
-                              color="primary"
-                              variant="contained"
-                              size="small"
-                              onClick={handleAddNewMail}
-                            >
-                              Adicionar E-mail
-                            </Button>
-                          </Tooltip>
-                        </Grid>
+                        <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                        <Typography component="div" className={classes.containerInput}>
+                          <p>Telefones</p>
+                          {
+                            personPhone.length === 0 && (
+                              <Typography component="h3" align="center" color="textSecondary">
+                                Este registro não contém informações sobre telefones
+                              </Typography>
+                            )
+                          }
+                          {
+                            personPhone.map((phone, index) => (
+                              <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                                <InputLabel>Telefone</InputLabel>
+                                <OutlinedInput
+                                  onChange={(e) => handleChangeInputsPhone(e, index)}
+                                  fullWidth
+                                  required
+                                  label="Telefone"
+                                  value={phone.tel}
+                                  name="phoneNumber"
+                                  endAdornment={
+                                    <InputAdornment position="end">
+                                      <Tooltip title="Deletar">
+                                        <IconButton
+                                          aria-label="Deletar"
+                                          onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}
+                                          edge="end"
+                                        >
+                                          <Delete size={8} style={{ color: red[300] }} />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </InputAdornment>
+                                  }
+                                  labelWidth={70}
+                                />
+                                <Divider className={classes.divider} />
+                              </FormControl>
+                            ))
+                          }
+                        </Typography>
                       </Grid>
-                      <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                      {
-                        personMail.length === 0 && (
-                          <Typography component="h3" align="center" color="textSecondary">
-                            Este registro não contém informações sobre email.
-                          </Typography>
-                        )
-                      }
-
-                      <Typography component="div">
+                      <Grid
+                        item
+                        xl={1}
+                        xs={1}
+                        sm={1}
+                        alignContent="center"
+                        alignItems="center"
+                      >
+                        <Divider className={classes.dividerVertical} orientation="vertical" />
+                      </Grid>
+                      <Grid
+                        item
+                        xs={5}
+                        xl={5}
+                        sm={5}
+                      >
                         <Grid
                           container
                           spacing={3}
                         >
                           <Grid
                             item
-                            xs={4}
-                            sm={4}
-                            xl={4}
+                            xs={5}
+                            sm={5}
+                            xl={5}
                           >
-                            {
-                              personMail.map((mail, index) => (
-                                <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
-                                  <InputLabel>E-mail</InputLabel>
-                                  <OutlinedInput
-                                    value={mail.userMail}
-                                    onChange={(e) => handleChangeInputsMails(e, index)}
-                                    fullWidth
-                                    required
-                                    type="email"
-                                    label="E-mail"
-                                    name="userMail"
-                                    endAdornment={
-                                      <InputAdornment position="end">
-                                        <Tooltip title="Deletar">
-                                          <IconButton
-                                            aria-label="Deletar"
-                                            onClick={() => handleClickOpenModalRemoveMail(mail.userMail)}
-                                            edge="end"
-                                          >
-                                            <Delete size={8} style={{ color: red[300] }} />
-                                          </IconButton>
-                                        </Tooltip>
-                                      </InputAdornment>
-                                    }
-                                    labelWidth={70}
-                                  />
-                                </FormControl>
-                              ))
-                            }
+                            <Tooltip title="Adicionar novo email">
+                              <Button
+                                color="primary"
+                                variant="contained"
+                                size="small"
+                                onClick={handleAddNewMail}
+                              >
+                                Adicionar E-mail
+                              </Button>
+                            </Tooltip>
                           </Grid>
                         </Grid>
-                      </Typography>
-                    </Typography>
+                        <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                        <Typography component="div" className={classes.containerInput}>
+                          <p>E-mails</p>
+                          {
+                            personMail.length === 0 && (
+                              <Typography component="h3" align="center" color="textSecondary">
+                                Este registro não contém informações sobre email
+                              </Typography>
+                            )
+                          }
+                          {
+                            personMail.map((mail, index) => (
+                              <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
+                                <InputLabel>E-mail</InputLabel>
+                                <OutlinedInput
+                                  onChange={(e) => handleChangeInputsMails(e, index)}
+                                  fullWidth
+                                  required
+                                  value={mail.email}
+                                  label="E-mail"
+                                  name="userMail"
+                                  endAdornment={
+                                    <InputAdornment position="end">
+                                      <Tooltip title="Deletar">
+                                        <IconButton
+                                          aria-label="Deletar"
+                                          onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}
+                                          edge="end"
+                                        >
+                                          <Delete size={8} style={{ color: red[300] }} />
+                                        </IconButton>
+                                      </Tooltip>
+                                    </InputAdornment>
+                                  }
+                                  labelWidth={70}
+                                />
+                                <Divider className={classes.divider} />
+                              </FormControl>
+                            ))
+                          }
+                        </Typography>
+                      </Grid>
+                    </Grid>
                   </TabPanel>
                   {/* REFERÊNCIAS */}
                   <TabPanel value={valueTab} index={3}>
@@ -1459,7 +1475,7 @@ export default function RegisterLegalPerson() {
                     </Grid>
                   </TabPanel>
 
-                </Box>
+                </SwipeableViews>
 
                 <Box>
                   <Grid
