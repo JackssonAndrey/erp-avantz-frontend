@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
-import { green, red, grey } from '@material-ui/core/colors';
+import { green, red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -252,21 +252,11 @@ const useStyles = makeStyles((theme) => ({
   formControl: {
     width: '100%'
   },
-  inputList: {
-    marginTop: theme.spacing(2)
-  },
-  divFooter: {
-    position: 'absolute',
-    bottom: 0
-  },
   divider: {
-    margin: '20px'
+    marginTop: '20px'
   },
   dividerVertical: {
     margin: 'auto'
-  },
-  title: {
-    color: grey[700]
   }
 }));
 

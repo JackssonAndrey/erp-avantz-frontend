@@ -6,9 +6,33 @@ import { red } from '@material-ui/core/colors';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem,
-  FormControl, InputLabel, Divider, Button, CircularProgress, Tooltip, Dialog, DialogContent, DialogTitle, DialogActions,
-  FormHelperText, OutlinedInput, InputAdornment
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  AppBar,
+  Tabs,
+  Tab,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Divider,
+  Button,
+  CircularProgress,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  FormHelperText,
+  OutlinedInput,
+  InputAdornment
 } from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { ArrowBack, Delete } from '@material-ui/icons';
@@ -27,56 +51,56 @@ import useStyles from './styles';
 import 'react-toastify/dist/ReactToastify.css';
 
 const initialStatePerson = {
-  "id_pessoa_cod": 0,
-  "id_instituicao_fk": 0,
-  "tipo": 1,
-  "sit": 2,
-  "forn": 0,
-  "cpfcnpj": "",
-  "nomeorrazaosocial": "",
-  "foto": "",
-  "img_bites": 0,
-  "limite": "",
-  "saldo": ""
+  id_pessoa_cod: 0,
+  id_instituicao_fk: 0,
+  tipo: 1,
+  sit: 2,
+  forn: 0,
+  cpfcnpj: "",
+  nomeorrazaosocial: "",
+  foto: "",
+  img_bites: 0,
+  limite: "",
+  saldo: ""
 }
 
 const initialStatePhysicalPerson = {
-  "id_pessoa_fisica": 0,
-  "id_pessoa_cod_fk": 0,
-  "identidade": "",
-  "emissor_identidade": "",
-  "id_municipio_fk": 0,
-  "id_uf_municipio_fk": 7,
-  "data_de_nascimento": "",
-  "tratam": 0,
-  "apelido": "",
-  "sexo": "",
-  "pai": null,
-  "mae": null,
-  "profissao": null,
-  "ctps": null,
-  "salario": "0.00",
-  "empresa": null,
-  "resp": null,
-  "cnpj": null,
-  "iest": null,
-  "imun": null,
-  "emprend": "",
-  "orendas": null,
-  "vrendas": "0.00",
-  "irpf": 0,
-  "estcivil": 0,
-  "depend": 0,
-  "pensao": "0.00",
-  "conjuge": null,
-  "cpfconj": null,
-  "profconj": null,
-  "emprconj": null,
-  "rendaconj": "0.00",
-  "telconj": null,
-  "mailconj": null,
-  "data_criacao": "",
-  "data_atualizacao": ""
+  id_pessoa_fisica: 0,
+  id_pessoa_cod_fk: 0,
+  identidade: "",
+  emissor_identidade: "",
+  id_municipio_fk: 0,
+  id_uf_municipio_fk: 7,
+  data_de_nascimento: moment().format('YYYY-MM-DD'),
+  tratam: 0,
+  apelido: "",
+  sexo: "",
+  pai: "",
+  mae: "",
+  profissao: "",
+  ctps: "",
+  salario: "",
+  empresa: "",
+  resp: "",
+  cnpj: "",
+  iest: "",
+  imun: "",
+  emprend: "",
+  orendas: "",
+  vrendas: "",
+  irpf: 0,
+  estcivil: "",
+  depend: 0,
+  pensao: "",
+  conjuge: "",
+  cpfconj: "",
+  profconj: "",
+  emprconj: "",
+  rendaconj: "",
+  telconj: "",
+  mailconj: "",
+  data_criacao: "",
+  data_atualizacao: ""
 }
 
 const initialStateAddress = {
@@ -1358,8 +1382,8 @@ export default function EditPhysicalPerson(props) {
                             <em>None</em>
                           </MenuItem>
                           {
-                            ufs.map(uf => (
-                              <MenuItem value={uf.id_municipios}>{uf.uf_sigla}</MenuItem>
+                            ufs.map((uf, index) => (
+                              <MenuItem key={index} value={uf.id_municipios}>{uf.uf_sigla}</MenuItem>
                             ))
                           }
                         </Select>
@@ -1422,10 +1446,11 @@ export default function EditPhysicalPerson(props) {
                         getOptionLabel={(option) => `${option.descr}, ${option.uf_sigla}`}
                         getOptionSelected={(option, value) => option.id_municipios === value.id_municipios}
                         onChange={(e, value) => {
+                          const name = 'id_municipio_fk';
                           if (value == null) {
-                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: '' });
+                            setPhysicalPerson({ ...physicalPerson, [name]: '' });
                           } else {
-                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: value.id_municipios });
+                            setPhysicalPerson({ ...physicalPerson, [name]: value.id_municipios });
                           }
                         }}
                         renderInput={(params) => <TextField

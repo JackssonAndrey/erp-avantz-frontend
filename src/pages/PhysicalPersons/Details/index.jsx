@@ -5,8 +5,23 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { orange } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem,
-  FormControl, InputLabel, Divider
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  AppBar,
+  Tabs,
+  Tab,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Divider
 } from '@material-ui/core';
 import { ArrowBack, Edit } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
@@ -21,56 +36,56 @@ import 'react-toastify/dist/ReactToastify.css';
 import moment from 'moment';
 
 const initialStatePerson = {
-  "id_pessoa_cod": 0,
-  "id_instituicao_fk": 0,
-  "tipo": 1,
-  "sit": 2,
-  "forn": 0,
-  "cpfcnpj": "",
-  "nomeorrazaosocial": "",
-  "foto": "",
-  "img_bites": 0,
-  "limite": "",
-  "saldo": ""
+  id_pessoa_cod: 0,
+  id_instituicao_fk: 0,
+  tipo: 1,
+  sit: 2,
+  forn: 0,
+  cpfcnpj: "",
+  nomeorrazaosocial: "",
+  foto: "",
+  img_bites: 0,
+  limite: "",
+  saldo: ""
 }
 
 const initialStatePhysicalPerson = {
-  "id_pessoa_fisica": 0,
-  "id_pessoa_cod_fk": 0,
-  "identidade": "",
-  "emissor_identidade": "",
-  "id_municipio_fk": 0,
-  "id_uf_municipio_fk": 7,
-  "data_de_nascimento": "",
-  "tratam": 0,
-  "apelido": "",
-  "sexo": "",
-  "pai": null,
-  "mae": null,
-  "profissao": null,
-  "ctps": null,
-  "salario": "0.00",
-  "empresa": null,
-  "resp": null,
-  "cnpj": null,
-  "iest": null,
-  "imun": null,
-  "emprend": "",
-  "orendas": null,
-  "vrendas": "0.00",
-  "irpf": 0,
-  "estcivil": 0,
-  "depend": 0,
-  "pensao": "0.00",
-  "conjuge": null,
-  "cpfconj": null,
-  "profconj": null,
-  "emprconj": null,
-  "rendaconj": "0.00",
-  "telconj": null,
-  "mailconj": null,
-  "data_criacao": "",
-  "data_atualizacao": ""
+  id_pessoa_fisica: 0,
+  id_pessoa_cod_fk: 0,
+  identidade: "",
+  emissor_identidade: "",
+  id_municipio_fk: "",
+  id_uf_municipio_fk: "",
+  data_de_nascimento: "",
+  tratam: 0,
+  apelido: "",
+  sexo: "",
+  pai: "",
+  mae: "",
+  profissao: "",
+  ctps: "",
+  salario: "",
+  empresa: "",
+  resp: "",
+  cnpj: "",
+  iest: "",
+  imun: "",
+  emprend: "",
+  orendas: "",
+  vrendas: "",
+  irpf: 0,
+  estcivil: "",
+  depend: 0,
+  pensao: "",
+  conjuge: "",
+  cpfconj: "",
+  profconj: "",
+  emprconj: "",
+  rendaconj: "",
+  telconj: "",
+  mailconj: "",
+  data_criacao: "",
+  data_atualizacao: ""
 }
 
 function TabPanel(props) {
@@ -370,8 +385,8 @@ export default function PhysicalPersonDetails(props) {
                           <em>None</em>
                         </MenuItem>
                         {
-                          counties.map(countie => (
-                            <MenuItem value={countie.id_municipios}>{countie.uf_sigla}</MenuItem>
+                          counties.map((countie, index) => (
+                            <MenuItem key={index} value={countie.id_municipios}>{countie.uf_sigla}</MenuItem>
                           ))
                         }
                       </Select>
@@ -444,8 +459,8 @@ export default function PhysicalPersonDetails(props) {
                           <em>None</em>
                         </MenuItem>
                         {
-                          counties.map(countie => (
-                            <MenuItem value={countie.id_municipios}>{countie.descr}</MenuItem>
+                          counties.map((countie, index) => (
+                            <MenuItem key={index} value={countie.id_municipios}>{countie.descr}</MenuItem>
                           ))
                         }
                       </Select>
@@ -1139,8 +1154,6 @@ export default function PhysicalPersonDetails(props) {
                     xl={2}
                     xs={2}
                     sm={2}
-                    alignContent="center"
-                    alignItems="center"
                   >
                     <Divider className={classes.dividerVertical} orientation="vertical" />
                   </Grid>

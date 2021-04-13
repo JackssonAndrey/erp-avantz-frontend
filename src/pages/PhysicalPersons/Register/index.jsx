@@ -6,10 +6,35 @@ import { red } from '@material-ui/core/colors';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, Select, MenuItem,
-  FormControl, InputLabel, Divider, Button, CircularProgress, Tooltip, Dialog, DialogContent, DialogTitle, DialogActions,
-  FormHelperText, OutlinedInput, InputAdornment
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  AppBar,
+  Tabs,
+  Tab,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Divider,
+  Button,
+  CircularProgress,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogActions,
+  FormHelperText,
+  OutlinedInput,
+  InputAdornment
 } from '@material-ui/core';
+
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { ArrowBack, Delete } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
@@ -28,56 +53,56 @@ import useStyles from './styles';
 import 'react-toastify/dist/ReactToastify.css';
 
 const initialStatePerson = {
-  "id_pessoa_cod": 0,
-  "id_instituicao_fk": 0,
-  "tipo": 1,
-  "sit": 2,
-  "forn": 0,
-  "cpfcnpj": "",
-  "nomeorrazaosocial": "",
-  "foto": "",
-  "img_bites": 0,
-  "limite": "",
-  "saldo": ""
+  id_pessoa_cod: 0,
+  id_instituicao_fk: 0,
+  tipo: 1,
+  sit: 2,
+  forn: 0,
+  cpfcnpj: "",
+  nomeorrazaosocial: "",
+  foto: "",
+  img_bites: 0,
+  limite: "",
+  saldo: ""
 }
 
 const initialStatePhysicalPerson = {
-  "id_pessoa_fisica": 0,
-  "id_pessoa_cod_fk": 0,
-  "identidade": "",
-  "emissor_identidade": "",
-  "id_municipio_fk": 0,
-  "id_uf_municipio_fk": 0,
-  "data_de_nascimento": moment().format('YYYY-MM-DD'),
-  "tratam": 0,
-  "apelido": "",
-  "sexo": "",
-  "pai": "",
-  "mae": "",
-  "profissao": "",
-  "ctps": "",
-  "salario": "",
-  "empresa": "",
-  "resp": "",
-  "cnpj": "",
-  "iest": "",
-  "imun": "",
-  "emprend": "",
-  "orendas": "",
-  "vrendas": "",
-  "irpf": 0,
-  "estcivil": "",
-  "depend": 0,
-  "pensao": "",
-  "conjuge": "",
-  "cpfconj": "",
-  "profconj": "",
-  "emprconj": "",
-  "rendaconj": "",
-  "telconj": "",
-  "mailconj": "",
-  "data_criacao": "",
-  "data_atualizacao": ""
+  id_pessoa_fisica: 0,
+  id_pessoa_cod_fk: 0,
+  identidade: "",
+  emissor_identidade: "",
+  id_municipio_fk: 0,
+  id_uf_municipio_fk: 0,
+  data_de_nascimento: moment().format('YYYY-MM-DD'),
+  tratam: 0,
+  apelido: "",
+  sexo: "",
+  pai: "",
+  mae: "",
+  profissao: "",
+  ctps: "",
+  salario: "",
+  empresa: "",
+  resp: "",
+  cnpj: "",
+  iest: "",
+  imun: "",
+  emprend: "",
+  orendas: "",
+  vrendas: "",
+  irpf: 0,
+  estcivil: "",
+  depend: 0,
+  pensao: "",
+  conjuge: "",
+  cpfconj: "",
+  profconj: "",
+  emprconj: "",
+  rendaconj: "",
+  telconj: "",
+  mailconj: "",
+  data_criacao: "",
+  data_atualizacao: ""
 }
 
 function TabPanel(props) {
@@ -321,7 +346,7 @@ export default function RegisterPhysicalPerson(props) {
   function handleAddNewPhone() {
     setPersonPhone([
       ...personPhone,
-      { phoneNumber: '' }
+      { id: uuidV4(), phoneNumber: '' }
     ]);
   }
 
@@ -345,7 +370,7 @@ export default function RegisterPhysicalPerson(props) {
   function handleAddNewMail() {
     setPersonMail([
       ...personMail,
-      { userMail: '' }
+      { id: uuidV4(), userMail: '' }
     ]);
   }
 
@@ -411,15 +436,15 @@ export default function RegisterPhysicalPerson(props) {
     handleCloseModalRemoveAddress();
   }
 
-  function handleRemovePhone(index) {
-    const newArrayPhone = personPhone.filter((phone) => phone.phoneNumber !== index);
+  function handleRemovePhone(id) {
+    const newArrayPhone = personPhone.filter((phone) => phone.id !== id);
 
     setPersonPhone(newArrayPhone);
     handleCloseModaRemovePhone();
   }
 
-  function handleRemoveMail(index) {
-    const newArrayMails = personMail.filter((mail) => mail.userMail !== index);
+  function handleRemoveMail(id) {
+    const newArrayMails = personMail.filter((mail) => mail.id !== id);
 
     setPersonMail(newArrayMails);
     handleCloseModalRemoveMail();
@@ -1272,7 +1297,7 @@ export default function RegisterPhysicalPerson(props) {
                                 style={{ background: red[300], color: '#FFF' }}
                                 variant="contained"
                                 size="small"
-                                onClick={() => handleClickOpenModalRemoveAddress(address.id_enderecos)}
+                                onClick={() => handleClickOpenModalRemoveAddress(address.id)}
                                 startIcon={<Delete size={5} />}
                               >
                                 Remover
@@ -1326,7 +1351,7 @@ export default function RegisterPhysicalPerson(props) {
                               name="street"
                               variant="outlined"
                               value={address.street}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -1343,7 +1368,7 @@ export default function RegisterPhysicalPerson(props) {
                               name="neighborhood"
                               variant="outlined"
                               value={address.neighborhood}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -1360,7 +1385,7 @@ export default function RegisterPhysicalPerson(props) {
                               name="numberHouse"
                               variant="outlined"
                               value={address.numberHouse}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -1377,7 +1402,7 @@ export default function RegisterPhysicalPerson(props) {
                               name="complement"
                               variant="outlined"
                               value={address.complement}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -1389,13 +1414,12 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Cidade"
                               name="city"
                               variant="outlined"
                               value={address.city}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -1407,13 +1431,12 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Estado"
                               name="state"
                               variant="outlined"
                               value={address.state}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
                         </Grid>
@@ -1459,7 +1482,7 @@ export default function RegisterPhysicalPerson(props) {
                       </Grid>
                       <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                       <Typography component="div" className={classes.containerInput}>
-                        <p>Telefones</p>
+                        <p className={classes.title}>Telefones</p>
                         {
                           personPhone.length === 0 && (
                             <Typography component="h3" align="center" color="textSecondary">
@@ -1476,14 +1499,14 @@ export default function RegisterPhysicalPerson(props) {
                                 fullWidth
                                 required
                                 label="Telefone"
-                                value={phone.tel}
+                                value={phone.phoneNumber}
                                 name="phoneNumber"
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <Tooltip title="Deletar">
                                       <IconButton
                                         aria-label="Deletar"
-                                        onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}
+                                        onClick={() => handleClickOpenModalRemovePhone(phone.id)}
                                         edge="end"
                                       >
                                         <Delete size={8} style={{ color: red[300] }} />
@@ -1537,7 +1560,7 @@ export default function RegisterPhysicalPerson(props) {
                       </Grid>
                       <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                       <Typography component="div" className={classes.containerInput}>
-                        <p>E-mails</p>
+                        <p className={classes.title}>E-mails</p>
                         {
                           personMail.length === 0 && (
                             <Typography component="h3" align="center" color="textSecondary">
@@ -1553,7 +1576,7 @@ export default function RegisterPhysicalPerson(props) {
                                 onChange={(e) => handleChangeInputsMails(e, index)}
                                 fullWidth
                                 required
-                                value={mail.email}
+                                value={mail.userMail}
                                 label="E-mail"
                                 name="userMail"
                                 endAdornment={
@@ -1561,7 +1584,7 @@ export default function RegisterPhysicalPerson(props) {
                                     <Tooltip title="Deletar">
                                       <IconButton
                                         aria-label="Deletar"
-                                        onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}
+                                        onClick={() => handleClickOpenModalRemoveMail(mail.id)}
                                         edge="end"
                                       >
                                         <Delete size={8} style={{ color: red[300] }} />
@@ -1654,7 +1677,6 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Nome"
                               name="referenceName"
@@ -1672,7 +1694,6 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Tipo"
                               name="referenceType"
@@ -1690,7 +1711,6 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Telefone"
                               name="referencePhone"
@@ -1708,7 +1728,6 @@ export default function RegisterPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Endereço"
                               name="referenceAdress"

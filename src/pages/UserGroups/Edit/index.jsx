@@ -2,11 +2,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import { makeStyles } from '@material-ui/core/styles';
-import { green, red, blue } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, List, ListItem, ListItemText, Divider,
-  ListItemSecondaryAction, Checkbox, Button, CircularProgress
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  ListItemSecondaryAction,
+  Checkbox,
+  Button,
+  CircularProgress
 } from '@material-ui/core';
 import { ArrowBack } from '@material-ui/icons';
 
@@ -15,73 +27,9 @@ import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
+import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-  },
-  rootForm: {},
-  appBarSpacer: theme.mixins.toolbar,
-  content: {
-    flexGrow: 1,
-    height: '100vh',
-    overflow: 'auto',
-  },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-    alignItems: 'center'
-  },
-  input: {
-    display: 'none',
-  },
-  large: {
-    width: theme.spacing(10),
-    height: theme.spacing(10),
-    marginBottom: theme.spacing(4)
-  },
-  form: {
-    width: '100%',
-    padding: theme.spacing(2),
-    display: 'flex',
-    alignItems: 'center'
-  },
-  buttonSuccess: {
-    backgroundColor: green[500],
-    '&:hover': {
-      backgroundColor: green[700],
-    },
-  },
-  buttonProgress: {
-    color: blue[500],
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    marginTop: -12,
-    marginLeft: -12,
-  },
-  buttonError: {
-    backgroundColor: red[500],
-    '&:hover': {
-      backgroundColor: red[700],
-    },
-  },
-  cardContent: {
-    marginTop: theme.spacing(3)
-  },
-  avatarLarge: {
-    width: theme.spacing(10),
-    height: theme.spacing(10)
-  }
-}));
 
 export default function EditUserGroup(props) {
   const classes = useStyles();

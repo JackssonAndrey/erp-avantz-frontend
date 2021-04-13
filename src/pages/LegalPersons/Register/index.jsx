@@ -4,9 +4,33 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
-  Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel, OutlinedInput, InputAdornment, FormHelperText
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  AppBar,
+  Tabs,
+  Tab,
+  Typography,
+  CircularProgress,
+  Divider,
+  Button,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  DialogTitle,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  FormHelperText
 } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import SwipeableViews from 'react-swipeable-views';
@@ -16,7 +40,7 @@ import moment from 'moment';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
 
-import { ArrowBack, Delete } from '@material-ui/icons';
+import { ArrowBack, Delete, SignalCellularNoSimOutlined } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -105,9 +129,9 @@ export default function RegisterLegalPerson() {
   const [personAddress, setPersonAddress] = useState([]);
   const [addressId, setAddressId] = useState(0);
   const [personMail, setPersonMail] = useState([]);
-  const [personMailId, setPersonMailId] = useState(0);
+  const [personMailId, setPersonMailId] = useState('');
   const [personPhone, setPersonPhone] = useState([]);
-  const [phoneId, setPhoneId] = useState(0);
+  const [phoneId, setPhoneId] = useState('');
   const [legalPerson, setLegalPerson] = useState(initialStateLegalPerson);
   const [personReferences, setPersonReferences] = useState([]);
   const [personReferenceId, setPersonReferenceId] = useState(0);
@@ -285,7 +309,7 @@ export default function RegisterLegalPerson() {
   function handleAddNewPhone() {
     setPersonPhone([
       ...personPhone,
-      { phoneNumber: '' }
+      { id: uuidV4(), phoneNumber: '' }
     ]);
   }
 
@@ -309,7 +333,7 @@ export default function RegisterLegalPerson() {
   function handleAddNewMail() {
     setPersonMail([
       ...personMail,
-      { userMail: '' }
+      { id: uuidV4(), userMail: '' }
     ]);
   }
 
@@ -349,24 +373,23 @@ export default function RegisterLegalPerson() {
     handleCloseModalRemoveAddress();
   }
 
-  function handleRemovePhone(index) {
-    const newArrayPhone = personPhone.filter((phone) => phone.phoneNumber !== index);
+  function handleRemovePhone(id) {
+    const newArrayPhone = personPhone.filter((phone) => phone.id !== id);
 
     setPersonPhone(newArrayPhone);
     handleCloseModaRemovelPhone();
   }
 
-  function handleRemoveMail(index) {
-    const newArrayMails = personMail.filter((mail) => mail.userMail !== index);
+  function handleRemoveMail(id) {
+    const newArrayMails = personMail.filter((mail) => mail.id !== id);
 
     setPersonMail(newArrayMails);
+    setPersonMailId('');
     handleCloseModalRemoveMail();
   }
 
   function handleRemoveReference(index) {
     const newArrayReferences = personReferences.filter((reference) => reference.id !== index);
-    console.log('index', index);
-    console.log('novo array', newArrayReferences);
 
     setPersonReferences(newArrayReferences);
     handleCloseModalRemoveReference();
@@ -736,6 +759,28 @@ export default function RegisterLegalPerson() {
                               sm={3}
                               xl={3}
                             >
+                              <Tooltip title="Remover este endereço">
+                                <Button
+                                  style={{ background: red[300], color: '#FFF' }}
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleClickOpenModalRemoveAddress(addressValue.id)}
+                                >
+                                  Remover
+                                </Button>
+                              </Tooltip>
+                            </Grid>
+                          </Grid>
+                          <Grid
+                            container
+                            spacing={3}
+                          >
+                            <Grid
+                              item
+                              xs={3}
+                              sm={3}
+                              xl={3}
+                            >
                               <InputMask mask="99.999-999" value={addressValue.zipCode} onChange={(e) => handleChangeInputsAddress(e, index)}>
                                 <TextField
                                   fullWidth
@@ -866,28 +911,7 @@ export default function RegisterLegalPerson() {
                               />
                             </Grid>
                           </Grid>
-                          <Grid
-                            container
-                            spacing={3}
-                          >
-                            <Grid
-                              item
-                              xs={3}
-                              sm={3}
-                              xl={3}
-                            >
-                              <Tooltip title="Remover este endereço">
-                                <Button
-                                  style={{ background: red[300], color: '#FFF' }}
-                                  variant="contained"
-                                  size="small"
-                                  onClick={() => handleClickOpenModalRemoveAddress(addressValue.id)}
-                                >
-                                  Remover
-                                </Button>
-                              </Tooltip>
-                            </Grid>
-                          </Grid>
+                          <Divider className={classes.divider} />
                         </Typography>
                       ))
                     }
@@ -929,7 +953,7 @@ export default function RegisterLegalPerson() {
                         </Grid>
                         <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                         <Typography component="div" className={classes.containerInput}>
-                          <p>Telefones</p>
+                          <p className={classes.title}>Telefones</p>
                           {
                             personPhone.length === 0 && (
                               <Typography component="h3" align="center" color="textSecondary">
@@ -946,14 +970,14 @@ export default function RegisterLegalPerson() {
                                   fullWidth
                                   required
                                   label="Telefone"
-                                  value={phone.tel}
+                                  value={phone.phoneNumber}
                                   name="phoneNumber"
                                   endAdornment={
                                     <InputAdornment position="end">
                                       <Tooltip title="Deletar">
                                         <IconButton
                                           aria-label="Deletar"
-                                          onClick={() => handleClickOpenModalRemovePhone(phone.id_telefone)}
+                                          onClick={() => handleClickOpenModalRemovePhone(phone.id)}
                                           edge="end"
                                         >
                                           <Delete size={8} style={{ color: red[300] }} />
@@ -974,8 +998,6 @@ export default function RegisterLegalPerson() {
                         xl={1}
                         xs={1}
                         sm={1}
-                        alignContent="center"
-                        alignItems="center"
                       >
                         <Divider className={classes.dividerVertical} orientation="vertical" />
                       </Grid>
@@ -1009,7 +1031,7 @@ export default function RegisterLegalPerson() {
                         </Grid>
                         <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                         <Typography component="div" className={classes.containerInput}>
-                          <p>E-mails</p>
+                          <p className={classes.title}>E-mails</p>
                           {
                             personMail.length === 0 && (
                               <Typography component="h3" align="center" color="textSecondary">
@@ -1025,7 +1047,7 @@ export default function RegisterLegalPerson() {
                                   onChange={(e) => handleChangeInputsMails(e, index)}
                                   fullWidth
                                   required
-                                  value={mail.email}
+                                  value={mail.userMail}
                                   label="E-mail"
                                   name="userMail"
                                   endAdornment={
@@ -1033,7 +1055,7 @@ export default function RegisterLegalPerson() {
                                       <Tooltip title="Deletar">
                                         <IconButton
                                           aria-label="Deletar"
-                                          onClick={() => handleClickOpenModalRemoveMail(mail.id_mails)}
+                                          onClick={() => handleClickOpenModalRemoveMail(mail.id)}
                                           edge="end"
                                         >
                                           <Delete size={8} style={{ color: red[300] }} />
@@ -1089,6 +1111,28 @@ export default function RegisterLegalPerson() {
                           component="div"
                           key={index}
                         >
+                          <Grid
+                            container
+                            spacing={3}
+                          >
+                            <Grid
+                              item
+                              xs={3}
+                              sm={3}
+                              xl={3}
+                            >
+                              <Tooltip title="Remover este registro">
+                                <Button
+                                  style={{ background: red[300], color: '#FFF' }}
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleClickOpenModalRemoveReference(reference.id)}
+                                >
+                                  Remover
+                                </Button>
+                              </Tooltip>
+                            </Grid>
+                          </Grid>
                           <Grid
                             container
                             spacing={3}
@@ -1163,28 +1207,7 @@ export default function RegisterLegalPerson() {
                               />
                             </Grid>
                           </Grid>
-                          <Grid
-                            container
-                            spacing={3}
-                          >
-                            <Grid
-                              item
-                              xs={3}
-                              sm={3}
-                              xl={3}
-                            >
-                              <Tooltip title="Remover este registro">
-                                <Button
-                                  style={{ background: red[300], color: '#FFF' }}
-                                  variant="contained"
-                                  size="small"
-                                  onClick={() => handleClickOpenModalRemoveReference(reference.id)}
-                                >
-                                  Remover
-                                </Button>
-                              </Tooltip>
-                            </Grid>
-                          </Grid>
+                          <Divider className={classes.divider} />
                         </Typography>
                       ))
                     }
@@ -1225,6 +1248,28 @@ export default function RegisterLegalPerson() {
                     {
                       bankingReferences.map((banking, index) => (
                         <Typography component="div" key={index}>
+                          <Grid
+                            container
+                            spacing={3}
+                          >
+                            <Grid
+                              item
+                              xs={3}
+                              sm={3}
+                              xl={3}
+                            >
+                              <Tooltip title="Remover este registro">
+                                <Button
+                                  style={{ background: red[300], color: '#FFF' }}
+                                  variant="contained"
+                                  size="small"
+                                  onClick={() => handleClickOpenModalRemoveBankingReference(banking.id)}
+                                >
+                                  Remover
+                                </Button>
+                              </Tooltip>
+                            </Grid>
+                          </Grid>
                           <Grid
                             container
                             spacing={3}
@@ -1343,28 +1388,7 @@ export default function RegisterLegalPerson() {
                               />
                             </Grid>
                           </Grid>
-                          <Grid
-                            container
-                            spacing={3}
-                          >
-                            <Grid
-                              item
-                              xs={3}
-                              sm={3}
-                              xl={3}
-                            >
-                              <Tooltip title="Remover este registro">
-                                <Button
-                                  style={{ background: red[300], color: '#FFF' }}
-                                  variant="contained"
-                                  size="small"
-                                  onClick={() => handleClickOpenModalRemoveBankingReference(banking.id)}
-                                >
-                                  Remover
-                                </Button>
-                              </Tooltip>
-                            </Grid>
-                          </Grid>
+                          <Divider className={classes.divider} />
                         </Typography>
                       ))
                     }
@@ -1444,7 +1468,6 @@ export default function RegisterLegalPerson() {
                       </Grid>
                     </Grid>
                   </TabPanel>
-
                   {/* OPÇÕES */}
                   <TabPanel value={valueTab} index={6}>
                     <Grid

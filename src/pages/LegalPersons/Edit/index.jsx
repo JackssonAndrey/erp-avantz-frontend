@@ -3,11 +3,37 @@ import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
+import { useTheme } from '@material-ui/core/styles';
 import {
-  Box, Container, CssBaseline, Card, CardContent, IconButton, Grid, TextField, AppBar, Tabs, Tab, Typography, CircularProgress,
-  Divider, Button, Tooltip, Dialog, DialogContent, DialogActions, DialogTitle, Select, MenuItem, FormControl,
-  InputLabel, OutlinedInput, InputAdornment, FormHelperText
+  Box,
+  Container,
+  CssBaseline,
+  Card,
+  CardContent,
+  IconButton,
+  Grid,
+  TextField,
+  AppBar,
+  Tabs,
+  Tab,
+  Typography,
+  CircularProgress,
+  Divider,
+  Button,
+  Tooltip,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  DialogTitle,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  FormHelperText
 } from '@material-ui/core';
+import SwipeableViews from 'react-swipeable-views';
 import { ArrowBack, Delete } from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -57,32 +83,32 @@ function a11yProps(index) {
 }
 
 const initialStatePerson = {
-  "id_pessoa_cod": 0,
-  "id_instituicao_fk": 0,
-  "tipo": 0,
-  "sit": 0,
-  "forn": 0,
-  "cpfcnpj": "",
-  "nomeorrazaosocial": "",
-  "foto": "",
-  "img_bites": 0,
-  "limite": "0",
-  "saldo": "0"
+  id_pessoa_cod: 0,
+  id_instituicao_fk: 0,
+  tipo: 0,
+  sit: 0,
+  forn: 0,
+  cpfcnpj: "",
+  nomeorrazaosocial: "",
+  foto: "",
+  img_bites: 0,
+  limite: "0",
+  saldo: "0"
 }
 
 const initialStateLegalPerson = {
-  "id_pessoa_cod_fk": 0,
-  "fantasia": "",
-  "ramo": "",
-  "inscricao_estadual": "",
-  "inscricao_municipal": "",
-  "tipo_empresa": "",
-  "capsocial": "0",
-  "faturamento": "0",
-  "tribut": 0,
-  "contato": "",
-  "data_abertura": "",
-  "data_criacao": ""
+  id_pessoa_cod_fk: 0,
+  fantasia: "",
+  ramo: "",
+  inscricao_estadual: "",
+  inscricao_municipal: "",
+  tipo_empresa: "",
+  capsocial: "0",
+  faturamento: "0",
+  tribut: 1,
+  contato: 0,
+  data_abertura: "",
+  data_criacao: ""
 }
 
 const initialStateAdress = {
@@ -97,12 +123,12 @@ const initialStateAdress = {
 }
 
 const initialStateReference = {
-  "idPerson": 0,
-  "referenceSituation": 1,
-  "referenceType": "",
-  "referenceName": "",
-  "referencePhone": "",
-  "referenceAdress": ""
+  idPerson: 0,
+  referenceSituation: 1,
+  referenceType: "",
+  referenceName: "",
+  referencePhone: "",
+  referenceAdress: ""
 }
 
 const initialStateBankingReference = {
@@ -118,6 +144,7 @@ const initialStateBankingReference = {
 export default function EditLegalPerson(props) {
   const classes = useStyles();
   const timer = useRef();
+  const theme = useTheme();
   const idPerson = props.match.params.id;
 
   // SUCCESS AND ERRORS BUTTONS STATES
@@ -201,6 +228,10 @@ export default function EditLegalPerson(props) {
   const [address, setAddress] = useState(initialStateAdress);
   const [reference, setReference] = useState(initialStateReference);
   const [banking, setBanking] = useState(initialStateBankingReference);
+
+  const handleChangeIndex = (index) => {
+    setValueTab(index);
+  };
 
   const handleClickOpenModalPhone = () => {
     setOpenModalPhone(true);
@@ -1166,403 +1197,217 @@ export default function EditLegalPerson(props) {
               </Tabs>
             </AppBar>
             <form onSubmit={(e) => handleSubmitFormEdit(e)} >
-              {/* DADOS PESSOAIS */}
-              <TabPanel value={valueTab} index={0}>
-                <Grid
-                  container
-                  spacing={3}
-                >
+              <SwipeableViews
+                axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+                index={valueTab}
+                onChangeIndex={handleChangeIndex}
+              >
+                {/* DADOS PESSOAIS */}
+                <TabPanel value={valueTab} index={0}>
                   <Grid
-                    item
-                    xs={6}
-                    sm={6}
-                    xl={6}
+                    container
+                    spacing={3}
                   >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Razão social"
-                      name="nomeorrazaosocial"
-                      variant="outlined"
-                      value={person.nomeorrazaosocial}
-                      onChange={(e) => handleChangeInputsPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={6}
-                    sm={6}
-                    xl={6}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Nome fantasia"
-                      name="fantasia"
-                      variant="outlined"
-                      value={legalPerson.fantasia}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={4}
-                    sm={4}
-                    xl={4}
-                  >
-                    <InputMask value={person.cpfcnpj} onChange={(e) => handleChangeInputsPerson(e)}>
+                    <Grid
+                      item
+                      xs={6}
+                      sm={6}
+                      xl={6}
+                    >
                       <TextField
                         fullWidth
                         required
-                        label="CNPJ"
-                        name="cpfcnpj"
+                        label="Razão social"
+                        name="nomeorrazaosocial"
                         variant="outlined"
+                        value={person.nomeorrazaosocial}
+                        onChange={(e) => handleChangeInputsPerson(e)}
+
                       />
-                    </InputMask>
-                  </Grid>
+                    </Grid>
 
-                  <Grid
-                    item
-                    xs={4}
-                    sm={4}
-                    xl={4}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Inscrição Estadual"
-                      name="inscricao_estadual"
-                      variant="outlined"
-                      value={legalPerson.inscricao_estadual === null ? 'Não informado' : legalPerson.inscricao_estadual}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={4}
-                    sm={4}
-                    xl={4}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Inscrição Municipal"
-                      name="inscricao_municipal"
-                      variant="outlined"
-                      value={legalPerson.inscricao_municipal === null ? 'Não informado' : legalPerson.inscricao_municipal}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      type="date"
-                      label="Data de abertura"
-                      name="data_abertura"
-                      variant="outlined"
-                      value={legalPerson.data_abertura}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={5}
-                    sm={5}
-                    xl={5}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Ramo"
-                      name="ramo"
-                      variant="outlined"
-                      value={legalPerson.ramo}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={4}
-                    sm={4}
-                    xl={4}
-                  >
-                    <FormControl variant="outlined" className={classes.formControl}>
-                      <InputLabel id="select-company-type">Tipo da empresa</InputLabel>
-                      <Select
-                        labelId="select-company-type"
-                        value={legalPerson.tipo_empresa}
+                    <Grid
+                      item
+                      xs={6}
+                      sm={6}
+                      xl={6}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Nome fantasia"
+                        name="fantasia"
+                        variant="outlined"
+                        value={legalPerson.fantasia}
                         onChange={(e) => handleChangeInputsLegalPerson(e)}
-                        label="Tipo da empresa"
-                        name="tipo_empresa"
-                      >
-                        <MenuItem value="">
-                          <em>None</em>
-                        </MenuItem>
-                        <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
-                        <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
-                        <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
-                        <MenuItem value="Microempreendedor Individual">Microempreendedor Individual</MenuItem>
-                        <MenuItem value="Sociedade Simples">Sociedade Simples</MenuItem>
-                        <MenuItem value="Sociedade Anônima">Sociedade Anônima</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
 
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <FormControl variant="outlined" className={classes.formControl}>
-                      <InputLabel id="select-taxation">Tributação</InputLabel>
-                      <Select
-                        labelId="select-taxation"
-                        value={legalPerson.tribut}
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={4}
+                      sm={4}
+                      xl={4}
+                    >
+                      <InputMask value={person.cpfcnpj} onChange={(e) => handleChangeInputsPerson(e)}>
+                        <TextField
+                          fullWidth
+                          required
+                          label="CNPJ"
+                          name="cpfcnpj"
+                          variant="outlined"
+                        />
+                      </InputMask>
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={4}
+                      sm={4}
+                      xl={4}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Inscrição Estadual"
+                        name="inscricao_estadual"
+                        variant="outlined"
+                        value={legalPerson.inscricao_estadual === null ? 'Não informado' : legalPerson.inscricao_estadual}
                         onChange={(e) => handleChangeInputsLegalPerson(e)}
-                        label="Tributação"
-                        name="tribut"
-                      >
-                        <MenuItem value={1}>
-                          <em>Não especificado</em>
-                        </MenuItem>
-                        <MenuItem value={2}>Simples Nacional</MenuItem>
-                        <MenuItem value={3}>Lucro Real</MenuItem>
-                        <MenuItem value={4}>Lucro Presumido</MenuItem>
-                      </Select>
-                    </FormControl>
+
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={4}
+                      sm={4}
+                      xl={4}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Inscrição Municipal"
+                        name="inscricao_municipal"
+                        variant="outlined"
+                        value={legalPerson.inscricao_municipal === null ? 'Não informado' : legalPerson.inscricao_municipal}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        type="date"
+                        label="Data de abertura"
+                        name="data_abertura"
+                        variant="outlined"
+                        value={legalPerson.data_abertura}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={5}
+                      sm={5}
+                      xl={5}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Ramo"
+                        name="ramo"
+                        variant="outlined"
+                        value={legalPerson.ramo}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={4}
+                      sm={4}
+                      xl={4}
+                    >
+                      <FormControl variant="outlined" className={classes.formControl}>
+                        <InputLabel id="select-company-type">Tipo da empresa</InputLabel>
+                        <Select
+                          labelId="select-company-type"
+                          value={legalPerson.tipo_empresa}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+                          label="Tipo da empresa"
+                          name="tipo_empresa"
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                          <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                          <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                          <MenuItem value="Microempreendedor Individual">Microempreendedor Individual</MenuItem>
+                          <MenuItem value="Sociedade Simples">Sociedade Simples</MenuItem>
+                          <MenuItem value="Sociedade Anônima">Sociedade Anônima</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <FormControl variant="outlined" className={classes.formControl}>
+                        <InputLabel id="select-taxation">Tributação</InputLabel>
+                        <Select
+                          labelId="select-taxation"
+                          value={legalPerson.tribut}
+                          onChange={(e) => handleChangeInputsLegalPerson(e)}
+                          label="Tributação"
+                          name="tribut"
+                        >
+                          <MenuItem value={1}>
+                            <em>Não especificado</em>
+                          </MenuItem>
+                          <MenuItem value={2}>Simples Nacional</MenuItem>
+                          <MenuItem value={3}>Lucro Real</MenuItem>
+                          <MenuItem value={4}>Lucro Presumido</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={4}
+                      sm={4}
+                      xl={4}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Contato na empresa"
+                        name="contato"
+                        variant="outlined"
+                        value={legalPerson.contato}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+
+                      />
+                    </Grid>
                   </Grid>
-
-                  <Grid
-                    item
-                    xs={4}
-                    sm={4}
-                    xl={4}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Contato na empresa"
-                      name="contato"
-                      variant="outlined"
-                      value={legalPerson.contato}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-
-                    />
-                  </Grid>
-                </Grid>
-              </TabPanel>
-              {/* ENDEREÇOS */}
-              <TabPanel value={valueTab} index={1}>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <Tooltip title="Adicionar novo endereço">
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        size="small"
-                        onClick={handleClickOpenModalAddress}
-                      >
-                        Adicionar
-                      </Button>
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                {
-                  personAddress.map((address, index) => (
-                    <Typography component="div" key={index}>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <InputMask mask="99.999-999" value={address.cep} onChange={(e) => handleChangeInputsAddress(e, index)}>
-                            <TextField
-                              fullWidth
-                              required
-                              error={!isZipCodeValid}
-                              autoComplete="off"
-                              label="CEP"
-                              name="cep"
-                              variant="outlined"
-                            />
-                          </InputMask>
-                          {
-                            (!isZipCodeValid) && (
-                              <FormHelperText error >{errorMessageZipCode}</FormHelperText>
-                            )
-                          }
-                        </Grid>
-                      </Grid>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={6}
-                          sm={6}
-                          xl={6}
-                        >
-                          <TextField
-                            fullWidth
-                            onFocus={(e) => searchZipCode(address.cep, e, index)}
-                            required
-                            label="Rua"
-                            name="rua"
-                            variant="outlined"
-                            value={address.rua}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={4}
-                          sm={4}
-                          xl={4}
-                        >
-                          <TextField
-                            fullWidth
-                            required
-                            label="Bairro"
-                            name="bairro"
-                            variant="outlined"
-                            value={address.bairro}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={2}
-                          sm={2}
-                          xl={2}
-                        >
-                          <TextField
-                            fullWidth
-                            required
-                            label="Número"
-                            name="numero"
-                            variant="outlined"
-                            value={address.numero}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={6}
-                          sm={6}
-                          xl={6}
-                        >
-                          <TextField
-                            fullWidth
-                            required
-                            label="Complemento"
-                            name="complemento"
-                            variant="outlined"
-                            value={address.complemento === null ? 'Não informado' : address.complemento}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <TextField
-                            fullWidth
-                            required
-                            label="Cidade"
-                            name="cidade"
-                            variant="outlined"
-                            value={address.cidade}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <TextField
-                            fullWidth
-                            required
-                            label="Estado"
-                            name="estado_endereco"
-                            variant="outlined"
-                            value={address.estado_endereco}
-                            onChange={(e) => handleChangeInputsAddress(e, index)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <Tooltip title="Remover este endereço">
-                            <Button
-                              style={{ background: red[300], color: '#FFF' }}
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleClickOpenModalRemoveAddress(address.id_enderecos)}
-                            >
-                              Remover
-                            </Button>
-                          </Tooltip>
-                        </Grid>
-                      </Grid>
-                    </Typography>
-                  ))
-                }
-
-              </TabPanel>
-              {/* CONTATOS */}
-              <TabPanel value={valueTab} index={2}>
-                <Typography component="div" className={classes.containerInput}>
+                </TabPanel>
+                {/* ENDEREÇOS */}
+                <TabPanel value={valueTab} index={1}>
                   <Grid
                     container
                     spacing={3}
@@ -1573,37 +1418,229 @@ export default function EditLegalPerson(props) {
                       sm={3}
                       xl={3}
                     >
-                      <Tooltip title="Adicionar novo telefone">
+                      <Tooltip title="Adicionar novo endereço">
                         <Button
                           color="primary"
                           variant="contained"
                           size="small"
-                          onClick={handleClickOpenModalPhone}
+                          onClick={handleClickOpenModalAddress}
                         >
-                          Adicionar Telefone
+                          Adicionar
                         </Button>
                       </Tooltip>
                     </Grid>
                   </Grid>
                   <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
                   {
-                    personPhone.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações sobre telefones
+                    personAddress.map((address, index) => (
+                      <Typography component="div" key={index}>
+                        <Grid
+                          container
+                          spacing={3}
+                        >
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <Tooltip title="Remover este endereço">
+                              <Button
+                                style={{ background: red[300], color: '#FFF' }}
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleClickOpenModalRemoveAddress(address.id_enderecos)}
+                              >
+                                Remover
+                              </Button>
+                            </Tooltip>
+                          </Grid>
+                        </Grid>
+                        <Grid
+                          container
+                          spacing={3}
+                        >
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <InputMask mask="99.999-999" value={address.cep} onChange={(e) => handleChangeInputsAddress(e, index)}>
+                              <TextField
+                                fullWidth
+                                required
+                                error={!isZipCodeValid}
+                                autoComplete="off"
+                                label="CEP"
+                                name="cep"
+                                variant="outlined"
+                              />
+                            </InputMask>
+                            {
+                              (!isZipCodeValid) && (
+                                <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                              )
+                            }
+                          </Grid>
+                        </Grid>
+                        <Grid
+                          container
+                          spacing={3}
+                        >
+                          <Grid
+                            item
+                            xs={6}
+                            sm={6}
+                            xl={6}
+                          >
+                            <TextField
+                              fullWidth
+                              onFocus={(e) => searchZipCode(address.cep, e, index)}
+                              required
+                              label="Rua"
+                              name="rua"
+                              variant="outlined"
+                              value={address.rua}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            xl={4}
+                          >
+                            <TextField
+                              fullWidth
+                              required
+                              label="Bairro"
+                              name="bairro"
+                              variant="outlined"
+                              value={address.bairro}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={2}
+                            sm={2}
+                            xl={2}
+                          >
+                            <TextField
+                              fullWidth
+                              required
+                              label="Número"
+                              name="numero"
+                              variant="outlined"
+                              value={address.numero}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={6}
+                            sm={6}
+                            xl={6}
+                          >
+                            <TextField
+                              fullWidth
+                              required
+                              label="Complemento"
+                              name="complemento"
+                              variant="outlined"
+                              value={address.complemento === null ? 'Não informado' : address.complemento}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <TextField
+                              fullWidth
+                              required
+                              label="Cidade"
+                              name="cidade"
+                              variant="outlined"
+                              value={address.cidade}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <TextField
+                              fullWidth
+                              required
+                              label="Estado"
+                              name="estado_endereco"
+                              variant="outlined"
+                              value={address.estado_endereco}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
+                            />
+                          </Grid>
+                        </Grid>
+                        <Divider className={classes.divider} />
                       </Typography>
-                    )
+                    ))
                   }
-                  <Typography component="div">
+
+                </TabPanel>
+                {/* CONTATOS */}
+                <TabPanel value={valueTab} index={2}>
+                  <Grid
+                    container
+                    spacing={3}
+                  >
                     <Grid
-                      container
-                      spacing={3}
+                      item
+                      xs={5}
+                      xl={5}
+                      sm={5}
                     >
                       <Grid
-                        item
-                        xs={4}
-                        sm={4}
-                        xl={4}
+                        container
+                        spacing={3}
                       >
+                        <Grid
+                          item
+                          xs={5}
+                          sm={5}
+                          xl={5}
+                        >
+                          <Tooltip title="Adicionar novo telefone">
+                            <Button
+                              color="primary"
+                              variant="contained"
+                              size="small"
+                              onClick={handleClickOpenModalPhone}
+                            >
+                              Adicionar Telefone
+                            </Button>
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
+                      <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                      <Typography component="div" className={classes.containerInput}>
+                        <p className={classes.title}>Telefones</p>
+                        {
+                          personPhone.length === 0 && (
+                            <Typography component="h3" align="center" color="textSecondary">
+                              Este registro não contém informações sobre telefones
+                            </Typography>
+                          )
+                        }
                         {
                           personPhone.map((phone, index) => (
                             <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
@@ -1630,57 +1667,58 @@ export default function EditLegalPerson(props) {
                                 }
                                 labelWidth={70}
                               />
+                              <Divider className={classes.divider} />
                             </FormControl>
                           ))
                         }
-
-
-                      </Grid>
+                      </Typography>
                     </Grid>
-                  </Typography>
-                </Typography>
-                <Typography component="div" style={{ marginTop: '20px' }} className={classes.containerInput}>
-                  <Grid
-                    container
-                    spacing={3}
-                  >
                     <Grid
                       item
-                      xs={3}
-                      sm={3}
-                      xl={3}
+                      xl={1}
+                      xs={1}
+                      sm={1}
                     >
-                      <Tooltip title="Adicionar novo email">
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          size="small"
-                          onClick={handleClickOpenModalMail}
-                        >
-                          Adicionar E-mail
-                        </Button>
-                      </Tooltip>
+                      <Divider className={classes.dividerVertical} orientation="vertical" />
                     </Grid>
-                  </Grid>
-                  <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                  {
-                    personMail.length === 0 && (
-                      <Typography component="h3" align="center" color="textSecondary">
-                        Este registro não contém informações sobre email
-                      </Typography>
-                    )
-                  }
-                  <Typography component="div">
                     <Grid
-                      container
-                      spacing={3}
+                      item
+                      xs={5}
+                      xl={5}
+                      sm={5}
                     >
                       <Grid
-                        item
-                        xs={4}
-                        sm={4}
-                        xl={4}
+                        container
+                        spacing={3}
                       >
+                        <Grid
+                          item
+                          xs={5}
+                          sm={5}
+                          xl={5}
+                        >
+                          <Tooltip title="Adicionar novo email">
+                            <Button
+                              color="primary"
+                              variant="contained"
+                              size="small"
+                              onClick={handleClickOpenModalMail}
+                            >
+                              Adicionar E-mail
+                            </Button>
+                          </Tooltip>
+                        </Grid>
+                      </Grid>
+                      <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                      <Typography component="div" className={classes.containerInput}>
+                        <p className={classes.title}>E-mails</p>
+                        {
+                          personMail.length === 0 && (
+                            <Typography component="h3" align="center" color="textSecondary">
+                              Este registro não contém informações sobre email
+                            </Typography>
+                          )
+                        }
                         {
                           personMail.map((mail, index) => (
                             <FormControl className={classes.inputList} variant="outlined" fullWidth key={index}>
@@ -1707,463 +1745,466 @@ export default function EditLegalPerson(props) {
                                 }
                                 labelWidth={70}
                               />
+                              <Divider className={classes.divider} />
                             </FormControl>
                           ))
                         }
-                      </Grid>
+                      </Typography>
                     </Grid>
-                  </Typography>
-                </Typography>
-              </TabPanel>
-              {/* REFERÊNCIAS */}
-              <TabPanel value={valueTab} index={3}>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <Tooltip title="Adicionar nova referência">
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        size="small"
-                        onClick={handleClickOpenModalReference}
-                      >
-                        Adicionar
-                      </Button>
-                    </Tooltip>
                   </Grid>
-                </Grid>
-                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                {
-                  personReferences.length === 0 && (
-                    <Typography component="h3" align="center" color="textSecondary">
-                      Este registro não contém informações sobre referências
-                    </Typography>
-                  )
-                }
-                {
-                  personReferences.map((reference, index) => (
-                    <Typography
-                      component="div"
-                      key={index}
+                </TabPanel>
+                {/* REFERÊNCIAS */}
+                <TabPanel value={valueTab} index={3}>
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
                     >
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={6}
-                          sm={6}
-                          xl={6}
+                      <Tooltip title="Adicionar nova referência">
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          size="small"
+                          onClick={handleClickOpenModalReference}
                         >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Nome"
-                            name="nome"
-                            variant="outlined"
-                            value={reference.nome}
-                            onChange={(e) => handleChangeInputsReferences(e)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Tipo"
-                            name="tipo"
-                            variant="outlined"
-                            value={reference.tipo}
-                            onChange={(e) => handleChangeInputsReferences(e)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Telefone"
-                            name="tel"
-                            variant="outlined"
-                            value={reference.tel}
-                            onChange={(e) => handleChangeInputsReferences(e)}
-                          />
-                        </Grid>
-
-                        <Grid
-                          item
-                          xs={8}
-                          sm={8}
-                          xl={8}
-                        >
-                          <TextField
-                            fullWidth
-
-                            required
-                            label="Endereço"
-                            name="endereco"
-                            variant="outlined"
-                            value={reference.endereco}
-                            onChange={(e) => handleChangeInputsReferences(e)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <Tooltip title="Remover este registro">
-                            <Button
-                              style={{ background: red[300], color: '#FFF' }}
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleClickOpenModalRemoveReference(reference.id_referencia)}
-                            >
-                              Remover
-                            </Button>
-                          </Tooltip>
-                        </Grid>
-                      </Grid>
-                    </Typography>
-                  ))
-                }
-
-              </TabPanel>
-              {/* DADOS BANCÁRIOS */}
-              <TabPanel value={valueTab} index={4}>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <Tooltip title="Adicionar nova conta">
-                      <Button
-                        color="primary"
-                        variant="contained"
-                        size="small"
-                        onClick={handleClickOpenModalBankingReference}
-                      >
-                        Adicionar
-                      </Button>
-                    </Tooltip>
+                          Adicionar
+                        </Button>
+                      </Tooltip>
+                    </Grid>
                   </Grid>
-                </Grid>
-                <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
-                {
-                  bankingReferences.length === 0 && (
-                    <Typography component="h3" align="center" color="textSecondary">
-                      Este registro não contém informações bancárias
-                    </Typography>
-                  )
-                }
-                {
-                  bankingReferences.map((banking, index) => (
-                    <Typography component="div" key={index}>
-                      <Grid
-                        container
-                        spacing={3}
+                  <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                  {
+                    personReferences.length === 0 && (
+                      <Typography component="h3" align="center" color="textSecondary">
+                        Este registro não contém informações sobre referências
+                      </Typography>
+                    )
+                  }
+                  {
+                    personReferences.map((reference, index) => (
+                      <Typography
+                        component="div"
+                        key={index}
                       >
                         <Grid
-                          item
-                          xs={4}
-                          sm={4}
-                          xl={4}
+                          container
+                          spacing={3}
                         >
-                          <FormControl variant="outlined" className={classes.formControl}>
-                            <InputLabel id="select-banks-registered">Banco</InputLabel>
-                            <Select
-                              labelId="select-banks-registered"
-                              value={banking.id_bancos_fk}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
-                              label="Banco"
-                              name="id_bancos_fk"
-                              required
-                            >
-                              {
-                                registeredBanks.map(bank => (
-                                  <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
-                                ))
-                              }
-                            </Select>
-                          </FormControl>
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <Tooltip title="Remover este registro">
+                              <Button
+                                style={{ background: red[300], color: '#FFF' }}
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleClickOpenModalRemoveReference(reference.id_referencia)}
+                              >
+                                Remover
+                              </Button>
+                            </Tooltip>
+                          </Grid>
                         </Grid>
-
                         <Grid
-                          item
-                          xs={4}
-                          sm={4}
-                          xl={4}
+                          container
+                          spacing={3}
                         >
-                          <FormControl variant="outlined" className={classes.formControl}>
-                            <InputLabel id="select-type-account">Tipo</InputLabel>
-                            <Select
-                              labelId="select-type-account"
-                              id="type-account"
-                              value={banking.tipo}
-                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
+                          <Grid
+                            item
+                            xs={6}
+                            sm={6}
+                            xl={6}
+                          >
+                            <TextField
+                              fullWidth
+
+                              required
+                              label="Nome"
+                              name="nome"
+                              variant="outlined"
+                              value={reference.nome}
+                              onChange={(e) => handleChangeInputsReferences(e)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <TextField
+                              fullWidth
+
+                              required
                               label="Tipo"
                               name="tipo"
+                              variant="outlined"
+                              value={reference.tipo}
+                              onChange={(e) => handleChangeInputsReferences(e)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <TextField
+                              fullWidth
+
                               required
-                            >
-                              <MenuItem value="">
-                                <em>None</em>
-                              </MenuItem>
-                              <MenuItem value="Conta corrente">Conta corrente</MenuItem>
-                              <MenuItem value="Conta poupança">Conta poupança</MenuItem>
-                              <MenuItem value="Conta salário">Conta salário</MenuItem>
-                              <MenuItem value="Conta digital">Conta digital</MenuItem>
-                              <MenuItem value="Conta universitária">Conta universitária</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                      </Grid>
+                              label="Telefone"
+                              name="tel"
+                              variant="outlined"
+                              value={reference.tel}
+                              onChange={(e) => handleChangeInputsReferences(e)}
+                            />
+                          </Grid>
 
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
+                          <Grid
+                            item
+                            xs={8}
+                            sm={8}
+                            xl={8}
+                          >
+                            <TextField
+                              fullWidth
+
+                              required
+                              label="Endereço"
+                              name="endereco"
+                              variant="outlined"
+                              value={reference.endereco}
+                              onChange={(e) => handleChangeInputsReferences(e)}
+                            />
+                          </Grid>
+                        </Grid>
+                        <Divider className={classes.divider} />
+                      </Typography>
+                    ))
+                  }
+
+                </TabPanel>
+                {/* DADOS BANCÁRIOS */}
+                <TabPanel value={valueTab} index={4}>
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <Tooltip title="Adicionar nova conta">
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          size="small"
+                          onClick={handleClickOpenModalBankingReference}
                         >
-                          <TextField
-                            fullWidth
+                          Adicionar
+                        </Button>
+                      </Tooltip>
+                    </Grid>
+                  </Grid>
+                  <Divider style={{ marginBottom: '20px', marginTop: '20px' }} />
+                  {
+                    bankingReferences.length === 0 && (
+                      <Typography component="h3" align="center" color="textSecondary">
+                        Este registro não contém informações bancárias
+                      </Typography>
+                    )
+                  }
+                  {
+                    bankingReferences.map((banking, index) => (
+                      <Typography component="div" key={index}>
+                        <Grid
+                          container
+                          spacing={3}
+                        >
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <Tooltip title="Remover este registro">
+                              <Button
+                                style={{ background: red[300], color: '#FFF' }}
+                                variant="contained"
+                                size="small"
+                                onClick={() => handleClickOpenModalRemoveBankingReference(banking.id_banco)}
+                              >
+                                Remover
+                              </Button>
+                            </Tooltip>
+                          </Grid>
+                        </Grid>
+                        <Grid
+                          container
+                          spacing={3}
+                        >
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            xl={4}
+                          >
+                            <FormControl variant="outlined" className={classes.formControl}>
+                              <InputLabel id="select-banks-registered">Banco</InputLabel>
+                              <Select
+                                labelId="select-banks-registered"
+                                value={banking.id_bancos_fk}
+                                onChange={(e) => handleChangeInputsBankingReferences(e)}
+                                label="Banco"
+                                name="id_bancos_fk"
+                                required
+                              >
+                                {
+                                  registeredBanks.map(bank => (
+                                    <MenuItem value={bank.id_bancos} key={bank.id_bancos}>{bank.banco}</MenuItem>
+                                  ))
+                                }
+                              </Select>
+                            </FormControl>
+                          </Grid>
 
-                            required
-                            label="Conta"
-                            name="conta"
-                            variant="outlined"
-                            value={banking.conta}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
-                          />
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            xl={4}
+                          >
+                            <FormControl variant="outlined" className={classes.formControl}>
+                              <InputLabel id="select-type-account">Tipo</InputLabel>
+                              <Select
+                                labelId="select-type-account"
+                                id="type-account"
+                                value={banking.tipo}
+                                onChange={(e) => handleChangeInputsBankingReferences(e, index)}
+                                label="Tipo"
+                                name="tipo"
+                                required
+                              >
+                                <MenuItem value="">
+                                  <em>None</em>
+                                </MenuItem>
+                                <MenuItem value="Conta corrente">Conta corrente</MenuItem>
+                                <MenuItem value="Conta poupança">Conta poupança</MenuItem>
+                                <MenuItem value="Conta salário">Conta salário</MenuItem>
+                                <MenuItem value="Conta digital">Conta digital</MenuItem>
+                                <MenuItem value="Conta universitária">Conta universitária</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
                         </Grid>
 
                         <Grid
-                          item
-                          xs={2}
-                          sm={2}
-                          xl={2}
+                          container
+                          spacing={3}
                         >
-                          <TextField
-                            fullWidth
+                          <Grid
+                            item
+                            xs={3}
+                            sm={3}
+                            xl={3}
+                          >
+                            <TextField
+                              fullWidth
 
-                            required
-                            label="Agência"
-                            name="agencia"
-                            variant="outlined"
-                            value={banking.agencia}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
-                          />
+                              required
+                              label="Conta"
+                              name="conta"
+                              variant="outlined"
+                              value={banking.conta}
+                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={2}
+                            sm={2}
+                            xl={2}
+                          >
+                            <TextField
+                              fullWidth
+
+                              required
+                              label="Agência"
+                              name="agencia"
+                              variant="outlined"
+                              value={banking.agencia}
+                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            />
+                          </Grid>
+
+                          <Grid
+                            item
+                            xs={4}
+                            sm={4}
+                            xl={4}
+                          >
+                            <TextField
+                              fullWidth
+                              type="date"
+                              required
+                              label="Abertura"
+                              name="abertura"
+                              variant="outlined"
+                              value={moment(banking.abertura).format('YYYY-MM-DD')}
+                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                            />
+                          </Grid>
                         </Grid>
-
-                        <Grid
-                          item
-                          xs={4}
-                          sm={4}
-                          xl={4}
-                        >
-                          <TextField
-                            fullWidth
-                            type="date"
-                            required
-                            label="Abertura"
-                            name="abertura"
-                            variant="outlined"
-                            value={moment(banking.abertura).format('YYYY-MM-DD')}
-                            onChange={(e) => handleChangeInputsBankingReferences(e)}
-                          />
-                        </Grid>
-                      </Grid>
-                      <Grid
-                        container
-                        spacing={3}
-                      >
-                        <Grid
-                          item
-                          xs={3}
-                          sm={3}
-                          xl={3}
-                        >
-                          <Tooltip title="Remover este registro">
-                            <Button
-                              style={{ background: red[300], color: '#FFF' }}
-                              variant="contained"
-                              size="small"
-                              onClick={() => handleClickOpenModalRemoveBankingReference(banking.id_banco)}
-                            >
-                              Remover
-                            </Button>
-                          </Tooltip>
-                        </Grid>
-                      </Grid>
-                    </Typography>
-                  ))
-                }
-              </TabPanel>
-              {/* FINANCEIRO */}
-              <TabPanel value={valueTab} index={5}>
-                <Grid
-                  container
-                  spacing={3}
-                >
+                        <Divider className={classes.divider} />
+                      </Typography>
+                    ))
+                  }
+                </TabPanel>
+                {/* FINANCEIRO */}
+                <TabPanel value={valueTab} index={5}>
                   <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
+                    container
+                    spacing={3}
                   >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Limite"
-                      name="limite"
-                      variant="outlined"
-                      value={person.limite}
-                      onChange={(e) => handleChangeInputsPerson(e)}
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Saldo"
-                      name="saldo"
-                      variant="outlined"
-                      value={person.saldo}
-                      onChange={(e) => handleChangeInputsPerson(e)}
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Capital"
-                      name="capsocial"
-                      variant="outlined"
-                      value={legalPerson.capsocial}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    />
-                  </Grid>
-
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <TextField
-                      fullWidth
-                      required
-                      label="Receitas"
-                      name="faturamento"
-                      variant="outlined"
-                      value={legalPerson.faturamento}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
-                    />
-                  </Grid>
-                </Grid>
-              </TabPanel>
-              {/* OPÇÕES */}
-              <TabPanel value={valueTab} index={6}>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={3}
-                    sm={3}
-                    xl={3}
-                  >
-                    <FormControl variant="outlined" className={classes.formControl}>
-                      <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
-                      <Select
-                        labelId="demo-simple-select-outlined-label"
-                        id="demo-simple-select-outlined"
-                        value={person.forn}
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Limite"
+                        name="limite"
+                        variant="outlined"
+                        value={person.limite}
                         onChange={(e) => handleChangeInputsPerson(e)}
-                        label="Fornecedor"
-                        name="forn"
-                      >
-                        <MenuItem value={1}>Sim</MenuItem>
-                        <MenuItem value={0}>Não</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </TabPanel>
+                      />
+                    </Grid>
 
-              <Grid
-                item
-                xs={12}
-                sm={12}
-                xl={12}
-              >
-                <Divider style={{ marginTop: '20px' }} />
-                <Box
-                  display="flex"
-                  justifyContent="flex-start"
-                  alignItems="flex-end"
-                  padding="20px"
-                >
-                  <Button
-                    color="primary"
-                    variant="contained"
-                    type="submit"
-                    className={buttonClassname}
-                    disabled={loading}
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Saldo"
+                        name="saldo"
+                        variant="outlined"
+                        value={person.saldo}
+                        onChange={(e) => handleChangeInputsPerson(e)}
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Capital"
+                        name="capsocial"
+                        variant="outlined"
+                        value={legalPerson.capsocial}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                      />
+                    </Grid>
+
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <TextField
+                        fullWidth
+                        required
+                        label="Receitas"
+                        name="faturamento"
+                        variant="outlined"
+                        value={legalPerson.faturamento}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                      />
+                    </Grid>
+                  </Grid>
+                </TabPanel>
+                {/* OPÇÕES */}
+                <TabPanel value={valueTab} index={6}>
+                  <Grid
+                    container
+                    spacing={3}
                   >
-                    Salvar
-                    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-                  </Button>
-                </Box>
-              </Grid>
+                    <Grid
+                      item
+                      xs={3}
+                      sm={3}
+                      xl={3}
+                    >
+                      <FormControl variant="outlined" className={classes.formControl}>
+                        <InputLabel id="demo-simple-select-outlined-label">Fornecedor</InputLabel>
+                        <Select
+                          labelId="demo-simple-select-outlined-label"
+                          id="demo-simple-select-outlined"
+                          value={person.forn}
+                          onChange={(e) => handleChangeInputsPerson(e)}
+                          label="Fornecedor"
+                          name="forn"
+                        >
+                          <MenuItem value={1}>Sim</MenuItem>
+                          <MenuItem value={0}>Não</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </Grid>
+                  </Grid>
+                </TabPanel>
+
+                <Grid
+                  item
+                  xs={12}
+                  sm={12}
+                  xl={12}
+                >
+                  <Divider style={{ marginTop: '20px' }} />
+                  <Box
+                    display="flex"
+                    justifyContent="flex-start"
+                    alignItems="flex-end"
+                    padding="20px"
+                  >
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      type="submit"
+                      className={buttonClassname}
+                      disabled={loading}
+                    >
+                      Salvar
+                      {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                    </Button>
+                  </Box>
+                </Grid>
+              </SwipeableViews>
             </form>
           </div>
         </Container>

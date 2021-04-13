@@ -255,9 +255,12 @@ const useStyles = makeStyles((theme) => ({
   inputList: {
     marginTop: theme.spacing(2)
   },
-  divFooter: {
-    position: 'absolute',
-    bottom: 0
+  buttonDefault: {
+    background: '#3f51b5',
+    color: '#FFF',
+    '&:hover': {
+      backgroundColor: '#002984'
+    }
   },
   divider: {
     margin: '20px'
@@ -266,6 +269,7 @@ const useStyles = makeStyles((theme) => ({
     margin: 'auto'
   },
   title: {
+    marginBottom: '10px',
     color: grey[700]
   }
 }));

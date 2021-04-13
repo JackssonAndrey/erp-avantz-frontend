@@ -1,6 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
-import { green, grey } from '@material-ui/core/colors';
-
+import { green, red, blue } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -44,42 +43,20 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: green[700],
     },
   },
+  buttonError: {
+    backgroundColor: red[500],
+    '&:hover': {
+      backgroundColor: green[700],
+    },
+  },
   buttonProgress: {
-    color: green[500],
+    color: blue[500],
     position: 'absolute',
     top: '50%',
     left: '50%',
     marginTop: -12,
     marginLeft: -12,
   },
-  cardContent: {
-    marginTop: theme.spacing(3)
-  },
-  avatarLarge: {
-    width: theme.spacing(10),
-    height: theme.spacing(10)
-  },
-  tabArea: {
-    marginTop: theme.spacing(3),
-    boxShadow: '0 3px 3px #9e9e9e',
-    minHeight: '400px',
-    backgroundColor: '#FFF'
-  },
-  appBar: {
-    backgroundColor: '#FFF'
-  },
-  formControl: {
-    width: '100%'
-  },
-  divider: {
-    margin: '20px'
-  },
-  dividerVertical: {
-    margin: 'auto'
-  },
-  title: {
-    color: grey[700]
-  }
 }));
 
 export default useStyles;
