@@ -1373,16 +1373,14 @@ export default function EditPhysicalPerson(props) {
                           fullWidth
                           labelId="select-orgao-emissor-label"
                           id="select-orgao-emissor"
-                          value={physicalPerson.id_uf_municipio_fk}
+                          value={ufs.length > 1 ? physicalPerson.id_uf_municipio_fk : ""}
                           onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                           label="Órgão Emissor/UF"
                           name="id_uf_municipio_fk"
                         >
-                          <MenuItem value="">
-                            <em>None</em>
-                          </MenuItem>
+                          <MenuItem value=""><em>None</em></MenuItem>
                           {
-                            ufs.map((uf, index) => (
+                            ufs.length > 1 && ufs.map((uf, index) => (
                               <MenuItem key={index} value={uf.id_municipios}>{uf.uf_sigla}</MenuItem>
                             ))
                           }
@@ -1404,7 +1402,6 @@ export default function EditPhysicalPerson(props) {
                           value={physicalPerson.sexo}
                           onChange={(e) => handleChangeInputsPhysicalPerson(e)}
                           label="Sexo"
-
                           name="sexo"
                         >
                           <MenuItem value="">
@@ -1431,7 +1428,6 @@ export default function EditPhysicalPerson(props) {
                         variant="outlined"
                         value={physicalPerson.data_de_nascimento}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-
                       />
                     </Grid>
 
@@ -1499,7 +1495,6 @@ export default function EditPhysicalPerson(props) {
                         variant="outlined"
                         value={physicalPerson.apelido}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-
                       />
                     </Grid>
 
@@ -1511,13 +1506,11 @@ export default function EditPhysicalPerson(props) {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Nome do pai"
                         name="pai"
                         variant="outlined"
                         value={physicalPerson.pai === null ? 'Não informado' : physicalPerson.pai}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-
                       />
                     </Grid>
 
@@ -1529,13 +1522,11 @@ export default function EditPhysicalPerson(props) {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Nome da mãe"
                         name="mae"
                         variant="outlined"
                         value={physicalPerson.mae === null ? 'Não informado' : physicalPerson.mae}
                         onChange={(e) => handleChangeInputsPhysicalPerson(e)}
-
                       />
                     </Grid>
                   </Grid>
@@ -2244,8 +2235,6 @@ export default function EditPhysicalPerson(props) {
                       xl={1}
                       xs={1}
                       sm={1}
-                      alignContent="center"
-                      alignItems="center"
                     >
                       <Divider className={classes.dividerVertical} orientation="vertical" />
                     </Grid>

@@ -799,7 +799,6 @@ export default function RegisterPhysicalPerson(props) {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Nome do pai"
                         name="pai"
                         variant="outlined"
@@ -817,7 +816,6 @@ export default function RegisterPhysicalPerson(props) {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Nome da mãe"
                         name="mae"
                         variant="outlined"
