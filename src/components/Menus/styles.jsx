@@ -1,4 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
+import { grey } from '@material-ui/core/colors';
 
 const drawerWidth = 240;
 const useStyles = makeStyles((theme) => ({
@@ -78,11 +79,29 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
-  modal: {
+  modalContent: {
     display: 'flex',
-    padding: theme.spacing(1),
+    flexDirection: 'column',
+    padding: theme.spacing(3),
     alignItems: 'center',
     justifyContent: 'center',
+    width: '400px'
+  },
+  modalIcon: {
+    fontSize: '6rem',
+    color: grey[300],
+    margin: 'auto'
+  },
+  divIconModal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  iconMenuTop: {
+    fontSize: '1rem',
+    color: grey[500],
+    marginRight: '10px'
   }
 }));
 

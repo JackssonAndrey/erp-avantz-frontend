@@ -1,5 +1,5 @@
 import { lighten, makeStyles } from '@material-ui/core/styles';
-import { red, blue, green } from '@material-ui/core/colors';
+import { red, blue, green, grey } from '@material-ui/core/colors';
 
 const useToolbarStyles = makeStyles((theme) => ({
   root: {
@@ -70,6 +70,28 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       backgroundColor: '#ba000d'
     }
+  },
+  modalContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(3),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '450px'
+  },
+  modalIcon: {
+    fontSize: '6rem',
+    color: red[300],
+    margin: 'auto'
+  },
+  divIconModal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  modalContentText: {
+    textAlign: 'center'
   }
 }));
 

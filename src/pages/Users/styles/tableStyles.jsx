@@ -64,6 +64,35 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
+  buttonDefault: {
+    background: '#3f51b5',
+    color: '#FFF',
+    '&:hover': {
+      backgroundColor: '#002984'
+    }
+  },
+  modalContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(3),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '450px'
+  },
+  modalIcon: {
+    fontSize: '6rem',
+    color: red[300],
+    margin: 'auto'
+  },
+  divIconModal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  modalContentText: {
+    textAlign: 'center'
+  }
 }));
 
 export { useToolbarStyles, useStyles };

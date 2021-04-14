@@ -5,7 +5,10 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
   Notifications as NotificationsIcon,
-  MoreVert as MoreVertIcon
+  MoreVert as MoreVertIcon,
+  ExitToApp as ExitToAppIcon,
+  Person as PersonIcon,
+  Settings as SettingsIcons
 } from '@material-ui/icons';
 import {
   Button,
@@ -98,16 +101,16 @@ export default function Menus(props) {
           >
             <Link to="/profile" className="link">
               <MenuItem onClick={handleClose}>
-                Perfil
+                <PersonIcon className={classes.iconMenuTop} /> Perfil
               </MenuItem>
             </Link>
             <Link to="/settings" className="link">
               <MenuItem onClick={handleClose}>
-                Configurações
+                <SettingsIcons className={classes.iconMenuTop} /> Configurações
               </MenuItem>
             </Link>
             <MenuItem onClick={handleToggleModal}>
-              Logout
+              <ExitToAppIcon className={classes.iconMenuTop} /> Logout
             </MenuItem>
 
           </Menu>
@@ -140,17 +143,20 @@ export default function Menus(props) {
       >
         <DialogTitle id="alert-dialog-title">{"Sair do sistema"}</DialogTitle>
         <Divider />
-        <DialogContent>
+        <DialogContent className={classes.modalContent}>
+          <div className={classes.divIconModal}>
+            <ExitToAppIcon className={classes.modalIcon} />
+          </div>
           <DialogContentText id="alert-dialog-description">
             Você realmente deseja sair do sistema?
           </DialogContentText>
         </DialogContent>
         <Divider />
         <DialogActions>
-          <Button onClick={handleToggleModal} color="secondary">
+          <Button onClick={handleToggleModal} color="secondary" variant="outlined">
             Cancelar
           </Button>
-          <Button onClick={handleLogout} color="primary" autoFocus>
+          <Button onClick={handleLogout} color="primary" autoFocus variant="contained">
             Sair
           </Button>
         </DialogActions>

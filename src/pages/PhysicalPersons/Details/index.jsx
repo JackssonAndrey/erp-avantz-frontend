@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
+import clsx from 'clsx';
 import { useTheme } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import { orange } from '@material-ui/core/colors';
+import { orange, red } from '@material-ui/core/colors';
 import {
   Box,
   Container,
@@ -21,14 +22,28 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Divider
+  Divider,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContentText,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Button
 } from '@material-ui/core';
-import { ArrowBack, Edit } from '@material-ui/icons';
+import {
+  ArrowBack,
+  Edit,
+  Delete,
+  DeleteForever as DeleteForeverIcon
+} from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
+import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
@@ -125,7 +140,12 @@ function a11yProps(index) {
 export default function PhysicalPersonDetails(props) {
   const classes = useStyles();
   const theme = useTheme();
+  const timer = useRef();
   const idPerson = props.match.params.id;
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const [defaultButton, setDefaultButton] = useState(false);
   const [valueTab, setValueTab] = useState(0);
   const [bankingReferences, setBankingReferences] = useState([{}]);
   const [person, setPerson] = useState(initialStatePerson);
@@ -136,6 +156,13 @@ export default function PhysicalPersonDetails(props) {
   const [personReferences, setPersonReferences] = useState([{}]);
   const [registeredBanks, setRegisteredBanks] = useState([]);
   const [counties, setCounties] = useState([{}]);
+  const [openModal, setOpenModal] = useState(false);
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+    [classes.buttonDefault]: defaultButton
+  });
 
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
@@ -143,6 +170,37 @@ export default function PhysicalPersonDetails(props) {
 
   const handleChangeIndex = (index) => {
     setValueTab(index);
+  };
+
+  const handleClickOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setDefaultButton(true);
+  };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
   };
 
   useEffect(() => {
@@ -168,6 +226,12 @@ export default function PhysicalPersonDetails(props) {
       }
     })();
   }, [idPerson]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
 
   useEffect(() => {
     (async function () {
@@ -229,6 +293,32 @@ export default function PhysicalPersonDetails(props) {
     setBankingReferences([{ ...bankingReferences, [name]: value }]);
   }
 
+  async function handleDeletePerson(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/persons/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Registro da pessoa deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+        history.push('/physical/persons');
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -245,16 +335,26 @@ export default function PhysicalPersonDetails(props) {
                 justifyContent="flex-start"
               >
                 <Link to="/physical/persons/" className="link">
-                  <IconButton>
-                    <ArrowBack />
-                  </IconButton>
+                  <Tooltip title="Voltar">
+                    <IconButton>
+                      <ArrowBack />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
 
                 <Link to={`/physical/person/edit/${idPerson}`} className="link" >
-                  <IconButton>
-                    <Edit style={{ color: orange[300] }} />
-                  </IconButton>
+                  <Tooltip title="Editar">
+                    <IconButton >
+                      <Edit style={{ color: orange[300] }} />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
+
+                <Tooltip title="Deletar">
+                  <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
+                    <Delete style={{ color: red[300] }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </CardContent>
           </Card>
@@ -1541,6 +1641,40 @@ export default function PhysicalPersonDetails(props) {
         <Box pt={4}>
           <Copyright />
         </Box>
+
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+              <p>Você realmente deseja deletar este registro? Esta operação não pode ser desfeita.</p>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button
+              onClick={() => handleDeletePerson(idPerson)}
+              color="secondary"
+              className={buttonClassname}
+              disabled={loading}
+              variant="contained"
+            >
+              Deletar
+              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+            <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </main>
     </div>
   );

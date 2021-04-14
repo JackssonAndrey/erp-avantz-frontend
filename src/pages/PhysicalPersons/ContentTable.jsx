@@ -5,7 +5,8 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   More as DetailIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  DeleteForever as DeleteForeverIcon
 } from '@material-ui/icons';
 
 import {
@@ -44,7 +45,8 @@ import {
   TableContainer,
   TableCell,
   TableBody,
-  Table
+  Table,
+  Divider
 } from '@material-ui/core';
 
 import { Link } from 'react-router-dom';
@@ -464,23 +466,29 @@ export default function EnhancedTable() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Deletar Pessoa</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Você realmente deseja deletar este registro?
+        <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+        <Divider />
+        <DialogContent className={classes.modalContent}>
+          <div className={classes.divIconModal}>
+            <DeleteForeverIcon className={classes.modalIcon} />
+          </div>
+          <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+            <p>Você realmente deseja deletar este registro? Esta operação não pode ser desfeita.</p>
           </DialogContentText>
         </DialogContent>
+        <Divider />
         <DialogActions>
           <Button
             onClick={() => handleDeletePerson(personId)}
             color="secondary"
             className={buttonClassname}
             disabled={loading}
+            variant="contained"
           >
             Deletar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
-          <Button onClick={handleCloseModal} color="primary" autoFocus>
+          <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
             Cancelar
           </Button>
         </DialogActions>

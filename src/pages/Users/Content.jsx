@@ -22,11 +22,16 @@ import {
   DialogContentText,
   DialogTitle,
   CircularProgress,
-  Button
+  Button,
+  Divider
 } from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import EditIcon from '@material-ui/icons/Edit';
-import DetailIcon from '@material-ui/icons/More';
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  More as DetailIcon,
+  DeleteForever as DeleteForeverIcon
+} from '@material-ui/icons';
+
 import { orange, lightBlue, red } from '@material-ui/core/colors';
 
 import api from '../../services/api';
@@ -133,6 +138,7 @@ export default function EnhancedTable() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+  const [defaultButton, setDefaultButton] = useState(false);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
@@ -144,6 +150,7 @@ export default function EnhancedTable() {
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
+    [classes.buttonDefault]: defaultButton
   });
 
   useEffect(() => {
@@ -243,7 +250,8 @@ export default function EnhancedTable() {
       }, 2000);
       setTimeout(() => {
         handleCloseModal();
-      }, 7000);
+        setDefaultButton(true);
+      }, 3500);
     }).catch(reject => {
       const { data } = reject.response;
       handleButtonClickProgressError();
@@ -339,22 +347,28 @@ export default function EnhancedTable() {
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">Deletar usuário</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Você realmente deseja deletar este usuário?
+        <Divider />
+        <DialogContent className={classes.modalContent}>
+          <div className={classes.divIconModal}>
+            <DeleteForeverIcon className={classes.modalIcon} />
+          </div>
+          <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+            <p>Você realmente deseja deletar este usuário? Esta operação não pode ser desfeita.</p>
           </DialogContentText>
         </DialogContent>
+        <Divider />
         <DialogActions>
           <Button
             onClick={() => handleDeleteUser(userId)}
             color="secondary"
             className={buttonClassname}
             disabled={loading}
+            variant="contained"
           >
             Deletar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
-          <Button onClick={handleCloseModal} color="primary" autoFocus>
+          <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
             Cancelar
           </Button>
         </DialogActions>
