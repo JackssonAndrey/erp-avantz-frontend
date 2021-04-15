@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -23,13 +24,31 @@ import {
   DialogTitle,
   CircularProgress,
   Button,
-  Divider
+  Divider,
+  Badge,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  InputAdornment,
+  SvgIcon,
+  Grid,
+  FormControl,
+  InputLabel,
+  OutlinedInput
 } from '@material-ui/core';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   More as DetailIcon,
-  DeleteForever as DeleteForeverIcon
+  DeleteForever as DeleteForeverIcon,
+  Search as SearchIcon,
+  Close as CloseIcon
 } from '@material-ui/icons';
 
 import { orange, lightBlue, red } from '@material-ui/core/colors';
@@ -72,7 +91,8 @@ const headCells = [
   { id: 'first_name', numeric: false, disablePadding: true, label: 'Primeiro nome' },
   { id: 'username', numeric: false, disablePadding: true, label: 'Nome usuário' },
   { id: 'email', numeric: false, disablePadding: true, label: 'E-mail' },
-  { id: 'actions', numeric: false, disablePadding: false, label: '' },
+  { id: 'is_active', numeric: false, disablePadding: true, label: 'Ativo' },
+  { id: 'actions', numeric: false, disablePadding: true, label: '' },
 ];
 
 function EnhancedTableHead(props) {
@@ -146,6 +166,10 @@ export default function EnhancedTable() {
   const [users, setUsers] = useState([]);
   const [userId, setUserId] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [groupId, setGroupId] = useState(0);
+  const [userSearch, setUserSearch] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -169,6 +193,14 @@ export default function EnhancedTable() {
     setOpenModal(false);
   };
 
+  function handleClickOpen() {
+    setOpen(true);
+  };
+
+  function handleClose() {
+    setOpen(false);
+  };
+
   function handleButtonClickProgressError() {
     if (!loading) {
       setSuccess(false);
@@ -190,6 +222,33 @@ export default function EnhancedTable() {
       }, 2000);
     }
   };
+
+  useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
+    api.get('/groups/', {
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    }).then(response => {
+      setGroups(response.data);
+    }).catch(reject => {
+      const { data } = reject.response;
+      toast.error(`${data.detail}`);
+      setTimeout(() => {
+        handleLogout();
+      }, 5000);
+      console.log(data);
+    });
+  }, [groupId, handleLogout]);
+
+  function handleDetailGroup(id) {
+    history.push(`/groups/details/${id}`);
+  }
+
+  function handleEditGroup(id) {
+    history.push(`/groups/edit/${id}`);
+  }
 
   useEffect(() => {
     async function getAllUsers() {
@@ -263,8 +322,159 @@ export default function EnhancedTable() {
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
 
+  async function handleSearchUser(e) {
+    e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      if (userSearch !== '') {
+        const { data } = await api.get(`/users/list/${userSearch}`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setUsers(data.users);
+      } else {
+        const { data } = await api.get(`/users/list`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setUsers(data.users);
+      }
+    } catch (err) {
+      const { data } = err.response;
+      toast.error(`${data.detail}`);
+    }
+  }
+
   return (
     <div className={classes.root}>
+      <Card>
+        <CardContent>
+          <Grid
+            container
+            spacing={3}
+          >
+            <Grid
+              item
+              xl={6}
+              xs={6}
+              sm={6}
+            >
+              <form onSubmit={(e) => handleSearchUser(e)}>
+                <FormControl variant="outlined" fullWidth size="small" >
+                  <InputLabel>Pesquisar</InputLabel>
+                  <OutlinedInput
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    fullWidth
+                    label="Pesquisar"
+                    name="searchPerson"
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <Tooltip title="Pesquisar">
+                          <IconButton
+                            aria-label="Pesquisar"
+                            edge="end"
+                            type="submit"
+                          >
+                            <SearchIcon size={8} color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    }
+                    labelWidth={70}
+                  />
+                </FormControl>
+              </form>
+            </Grid>
+            <Grid
+              item
+              xl={6}
+              xs={6}
+              sm={6}
+            >
+              <Box
+                display="flex"
+                justifyContent="flex-end"
+              >
+                <Button
+                  className={classes.groupButton}
+                  onClick={handleClickOpen}
+                  color="default"
+                  variant="contained"
+                >
+                  Grupos
+                </Button>
+                <Link to="/users/register" className="link" >
+                  <Button
+                    color="primary"
+                    variant="contained"
+                  >
+                    Adicionar usuário
+                  </Button>
+                </Link>
+              </Box>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+
+
+      {/* MODAL GROUPS */}
+      <Dialog open={open} onClose={handleClose} className={classes.groupModal} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">
+          <Typography variant="h6" >Grupos de usuários</Typography>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Paper className={classes.paper}>
+            <Box
+              display="flex"
+              justifyContent="flex-end"
+            >
+              <Link to="/groups/register" className="link" >
+                <Button
+                  color="primary"
+                  variant="contained"
+                >
+                  Adicionar grupo
+                </Button>
+              </Link>
+            </Box>
+            <Box>
+              <List className={classes.listGroup}>
+                {
+                  groups.map((group) => (
+                    <ListItem key={group.id_grupo} button onClick={() => handleDetailGroup(group.id_grupo)}>
+                      <ListItemText>
+                        {group.grupo}
+                      </ListItemText>
+                      <ListItemSecondaryAction>
+                        <Tooltip title="Editar">
+                          <IconButton edge="end" onClick={() => handleEditGroup(group.id_grupo)} aria-label="edit">
+                            <EditIcon size={8} style={{ color: orange[300] }} />
+                          </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Deletar">
+                          <IconButton edge="end" aria-label="delete">
+                            <DeleteIcon size={8} style={{ color: red[300] }} />
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))
+                }
+              </List>
+            </Box>
+          </Paper>
+        </DialogContent>
+      </Dialog>
+
       <Paper className={classes.paper}>
         <EnhancedTableToolbar />
         <TableContainer>
@@ -301,6 +511,15 @@ export default function EnhancedTable() {
                       </TableCell>
                       <TableCell padding="none" align="left">{user.username}</TableCell>
                       <TableCell padding="none" align="left">{user.email}</TableCell>
+                      <TableCell padding="none" align="left">
+                        {
+                          user.is_active === true ? (
+                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                          ) : (
+                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                          )
+                        }
+                      </TableCell>
                       <TableCell padding="default" align="right">
                         <Tooltip title="Editar">
                           <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
@@ -309,12 +528,12 @@ export default function EnhancedTable() {
                         </Tooltip>
                         <Tooltip title="Detalhes">
                           <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
-                            <DetailIcon size={8} style={{ color: lightBlue[600] }} />
+                            <DetailIcon size={8} style={{ color: lightBlue[300] }} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Deletar">
                           <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
-                            <DeleteIcon size={8} style={{ color: red[200] }} />
+                            <DeleteIcon size={8} style={{ color: red[300] }} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -340,6 +559,7 @@ export default function EnhancedTable() {
           labelRowsPerPage="Linhas por página"
         />
       </Paper>
+      {/* DELETE USER MODAL */}
       <Dialog
         open={openModal}
         onClose={handleCloseModal}

@@ -92,6 +92,21 @@ const useStyles = makeStyles((theme) => ({
   },
   modalContentText: {
     textAlign: 'center'
+  },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+  groupModal: {
+    padding: theme.spacing(2)
+  },
+  listGroup: {
+    width: '400px'
+  },
+  groupButton: {
+    marginRight: theme.spacing(2)
   }
 }));
 

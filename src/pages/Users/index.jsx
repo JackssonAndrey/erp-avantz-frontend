@@ -6,7 +6,6 @@ import {
   Container
 } from '@material-ui/core';
 
-import PageHeader from './PageHeader';
 import EnhancedTable from './Content';
 import Menus from '../../components/Menus';
 import Copyright from '../../components/Copyright';
@@ -25,7 +24,6 @@ export default function Users() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
-          <PageHeader />
 
           <EnhancedTable />
         </Container>

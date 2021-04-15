@@ -312,10 +312,6 @@ const PageHeader = ({ className, ...rest }) => {
         display="flex"
         justifyContent="flex-end"
       >
-        {/* <Button className={classes.importButton}>
-          Import
-        </Button>
-        */}
         <Button className={classes.groupButton} onClick={handleClickOpen} color="default" variant="contained" >
           Grupos
         </Button>
@@ -325,7 +321,7 @@ const PageHeader = ({ className, ...rest }) => {
             variant="contained"
           >
             Adicionar usuário
-        </Button>
+          </Button>
         </Link>
       </Box>
       <Box mt={3}>
@@ -353,7 +349,7 @@ const PageHeader = ({ className, ...rest }) => {
           </CardContent>
         </Card>
       </Box>
-
+      {/* MODAL GROUPS */}
       <Dialog open={open} onClose={handleClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">Grupos de usuários</DialogTitle>
         <DialogContent>
@@ -447,7 +443,7 @@ const PageHeader = ({ className, ...rest }) => {
           </Button>
         </DialogActions>
       </Dialog>
-
+      {/* DELETE MODAL GROUP */}
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
