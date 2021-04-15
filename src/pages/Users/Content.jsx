@@ -159,6 +159,15 @@ export default function EnhancedTable() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
+
+  const [loadingDisableUser, setLoadingDisableUser] = useState(false);
+  const [successDisableUser, setSuccessDisableUser] = useState(false);
+  const [errorDisableUser, setErrorDisableUser] = useState(false);
+  const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
+
+  const [loadingModalGroup, setLoadingModalGroup] = useState(false);
+  const [successModalGroup, setSuccessModalGroup] = useState(false);
+  const [errorModalGroup, setErrorModalGroup] = useState(false);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('first_name');
   const [page, setPage] = useState(0);
@@ -166,6 +175,7 @@ export default function EnhancedTable() {
   const [users, setUsers] = useState([]);
   const [userId, setUserId] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [openModalDeleteGroup, setOpenModalDeleteGroup] = useState(false);
   const [open, setOpen] = useState(false);
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState(0);
@@ -175,6 +185,17 @@ export default function EnhancedTable() {
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
+  });
+
+  const buttonClassNameModalGroup = clsx({
+    [classes.buttonSuccess]: successModalGroup,
+    [classes.buttonError]: errorModalGroup,
+  });
+
+  const buttonClassNameDisableUser = clsx({
+    [classes.buttonSuccess]: successDisableUser,
+    [classes.buttonError]: errorDisableUser,
+    [classes.buttonDefault]: defaultButtonDisableUser
   });
 
   useEffect(() => {
@@ -191,6 +212,16 @@ export default function EnhancedTable() {
   const handleCloseModal = () => {
     setUserId(0);
     setOpenModal(false);
+  };
+
+  const handleClickOpenModalGroup = (id) => {
+    setGroupId(id);
+    setOpenModalDeleteGroup(true);
+  };
+
+  const handleCloseModalDeleteGroup = () => {
+    setGroupId(0);
+    setOpenModalDeleteGroup(false);
   };
 
   function handleClickOpen() {
@@ -219,6 +250,50 @@ export default function EnhancedTable() {
       timer.current = window.setTimeout(() => {
         setSuccess(true);
         setLoading(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonModalGroupProgressError() {
+    if (!loadingModalGroup) {
+      setSuccessModalGroup(false);
+      setLoadingModalGroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorModalGroup(true);
+        setLoadingModalGroup(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonModalGroupProgress() {
+    if (!loadingModalGroup) {
+      setSuccessModalGroup(false);
+      setLoadingModalGroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessModalGroup(true);
+        setLoadingModalGroup(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonDisableUserProgressError() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setErrorDisableUser(true);
+        setLoadingDisableUser(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonDisableUserProgress() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessDisableUser(true);
+        setLoadingDisableUser(false);
       }, 2000);
     }
   };
@@ -295,29 +370,57 @@ export default function EnhancedTable() {
     history.push(`/users/edit/${id}`);
   }
 
-  function handleDeleteUser(id) {
+  async function handleDisableUser(id) {
     const csrftoken = getCookie('csrftoken');
 
-    api.put(`/users/delete/${id}`, { userId }, {
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    }).then(result => {
+    try {
+      const { data } = await api.put(`/users/disable/${id}`, { userId }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonDisableUserProgress();
+      setTimeout(() => {
+        toast.success('Usuário desabilitado com sucesso!');
+      }, 2000);
+      setUsers(data);
+      setTimeout(() => {
+        handleCloseModal();
+        setDefaultButtonDisableUser(true);
+      }, 3500);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonDisableUserProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleDeleteUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      const { data } = await api.put(`/users/delete/${id}`, { userId }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Usuário deletado com sucesso!');
       }, 2000);
+      setUsers(data);
       setTimeout(() => {
         handleCloseModal();
-        setDefaultButton(true);
       }, 3500);
-    }).catch(reject => {
-      const { data } = reject.response;
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, users.length - page * rowsPerPage);
@@ -346,6 +449,31 @@ export default function EnhancedTable() {
       const { data } = err.response;
       toast.error(`${data.detail}`);
     }
+  }
+
+  function handleDeleteGroupUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    api.delete(`/groups/delete/${id}`, {
+      headers: {
+        'X-CSRFToken': csrftoken
+      }
+    }).then(result => {
+      handleButtonModalGroupProgress();
+      setTimeout(() => {
+        toast.success('Grupo deletado com sucesso!');
+      }, 2000);
+      setGroupId(0);
+      setTimeout(() => {
+        handleCloseModalDeleteGroup();
+      }, 3500);
+    }).catch(reject => {
+      const { data } = reject.response;
+      handleButtonModalGroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    });
   }
 
   return (
@@ -461,7 +589,7 @@ export default function EnhancedTable() {
                         </Tooltip>
 
                         <Tooltip title="Deletar">
-                          <IconButton edge="end" aria-label="delete">
+                          <IconButton edge="end" aria-label="delete" onClick={() => handleClickOpenModalGroup(group.id_grupo)}>
                             <DeleteIcon size={8} style={{ color: red[300] }} />
                           </IconButton>
                         </Tooltip>
@@ -566,18 +694,32 @@ export default function EnhancedTable() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Deletar usuário</DialogTitle>
-        <Divider />
-        <DialogContent className={classes.modalContent}>
+        <DialogTitle id="alert-dialog-title">
+          Deletar usuário
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className={classes.modalContent} dividers>
           <div className={classes.divIconModal}>
             <DeleteForeverIcon className={classes.modalIcon} />
           </div>
-          <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
-            <p>Você realmente deseja deletar este usuário? Esta operação não pode ser desfeita.</p>
+          <DialogContentText variant="h6" id="alert-dialog-description" className={classes.modalContentText}>
+            Você realmente deseja deletar este usuário? Esta operação não pode ser desfeita.
           </DialogContentText>
         </DialogContent>
-        <Divider />
         <DialogActions>
+          <Button
+            onClick={() => handleDisableUser(userId)}
+            color="primary"
+            className={buttonClassNameDisableUser}
+            disabled={loadingDisableUser}
+            variant="contained"
+          >
+            Apenas desativar
+            {loadingDisableUser && <CircularProgress size={24} className={classes.buttonProgress} />}
+          </Button>
+
           <Button
             onClick={() => handleDeleteUser(userId)}
             color="secondary"
@@ -588,7 +730,46 @@ export default function EnhancedTable() {
             Deletar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
+
           <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+            Cancelar
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* MODAL DELETE GROUP */}
+      <Dialog
+        open={openModalDeleteGroup}
+        onClose={handleCloseModalDeleteGroup}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Deletar grupo de usuário
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalDeleteGroup}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers className={classes.modalContent}>
+          <DialogContentText variant="h6" id="alert-dialog-description" className={classes.modalContentText}>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            Você realmente deseja deletar este grupo? Esta operação não pode ser desfeita.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => handleDeleteGroupUser(groupId)}
+            color="secondary"
+            className={buttonClassNameModalGroup}
+            disabled={loadingModalGroup}
+            variant="contained"
+          >
+            Deletar
+            {loadingModalGroup && <CircularProgress size={24} className={classes.buttonProgressModalGroups} />}
+          </Button>
+
+          <Button onClick={handleCloseModalDeleteGroup} color="primary" variant="outlined" autoFocus>
             Cancelar
           </Button>
         </DialogActions>

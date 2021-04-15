@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
   buttonError: {
     backgroundColor: red[500],
     '&:hover': {
-      backgroundColor: green[700],
+      backgroundColor: red[700],
     },
   },
   buttonProgress: {
@@ -69,6 +69,13 @@ const useStyles = makeStyles((theme) => ({
     color: '#FFF',
     '&:hover': {
       backgroundColor: '#002984'
+    }
+  },
+  buttonDefaultSecondary: {
+    background: '#f44336',
+    color: '#FFF',
+    '&:hover': {
+      backgroundColor: '#ba000d'
     }
   },
   modalContent: {
