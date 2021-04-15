@@ -24,19 +24,15 @@ import {
   DialogTitle,
   CircularProgress,
   Button,
-  Divider,
   Badge,
   List,
   ListItem,
-  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
   Box,
   Card,
   CardContent,
-  TextField,
   InputAdornment,
-  SvgIcon,
   Grid,
   FormControl,
   InputLabel,
@@ -451,14 +447,15 @@ export default function EnhancedTable() {
     }
   }
 
-  function handleDeleteGroupUser(id) {
+  async function handleDeleteGroupUser(id) {
     const csrftoken = getCookie('csrftoken');
 
-    api.delete(`/groups/delete/${id}`, {
-      headers: {
-        'X-CSRFToken': csrftoken
-      }
-    }).then(result => {
+    try {
+      await api.delete(`/groups/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
       handleButtonModalGroupProgress();
       setTimeout(() => {
         toast.success('Grupo deletado com sucesso!');
@@ -467,13 +464,13 @@ export default function EnhancedTable() {
       setTimeout(() => {
         handleCloseModalDeleteGroup();
       }, 3500);
-    }).catch(reject => {
-      const { data } = reject.response;
+    } catch (err) {
+      const { data } = err.response;
       handleButtonModalGroupProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
   return (

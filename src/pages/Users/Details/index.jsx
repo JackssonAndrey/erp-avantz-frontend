@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import clsx from 'clsx';
 import { Link } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { orange } from '@material-ui/core/colors';
+import { ToastContainer, toast } from 'react-toastify';
+import { orange, red } from '@material-ui/core/colors';
 import {
   Box,
   Container,
@@ -17,9 +18,23 @@ import {
   ListItemText,
   Divider,
   ListItemSecondaryAction,
-  Checkbox
+  Checkbox,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  Button,
+  DialogActions,
+  CircularProgress
 } from '@material-ui/core';
-import { ArrowBack, Edit } from '@material-ui/icons';
+import {
+  ArrowBack,
+  Edit,
+  Delete as DeleteIcon,
+  DeleteForever as DeleteForeverIcon,
+  Close as CloseIcon
+} from '@material-ui/icons';
 import moment from 'moment';
 
 import Menus from '../../../components/Menus';
@@ -29,9 +44,19 @@ import getCookie from '../../../utils/functions';
 import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
+import history from '../../../services/history';
 
 export default function Users(props) {
   const classes = useStyles();
+  const timer = useRef();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+  const [defaultButton, setDefaultButton] = useState(false);
+  const [loadingDisableUser, setLoadingDisableUser] = useState(false);
+  const [successDisableUser, setSuccessDisableUser] = useState(false);
+  const [errorDisableUser, setErrorDisableUser] = useState(false);
+  const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -39,10 +64,77 @@ export default function Users(props) {
   const [dateJoined, setDateJoined] = useState('');
   const [email, setEmail] = useState('');
   const [group, setGroup] = useState('');
+  const [isActive, setIsActive] = useState('');
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
+  const [openModal, setOpenModal] = useState(false);
   const idUser = props.match.params.id;
+
+  const buttonClassNameDisableUser = clsx({
+    [classes.buttonSuccess]: successDisableUser,
+    [classes.buttonError]: errorDisableUser,
+    [classes.buttonDefault]: defaultButtonDisableUser
+  });
+
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+    [classes.buttonDefault]: defaultButton
+  });
+
+  const handleClickOpenModal = (id) => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  function handleButtonDisableUserProgressError() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setErrorDisableUser(true);
+        setLoadingDisableUser(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonDisableUserProgress() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessDisableUser(true);
+        setLoadingDisableUser(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
+
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -58,6 +150,7 @@ export default function Users(props) {
       setDateJoined(response.data.date_joined);
       setEmail(response.data.email);
       setGroup(response.data.idgrp_id);
+      setIsActive(response.data.is_active);
     }).catch(reject => {
       console.log(reject);
     });
@@ -98,6 +191,63 @@ export default function Users(props) {
     });
   }, []);
 
+  async function handleDisableUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/users/disable/${id}`, { idUser }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonDisableUserProgress();
+      setTimeout(() => {
+        toast.success('Usuário desabilitado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+        setDefaultButtonDisableUser(true);
+      }, 3500);
+      setTimeout(() => {
+        history.push('/users');
+      }, 3800);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonDisableUserProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleDeleteUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/users/delete/${id}`, { idUser }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Usuário deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+      }, 3500);
+      setTimeout(() => {
+        history.push('/users');
+      }, 3800);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -124,6 +274,12 @@ export default function Users(props) {
                     <Edit style={{ color: orange[300] }} />
                   </IconButton>
                 </Link>
+
+                <Tooltip title="Deletar">
+                  <IconButton onClick={() => handleClickOpenModal(idUser)} aria-label="Deletar">
+                    <DeleteIcon size={8} style={{ color: red[300] }} />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </CardContent>
           </Card>
@@ -218,9 +374,9 @@ export default function Users(props) {
 
                 <Grid
                   item
-                  xs={4}
-                  sm={4}
-                  xl={4}
+                  xs={3}
+                  sm={3}
+                  xl={3}
                 >
                   <TextField
                     fullWidth
@@ -235,9 +391,26 @@ export default function Users(props) {
 
                 <Grid
                   item
-                  xs={8}
-                  sm={8}
-                  xl={8}
+                  xs={3}
+                  sm={3}
+                  xl={3}
+                >
+                  <TextField
+                    fullWidth
+                    disabled
+                    label="Usuário ativo"
+                    name="isActive"
+                    variant="outlined"
+                    value={isActive === true ? 'Sim' : 'Não'}
+                    onChange={(e) => setIsActive(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={6}
+                  sm={6}
+                  xl={6}
                 >
                   <TextField
                     fullWidth
@@ -299,6 +472,56 @@ export default function Users(props) {
         <Box pt={4}>
           <Copyright />
         </Box>
+
+        {/* DELETE USER MODAL */}
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Deletar usuário
+            <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent className={classes.modalContent} dividers>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText variant="h6" id="alert-dialog-description" className={classes.modalContentText}>
+              Você realmente deseja deletar este usuário? Esta operação não pode ser desfeita.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => handleDisableUser(idUser)}
+              color="primary"
+              className={buttonClassNameDisableUser}
+              disabled={loadingDisableUser}
+              variant="contained"
+            >
+              Apenas desativar
+              {loadingDisableUser && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+
+            <Button
+              onClick={() => handleDeleteUser(idUser)}
+              color="secondary"
+              className={buttonClassname}
+              disabled={loading}
+              variant="contained"
+            >
+              Deletar
+              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+
+            <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </main>
     </div>
   );

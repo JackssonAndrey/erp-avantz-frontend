@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
-import { green } from '@material-ui/core/colors';
+import { green, red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -57,6 +57,34 @@ const useStyles = makeStyles((theme) => ({
   avatarLarge: {
     width: theme.spacing(10),
     height: theme.spacing(10)
+  },
+  modalContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(3),
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '450px'
+  },
+  modalIcon: {
+    fontSize: '6rem',
+    color: red[300],
+    margin: 'auto'
+  },
+  divIconModal: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%'
+  },
+  modalContentText: {
+    textAlign: 'center'
+  },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
   }
 }));
 
