@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import clsx from 'clsx';
 import { toast, ToastContainer } from 'react-toastify';
-import SaveIcon from '@material-ui/icons/Save';
+import {
+  Visibility,
+  VisibilityOff
+} from '@material-ui/icons';
 import {
   Box,
   Button,
@@ -9,11 +12,18 @@ import {
   CardContent,
   CardHeader,
   Divider,
-  TextField,
   Container,
   CssBaseline,
-  CircularProgress
+  CircularProgress,
+  FormHelperText,
+  IconButton,
+  FormControl,
+  InputLabel,
+  OutlinedInput,
+  InputAdornment,
+  Grid
 } from '@material-ui/core';
+import { red } from '@material-ui/core/colors';
 
 import api from '../../services/api';
 import Menus from '../../components/Menus';
@@ -33,6 +43,11 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [passwordNotIsEquals, setPasswordNotIsEquals] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -59,6 +74,26 @@ export default function Settings() {
       clearTimeout(timer.current);
     };
   }, []);
+
+  function handleClickShowPassword() {
+    setShowPassword(!showPassword);
+  }
+
+  function handleClickShowPasswordConfirmation() {
+    setShowPasswordConfirmation(!showPasswordConfirmation);
+  }
+
+  function handleClickShowOldPassword() {
+    setShowOldPassword(!showOldPassword);
+  }
+
+  function verificationPassword() {
+    if (newPassword !== passwordConfirmation) {
+      setPasswordNotIsEquals(true);
+    } else {
+      setPasswordNotIsEquals(false);
+    }
+  }
 
   function handleButtonClickProgress() {
     if (!loading) {
@@ -135,28 +170,102 @@ export default function Settings() {
               />
               <Divider />
               <CardContent>
-                <TextField
-                  fullWidth
-                  label="Senha antiga"
-                  margin="normal"
-                  name="password"
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  type="password"
-                  value={oldPassword}
-                  variant="outlined"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Nova senha"
-                  margin="normal"
-                  name="confirm"
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  type="password"
-                  value={newPassword}
-                  variant="outlined"
-                  required
-                />
+                <Grid
+                  container
+                  spacing={3}
+                >
+                  <Grid
+                    item
+                    xl={12}
+                    xs={12}
+                    sm={12}
+                  >
+                    <FormControl variant="outlined" fullWidth required>
+                      <InputLabel htmlFor="outlined-adornment-password">Senha antiga</InputLabel>
+                      <OutlinedInput
+                        id="outlined-adornment-password"
+                        type={showOldPassword ? 'text' : 'password'}
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        name="password"
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowOldPassword}
+                              edge="end"
+                            >
+                              {showOldPassword ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        labelWidth={100}
+                      />
+                    </FormControl>
+                  </Grid>
+                  <Grid
+                    item
+                    xl={12}
+                    xs={12}
+                    sm={12}
+                  >
+                    <FormControl variant="outlined" fullWidth required>
+                      <InputLabel htmlFor="new-password">Nova senha</InputLabel>
+                      <OutlinedInput
+                        id="new-password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        name="password"
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="toggle password visibility"
+                              onClick={handleClickShowPassword}
+                              edge="end"
+                            >
+                              {showPassword ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        labelWidth={100}
+                      />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xl={12}
+                    xs={12}
+                    sm={12}
+                  >
+                    <FormControl variant="outlined" fullWidth required>
+                      <InputLabel htmlFor="confirm-password">Repita a senha</InputLabel>
+                      <OutlinedInput
+                        error={passwordNotIsEquals}
+                        id="confirm-password"
+                        type={showPasswordConfirmation ? 'text' : 'password'}
+                        value={passwordConfirmation}
+                        onChange={(e) => setPasswordConfirmation(e.target.value)}
+                        onKeyUp={() => verificationPassword()}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleClickShowPasswordConfirmation}
+                              edge="end"
+                            >
+                              {showPasswordConfirmation ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        labelWidth={110}
+                      />
+                      <FormHelperText hidden={!passwordNotIsEquals} style={{ color: red[700] }}>
+                        As senhas não são iguais
+                      </FormHelperText>
+                    </FormControl>
+                  </Grid>
+                </Grid>
               </CardContent>
               <Divider />
               <Box
@@ -169,8 +278,7 @@ export default function Settings() {
                   color="primary"
                   variant="contained"
                   className={buttonClassname}
-                  disabled={loading}
-                  startIcon={<SaveIcon />}
+                  disabled={oldPassword === '' || newPassword === '' || passwordConfirmation === '' || passwordNotIsEquals ? true : false}
                 >
                   Salvar alterações
                   {loading && <CircularProgress size={24} className={classes.buttonProgress} />}

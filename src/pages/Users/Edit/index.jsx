@@ -36,6 +36,21 @@ import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
 
+const initialStateUser = {
+  id: '',
+  username: '',
+  password: '',
+  first_name: '',
+  last_name: '',
+  email: '',
+  idpescod_id: 0,
+  instit_id: '',
+  idgrp_id: 0,
+  active: 1,
+  is_active: true,
+  acess: ''
+};
+
 export default function EditUser(props) {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
@@ -43,14 +58,9 @@ export default function EditUser(props) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [isActive, setIsactive] = useState('');
+  const [userData, setUserData] = useState(initialStateUser);
+
   const [access, setAccess] = useState([]);
-  const [email, setEmail] = useState('');
-  const [group, setGroup] = useState(0);
-  const [idPescod, setIdPescod] = useState(0);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [persons, setPersons] = useState([]);
@@ -64,27 +74,25 @@ export default function EditUser(props) {
   });
 
   useEffect(() => {
-    api.get(`/users/details/${idUser}`, {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get(`/users/details/${idUser}`, {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserData(data);
+        setAccess(data.acess.split(''));
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3500);
+        }
       }
-    }).then(response => {
-      setFirstName(response.data.first_name);
-      setLastName(response.data.last_name);
-      setUsername(response.data.username);
-      setAccess(response.data.acess.split(''));
-      setEmail(response.data.email);
-      setGroup(response.data.idgrp_id);
-      setIsactive(response.data.is_active);
-      setIdPescod(response.data.idpescod_id);
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      setTimeout(() => {
-        handleLogout();
-      }, 5000);
-      console.log(data);
-    });
+    })();
   }, [idUser, csrfToken, handleLogout]);
 
   useEffect(() => {
@@ -144,6 +152,11 @@ export default function EditUser(props) {
     };
   }, []);
 
+  function changeInputsUser(e) {
+    const { value, name } = e.target;
+    setUserData({ ...userData, [name]: value });
+  }
+
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-edit").elements;
     let newArrayAccess = [];
@@ -167,18 +180,7 @@ export default function EditUser(props) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
 
-    let data = {
-      username: username,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      idGroupUser: group,
-      idPerson: idPescod,
-      access: accessFormated,
-      isActive
-    };
-
-    api.post(`/users/admin_edit/${idUser}`, data, {
+    api.post(`/users/admin_edit/${idUser}`, userData, {
       headers: {
         'X-CSRFToken': csrfToken
       }
@@ -220,10 +222,10 @@ export default function EditUser(props) {
   };
 
   function handleChangeGroup(value) {
-    setGroup(value);
+    setUserData({ ...userData, idGroup: value });
 
     let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === group;
+      return userGroup.id_grupo === userData.idgrp_id;
     });
     if (userAccess.length > 0) {
       let userAccessArray = userAccess[0].acess.split('');
@@ -288,10 +290,10 @@ export default function EditUser(props) {
                       fullWidth
                       required
                       label="Primeiro nome"
-                      name="firstName"
+                      name="first_name"
                       variant="outlined"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      value={userData.first_name}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -304,10 +306,10 @@ export default function EditUser(props) {
                     <TextField
                       fullWidth
                       label="Segundo nome"
-                      name="lastName"
+                      name="last_name"
                       variant="outlined"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      value={userData.last_name}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -322,8 +324,8 @@ export default function EditUser(props) {
                       label="E-mail"
                       name="email"
                       variant="outlined"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={userData.email}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -339,8 +341,8 @@ export default function EditUser(props) {
                       label="Username"
                       name="username"
                       variant="outlined"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={userData.username}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -358,9 +360,9 @@ export default function EditUser(props) {
                       <InputLabel id="isactive-select" >Usuário ativo</InputLabel>
                       <Select
                         labelId="isactive-select"
-                        id="isactive"
-                        value={isActive}
-                        onChange={(e) => setIsactive(e.target.value)}
+                        id="is_active"
+                        value={userData.is_active}
+                        onChange={(e) => changeInputsUser(e)}
                         label="Usuário ativo"
                       >
                         <MenuItem value="">
@@ -391,14 +393,15 @@ export default function EditUser(props) {
                       <Select
                         labelId="register-person-select"
                         id="register-person"
-                        value={idPescod || ''}
-                        onChange={(e) => setIdPescod(e.target.value)}
+                        value={userData.idpescod_id}
+                        onChange={(e) => changeInputsUser(e)}
                         label="Registro de pessoa"
+                        name="idpescod_id"
                       >
-                        <MenuItem value="">
+                        <MenuItem value={0}>
                           <em>None</em>
                         </MenuItem>
-                        {persons.map((person, index) => (
+                        {persons && persons.map((person, index) => (
                           <MenuItem value={person.id_pessoa_cod} key={index} >{person.nomeorrazaosocial}</MenuItem>
                         ))}
 
@@ -421,14 +424,15 @@ export default function EditUser(props) {
                       <Select
                         labelId="user-group-select"
                         id="user-group"
-                        value={group || ''}
-                        onChange={(e) => handleChangeGroup(e.target.value)}
+                        value={userData.idgrp_id}
+                        onChange={(e) => changeInputsUser(e)}
                         label="Grupo"
+                        name="idgrp_id"
                       >
-                        <MenuItem value="">
+                        <MenuItem value={0}>
                           <em>None</em>
                         </MenuItem>
-                        {userGroups.map((userGroup, index) => (
+                        {userGroups && userGroups.map((userGroup, index) => (
                           <MenuItem value={userGroup.id_grupo} key={index} >{userGroup.grupo}</MenuItem>
                         ))}
 
