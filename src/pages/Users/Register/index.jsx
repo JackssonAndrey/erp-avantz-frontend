@@ -24,7 +24,8 @@ import {
   FormControl,
   OutlinedInput,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  FormHelperText
 } from '@material-ui/core';
 import { ArrowBack, Visibility, VisibilityOff } from '@material-ui/icons';
 
@@ -37,6 +38,21 @@ import { Context } from '../../../Context/AuthContext';
 import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
+import { red } from '@material-ui/core/colors';
+
+const initialStateUser = {
+  username: '',
+  password: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  idPerson: '',
+  idInstitution: '',
+  idGroup: '',
+  active: 1,
+  isAcite: true,
+  access: ''
+};
 
 export default function RegisterUser() {
   const classes = useStyles();
@@ -45,18 +61,15 @@ export default function RegisterUser() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
+  const [userData, setUserData] = useState(initialStateUser);
   const [access, setAccess] = useState([]);
-  const [email, setEmail] = useState('');
-  const [group, setGroup] = useState(0);
-  const [password, setPassword] = useState('');
-  const [idPescod, setIdPescod] = useState(0);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [persons, setPersons] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  const [passwordNotIsEquals, setPasswordNotIsEquals] = useState(false);
 
   const handleToggle = (value) => () => {
     if (access[value] === '1') {
@@ -140,13 +153,18 @@ export default function RegisterUser() {
 
   useEffect(() => {
     let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === group;
+      return userGroup.id_grupo === userData.idGroup;
     });
     if (userAccess.length > 0) {
       let userAccessArray = userAccess[0].acess.split('');
       setAccess(userAccessArray);
     }
-  }, [group, userGroups]);
+  }, [userData.idGroup, userGroups]);
+
+  function changeInputsUser(e) {
+    const { value, name } = e.target;
+    setUserData({ ...userData, [name]: value });
+  }
 
   function handleClickShowPassword() {
     setShowPassword(!showPassword);
@@ -155,6 +173,22 @@ export default function RegisterUser() {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
+
+  function handleClickShowPasswordConfirmation() {
+    setShowPasswordConfirmation(!showPasswordConfirmation);
+  };
+
+  const handleMouseDownPasswordConfirmation = (event) => {
+    event.preventDefault();
+  };
+
+  function verificationPassword() {
+    if (userData.password !== passwordConfirmation) {
+      setPasswordNotIsEquals(true);
+    } else {
+      setPasswordNotIsEquals(false);
+    }
+  }
 
   function handleFormatAccessUserArrayToString() {
     let elements = document.getElementById("form-register").elements;
@@ -181,20 +215,7 @@ export default function RegisterUser() {
     const csrfToken = getCookie('csrftoken');
     const { instit_id } = JSON.parse(localStorage.getItem('user'));
 
-    let data = {
-      "username": username,
-      "password": password,
-      "firstName": firstName,
-      "lastName": lastName,
-      "email": email,
-      "idPerson": idPescod,
-      "idInstitution": instit_id,
-      "idGroup": group,
-      "active": 1,
-      "access": accessFormated
-    };
-
-    api.post('/users/register', data, {
+    api.post('/users/register', { ...userData, access: accessFormated, idInstitution: instit_id }, {
       headers: {
         'X-CSRFToken': csrfToken
       }
@@ -284,8 +305,8 @@ export default function RegisterUser() {
                       label="Primeiro nome"
                       name="firstName"
                       variant="outlined"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      value={userData.firstName}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -300,8 +321,8 @@ export default function RegisterUser() {
                       label="Segundo nome"
                       name="lastName"
                       variant="outlined"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      value={userData.lastName}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -316,8 +337,8 @@ export default function RegisterUser() {
                       label="E-mail"
                       name="email"
                       variant="outlined"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={userData.email}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -333,8 +354,8 @@ export default function RegisterUser() {
                       label="Username"
                       name="username"
                       variant="outlined"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={userData.username}
+                      onChange={(e) => changeInputsUser(e)}
                     />
                   </Grid>
 
@@ -353,8 +374,9 @@ export default function RegisterUser() {
                       <Select
                         labelId="register-person-select"
                         id="register-person"
-                        value={idPescod || 0}
-                        onChange={(e) => setIdPescod(e.target.value)}
+                        name="idPerson"
+                        value={userData.idPerson || 0}
+                        onChange={(e) => changeInputsUser(e)}
                         label="Registro de pessoa"
                       >
                         <MenuItem value={0}>
@@ -383,9 +405,10 @@ export default function RegisterUser() {
                       <Select
                         labelId="user-group-select"
                         id="user-group"
-                        value={group || ''}
-                        onChange={(e) => setGroup(e.target.value)}
+                        value={userData.idGroup || ''}
+                        onChange={(e) => changeInputsUser(e)}
                         label="Grupo"
+                        name="idGroup"
                       >
                         <MenuItem value="">
                           <em>None</em>
@@ -399,17 +422,18 @@ export default function RegisterUser() {
                   </Grid>
                   <Grid
                     item
-                    xs={4}
-                    sm={4}
-                    xl={4}
+                    xs={3}
+                    sm={3}
+                    xl={3}
                   >
-                    <FormControl variant="outlined">
-                      <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel htmlFor="outlined-adornment-password">Senha</InputLabel>
                       <OutlinedInput
                         id="outlined-adornment-password"
                         type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        value={userData.password}
+                        onChange={(e) => changeInputsUser(e)}
+                        name="password"
                         endAdornment={
                           <InputAdornment position="end">
                             <IconButton
@@ -422,8 +446,42 @@ export default function RegisterUser() {
                             </IconButton>
                           </InputAdornment>
                         }
-                        labelWidth={70}
+                        labelWidth={50}
                       />
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <FormControl variant="outlined" fullWidth>
+                      <InputLabel htmlFor="confirm-password">Repita a senha</InputLabel>
+                      <OutlinedInput
+                        error={passwordNotIsEquals}
+                        id="confirm-password"
+                        type={showPasswordConfirmation ? 'text' : 'password'}
+                        value={passwordConfirmation}
+                        onChange={(e) => setPasswordConfirmation(e.target.value)}
+                        onKeyUp={() => verificationPassword()}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={handleClickShowPasswordConfirmation}
+                              onMouseDown={handleMouseDownPasswordConfirmation}
+                              edge="end"
+                            >
+                              {showPasswordConfirmation ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                          </InputAdornment>
+                        }
+                        labelWidth={110}
+                      />
+                      <FormHelperText hidden={!passwordNotIsEquals} style={{ color: red[700] }}>
+                        As senhas não são iguais
+                      </FormHelperText>
                     </FormControl>
                   </Grid>
                 </Grid>

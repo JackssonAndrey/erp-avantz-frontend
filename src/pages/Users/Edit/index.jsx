@@ -46,6 +46,7 @@ export default function EditUser(props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
+  const [isActive, setIsactive] = useState('');
   const [access, setAccess] = useState([]);
   const [email, setEmail] = useState('');
   const [group, setGroup] = useState(0);
@@ -74,6 +75,7 @@ export default function EditUser(props) {
       setAccess(response.data.acess.split(''));
       setEmail(response.data.email);
       setGroup(response.data.idgrp_id);
+      setIsactive(response.data.is_active);
       setIdPescod(response.data.idpescod_id);
     }).catch(reject => {
       const { data } = reject.response;
@@ -166,13 +168,14 @@ export default function EditUser(props) {
     const accessFormated = handleFormatAccessUserArrayToString();
 
     let data = {
-      "username": username,
-      "email": email,
-      "firstName": firstName,
-      "lastName": lastName,
-      "idGroupUser": group,
-      "idPerson": idPescod,
-      "access": accessFormated
+      username: username,
+      email: email,
+      firstName: firstName,
+      lastName: lastName,
+      idGroupUser: group,
+      idPerson: idPescod,
+      access: accessFormated,
+      isActive
     };
 
     api.post(`/users/admin_edit/${idUser}`, data, {
@@ -310,9 +313,9 @@ export default function EditUser(props) {
 
                   <Grid
                     item
-                    xs={8}
-                    sm={8}
-                    xl={8}
+                    xs={6}
+                    sm={6}
+                    xl={6}
                   >
                     <TextField
                       fullWidth
@@ -326,9 +329,9 @@ export default function EditUser(props) {
 
                   <Grid
                     item
-                    xs={4}
-                    sm={4}
-                    xl={4}
+                    xs={3}
+                    sm={3}
+                    xl={3}
                   >
                     <TextField
                       fullWidth
@@ -339,6 +342,38 @@ export default function EditUser(props) {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      required
+                    >
+                      <InputLabel id="isactive-select" >Usuário ativo</InputLabel>
+                      <Select
+                        labelId="isactive-select"
+                        id="isactive"
+                        value={isActive}
+                        onChange={(e) => setIsactive(e.target.value)}
+                        label="Usuário ativo"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={true}>
+                          Sim
+                        </MenuItem>
+                        <MenuItem value={false}>
+                          Não
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid

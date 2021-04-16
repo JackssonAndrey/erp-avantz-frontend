@@ -594,7 +594,6 @@ export default function RegisterPhysicalPerson(props) {
                         variant="outlined"
                         value={person.nomeorrazaosocial}
                         onChange={(e) => handleChangeInputsPerson(e)}
-
                       />
                     </Grid>
 
