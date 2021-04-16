@@ -259,6 +259,24 @@ export default function RegisterUser() {
     }
   };
 
+  function geraSenha() {
+    const rand = (min, max) => Math.floor(Math.random() * (max - min) + min);
+    const geraMaiuscula = () => String.fromCharCode(rand(65, 91));
+    const geraMinuscula = () => String.fromCharCode(rand(97, 123));
+    const geraNumero = () => String.fromCharCode(rand(48, 58));
+
+    const senhaArray = [];
+    const qtd = Number(8);
+
+    for (let i = 0; i < qtd; i++) {
+      senhaArray.push(geraMaiuscula());
+      senhaArray.push(geraMinuscula());
+      senhaArray.push(geraNumero());
+    }
+    const senhaGerada = senhaArray.join('').slice(0, qtd);
+    setUserData({ ...userData, password: senhaGerada });
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -328,14 +346,15 @@ export default function RegisterUser() {
 
                   <Grid
                     item
-                    xs={8}
-                    sm={8}
-                    xl={8}
+                    xs={6}
+                    sm={6}
+                    xl={6}
                   >
                     <TextField
                       fullWidth
                       label="E-mail"
                       name="email"
+                      type="email"
                       variant="outlined"
                       value={userData.email}
                       onChange={(e) => changeInputsUser(e)}
@@ -344,9 +363,9 @@ export default function RegisterUser() {
 
                   <Grid
                     item
-                    xs={4}
-                    sm={4}
-                    xl={4}
+                    xs={3}
+                    sm={3}
+                    xl={3}
                   >
                     <TextField
                       fullWidth
@@ -357,6 +376,38 @@ export default function RegisterUser() {
                       value={userData.username}
                       onChange={(e) => changeInputsUser(e)}
                     />
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <FormControl
+                      variant="outlined"
+                      fullWidth
+                      required
+                    >
+                      <InputLabel id="isactive-select">Usuário ativo</InputLabel>
+                      <Select
+                        labelId="isactive-select"
+                        id="isactive"
+                        value={userData.isAcite}
+                        onChange={(e) => changeInputsUser(e)}
+                        label="Usuário ativo"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={true}>
+                          Sim
+                        </MenuItem>
+                        <MenuItem value={false}>
+                          Não
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -483,6 +534,21 @@ export default function RegisterUser() {
                         As senhas não são iguais
                       </FormHelperText>
                     </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <Button
+                      variant="contained"
+                      color="default"
+                      onClick={geraSenha}
+                    >
+                      Gerar senha
+                    </Button>
                   </Grid>
                 </Grid>
               </CardContent>
