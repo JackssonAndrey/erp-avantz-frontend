@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/core/styles';
-import { green, red, blue } from '@material-ui/core/colors';
+import { green, red, blue, grey } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -63,6 +63,12 @@ const useStyles = makeStyles((theme) => ({
   avatarLarge: {
     width: theme.spacing(10),
     height: theme.spacing(10)
+  },
+  textInfo: {
+    color: grey[500],
+    display: 'flex',
+    alignItems: 'center',
+    marginTop: '20px'
   }
 }));
 

@@ -24,7 +24,7 @@ import {
   FormControl,
   CircularProgress
 } from '@material-ui/core';
-import { ArrowBack } from '@material-ui/icons';
+import { ArrowBack, Info as InfoIcon } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -35,6 +35,7 @@ import CSRFToken from '../../../Context/CSRFToken';
 import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
+import history from '../../../services/history';
 
 const initialStateUser = {
   id: '',
@@ -96,20 +97,25 @@ export default function EditUser(props) {
   }, [idUser, csrfToken, handleLogout]);
 
   useEffect(() => {
-    api.get('/groups/', {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get('/groups/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserGroups(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3500);
+        }
+        console.log(data);
       }
-    }).then(response => {
-      setUserGroups(response.data);
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      setTimeout(() => {
-        handleLogout();
-      }, 5000);
-      console.log(data);
-    });
+    })();
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
@@ -176,27 +182,46 @@ export default function EditUser(props) {
     return accessFormated;
   }
 
-  function handleEditUser(e) {
+  async function handleEditUser(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
 
-    api.post(`/users/admin_edit/${idUser}`, userData, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    console.log(access);
+    console.log(userPermissions);
+
+    const data = {
+      username: userData.username,
+      firstName: userData.first_name,
+      lastName: userData.last_name,
+      email: userData.email,
+      access: accessFormated,
+      idGroupUser: userData.idgrp_id,
+      idPerson: userData.idpescod_id
+    }
+
+    try {
+      await api.put(`/users/admin_edit/${idUser}`, data, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Dados alterados com sucesso!');
       }, 2000);
-    }).catch(reject => {
-      const { data } = reject.response;
+
+      setTimeout(() => {
+        history.push(`/users/details/${idUser}`);
+      }, 3500);
+
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
-
+    }
   }
 
   function handleButtonClickProgressError() {
@@ -222,28 +247,62 @@ export default function EditUser(props) {
   };
 
   function handleChangeGroup(value) {
-    setUserData({ ...userData, idGroup: value });
+    setUserData({ ...userData, idgrp_id: value });
 
-    let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === userData.idgrp_id;
+    userGroups.filter((userGroup) => {
+      if (userGroup.id_grupo === value) {
+        const newArrayAccess = changeSizePermissionArray(userGroup.acess.split(''));
+        setAccess(newArrayAccess);
+      }
     });
-    if (userAccess.length > 0) {
-      let userAccessArray = userAccess[0].acess.split('');
-      setAccess(userAccessArray);
-    }
   }
 
   const handleToggle = (value) => () => {
-    if (access[value] === '1') {
-      access.splice(value, 1, '0');
-      let newArray = [...access];
-      setAccess(newArray);
+    const indexExists = access.find((element, index) => {
+      return index === value;
+    });
+
+    if (indexExists !== undefined) {
+      if (access[value] === '1') {
+        access.splice(value, 1, '0');
+        let newArray = [...access];
+        setAccess(newArray);
+      } else {
+        access.splice(value, 1, '1');
+        let newArray = [...access];
+        setAccess(newArray);
+      }
     } else {
-      access.splice(value, 1, '1');
-      let newArray = [...access];
+      const newArray = Array.from(access);
+      newArray.push('0');
       setAccess(newArray);
     }
+
   };
+
+
+  /* 
+    Method for changing the size of the group's access array. Leaves the same size as the permissions array.
+
+    Avoids errors in rendering group permissions.
+  */
+  function changeSizePermissionArray(arrayForChange) {
+    let count = 0;
+    const lengthArrayForChange = arrayForChange.length;
+    const lengthUserPermissions = userPermissions.length;
+    const totalRepetitions = lengthUserPermissions - lengthArrayForChange;
+
+    let newArrayAccess = Array.from(arrayForChange);
+
+    if (lengthUserPermissions > lengthArrayForChange) {
+      while (count < totalRepetitions) {
+        newArrayAccess.push('0');
+        count++;
+      }
+    }
+
+    return newArrayAccess;
+  }
 
   return (
     <div className={classes.root}>
@@ -425,7 +484,7 @@ export default function EditUser(props) {
                         labelId="user-group-select"
                         id="user-group"
                         value={userData.idgrp_id}
-                        onChange={(e) => changeInputsUser(e)}
+                        onChange={(e) => handleChangeGroup(e.target.value)}
                         label="Grupo"
                         name="idgrp_id"
                       >
@@ -469,12 +528,12 @@ export default function EditUser(props) {
                             <ListItemSecondaryAction>
                               <Checkbox
                                 edge="end"
-                                name={`${permission.id - 1}`}
-                                checked={access[permission.id - 1] === '1' ? true : false}
+                                name={`${permission.posicao_rotina}`}
+                                checked={access[permission.posicao_rotina - 1] === '1' ? true : false}
                                 tabIndex={-1}
                                 disableRipple
                                 color="primary"
-                                onClick={handleToggle(permission.id - 1)}
+                                onClick={handleToggle(permission.posicao_rotina - 1)}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>
@@ -489,7 +548,15 @@ export default function EditUser(props) {
                     sm={12}
                     xl={12}
                   >
-                    <Divider style={{ marginTop: '20px', marginBottom: '20px' }} />
+                    <Box
+                      display="flex"
+                      justifyContent="flex-start"
+                    >
+                      <p className={classes.textInfo}>
+                        <InfoIcon size={8} color="disabled" style={{ marginRight: '5px' }} /> Revise todoas as permissões antes de salvar as alterações.
+                      </p>
+                    </Box>
+                    <Divider style={{ marginBottom: '20px' }} />
                     <Box
                       display="flex"
                       justifyContent="flex-start"

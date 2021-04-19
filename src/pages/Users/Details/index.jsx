@@ -483,7 +483,7 @@ export default function Users(props) {
                             <Checkbox
                               edge="end"
                               disabled
-                              checked={access[permission.posicao_rotina] === '1' ? true : false}
+                              checked={access[permission.posicao_rotina - 1] === '1' ? true : false}
                               tabIndex={-1}
                               disableRipple
                               color="primary"
