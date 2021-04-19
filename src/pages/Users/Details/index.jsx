@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -26,7 +26,11 @@ import {
   DialogContentText,
   Button,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@material-ui/core';
 import {
   ArrowBack,
@@ -42,13 +46,31 @@ import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
+import { Context } from '../../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
 import history from '../../../services/history';
 
+const initialStateUser = {
+  id: '',
+  username: '',
+  password: '',
+  first_name: '',
+  last_name: '',
+  email: '',
+  idpescod_id: 0,
+  instit_id: '',
+  idgrp_id: 0,
+  active: 1,
+  is_active: true,
+  acess: '',
+  date_joined: ''
+};
+
 export default function Users(props) {
   const classes = useStyles();
   const timer = useRef();
+  const { handleLogout } = useContext(Context);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -57,17 +79,11 @@ export default function Users(props) {
   const [successDisableUser, setSuccessDisableUser] = useState(false);
   const [errorDisableUser, setErrorDisableUser] = useState(false);
   const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
+  const [userData, setUserData] = useState(initialStateUser);
+
   const [access, setAccess] = useState([]);
-  const [dateJoined, setDateJoined] = useState('');
-  const [email, setEmail] = useState('');
-  const [group, setGroup] = useState('');
-  const [isActive, setIsActive] = useState('');
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
-  const [nameGroup, setNameGroup] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const idUser = props.match.params.id;
 
@@ -137,23 +153,26 @@ export default function Users(props) {
 
 
   useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-    api.get(`/users/details/${idUser}`, {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const csrfToken = getCookie('csrftoken');
+        const { data } = await api.get(`/users/details/${idUser}`, {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserData(data);
+        setAccess(data.acess.split(''));
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3500);
+        }
       }
-    }).then(response => {
-      setFirstName(response.data.first_name);
-      setLastName(response.data.last_name);
-      setUsername(response.data.username);
-      setAccess(response.data.acess.split(''));
-      setDateJoined(response.data.date_joined);
-      setEmail(response.data.email);
-      setGroup(response.data.idgrp_id);
-      setIsActive(response.data.is_active);
-    }).catch(reject => {
-      console.log(reject);
-    });
+    })();
   }, [idUser]);
 
   useEffect(() => {
@@ -170,15 +189,6 @@ export default function Users(props) {
   }, []);
 
   useEffect(() => {
-    userGroups.map(userGroup => {
-      if (userGroup.id_grupo === group) {
-        setNameGroup(userGroup.grupo);
-      }
-      return true;
-    });
-  }, [userGroups, group]);
-
-  useEffect(() => {
     const csrfToken = getCookie('csrftoken');
     api.get('/permissions/', {
       headers: {
@@ -190,6 +200,11 @@ export default function Users(props) {
       console.log(reject);
     });
   }, []);
+
+  function changeInputsUser(e) {
+    const { value, name } = e.target;
+    setUserData({ ...userData, [name]: value });
+  }
 
   async function handleDisableUser(id) {
     const csrftoken = getCookie('csrftoken');
@@ -314,10 +329,10 @@ export default function Users(props) {
                     fullWidth
                     disabled
                     label="Primeiro nome"
-                    name="firstName"
+                    name="first_name"
                     variant="outlined"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    value={userData.first_name}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -331,10 +346,10 @@ export default function Users(props) {
                     fullWidth
                     disabled
                     label="Segundo nome"
-                    name="lastName"
+                    name="last_name"
                     variant="outlined"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    value={userData.last_name}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -350,8 +365,8 @@ export default function Users(props) {
                     label="E-mail"
                     name="email"
                     variant="outlined"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={userData.email}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -367,8 +382,8 @@ export default function Users(props) {
                     label="Username"
                     name="username"
                     variant="outlined"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={userData.username}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -382,10 +397,10 @@ export default function Users(props) {
                     fullWidth
                     disabled
                     label="Data de criação"
-                    name="dateJoined"
+                    name="date_joined"
                     variant="outlined"
-                    value={moment(dateJoined).format('DD/MM/YYYY')}
-                    onChange={(e) => setDateJoined(e.target.value)}
+                    value={moment(userData.date_joined).format('DD/MM/YYYY')}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -399,10 +414,10 @@ export default function Users(props) {
                     fullWidth
                     disabled
                     label="Usuário ativo"
-                    name="isActive"
+                    name="is_active"
                     variant="outlined"
-                    value={isActive === true ? 'Sim' : 'Não'}
-                    onChange={(e) => setIsActive(e.target.value)}
+                    value={userData.is_active === true ? 'Sim' : 'Não'}
+                    onChange={(e) => changeInputsUser(e)}
                   />
                 </Grid>
 
@@ -412,15 +427,30 @@ export default function Users(props) {
                   sm={6}
                   xl={6}
                 >
-                  <TextField
-                    fullWidth
-                    disabled
-                    label="Grupo"
-                    name="groups"
+                  <FormControl
                     variant="outlined"
-                    value={nameGroup}
-                    onChange={(e) => setNameGroup(e.target.value)}
-                  />
+                    fullWidth
+                    required
+                    disabled
+                  >
+                    <InputLabel id="user-group-select" >Grupo</InputLabel>
+                    <Select
+                      labelId="user-group-select"
+                      id="user-group"
+                      value={userData.idgrp_id}
+                      onChange={(e) => changeInputsUser(e)}
+                      label="Grupo"
+                      name="idgrp_id"
+                    >
+                      <MenuItem value={0}>
+                        <em>None</em>
+                      </MenuItem>
+                      {userGroups && userGroups.map((userGroup, index) => (
+                        <MenuItem value={userGroup.id_grupo} key={index} >{userGroup.grupo}</MenuItem>
+                      ))}
+
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </CardContent>
@@ -453,7 +483,7 @@ export default function Users(props) {
                             <Checkbox
                               edge="end"
                               disabled
-                              checked={access[permission.id - 1] === '1' ? true : false}
+                              checked={access[permission.posicao_rotina] === '1' ? true : false}
                               tabIndex={-1}
                               disableRipple
                               color="primary"

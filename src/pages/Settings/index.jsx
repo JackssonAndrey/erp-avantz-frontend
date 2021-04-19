@@ -136,6 +136,7 @@ export default function Settings() {
       setTimeout(() => {
         setNewPassword('');
         setOldPassword('');
+        setPasswordConfirmation('');
         toast.success('Senha alterada com sucesso!');
       }, 2000);
     } catch (error) {
