@@ -735,9 +735,9 @@ export default function RegisterPhysicalPerson(props) {
                         getOptionSelected={(option, value) => option.id_municipios === value.id_municipios}
                         onChange={(e, value) => {
                           if (value == null) {
-                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: '' });
+                            setPhysicalPerson({ ...physicalPerson, id_municipio_fk: '' });
                           } else {
-                            setPhysicalPerson({ ...physicalPerson, ['id_municipio_fk']: value.id_municipios });
+                            setPhysicalPerson({ ...physicalPerson, id_municipio_fk: value.id_municipios });
                           }
                         }}
                         renderInput={(params) => <TextField
@@ -748,7 +748,7 @@ export default function RegisterPhysicalPerson(props) {
                         />
                         }
                       />
-                      {/* 
+                      {/*
                       <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-naturalidade-label">Naturalidade</InputLabel>
                         <Select
