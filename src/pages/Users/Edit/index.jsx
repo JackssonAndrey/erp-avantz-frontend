@@ -31,7 +31,6 @@ import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import getCookie from '../../../utils/functions';
 import { Context } from '../../../Context/AuthContext';
-import CSRFToken from '../../../Context/CSRFToken';
 import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -83,7 +82,6 @@ export default function EditUser(props) {
           }
         });
         setUserData(data);
-        setAccess(data.acess.split(''));
       } catch (err) {
         const { data, status } = err.response;
         toast.error(`${data.detail}`);
@@ -119,20 +117,24 @@ export default function EditUser(props) {
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
-    api.get('/permissions/', {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get('/permissions/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserPermissions(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 5000);
+        }
       }
-    }).then(response => {
-      setUserPermissions(response.data);
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      setTimeout(() => {
-        handleLogout();
-      }, 5000);
-      console.log(data);
-    });
+    })();
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
@@ -158,36 +160,25 @@ export default function EditUser(props) {
     };
   }, []);
 
+  useEffect(() => {
+    const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
+    setAccess(newArrayAccess);
+  }, [userData.acess, userPermissions, changeSizePermissionArray]);
+
   function changeInputsUser(e) {
     const { value, name } = e.target;
     setUserData({ ...userData, [name]: value });
   }
 
   function handleFormatAccessUserArrayToString() {
-    let elements = document.getElementById("form-edit").elements;
-    let newArrayAccess = [];
+    let accessFormated = access.join('').toString();
 
-    for (let i = 0; i < elements.length; i++) {
-      let element = elements[i];
-      if (element.type === "checkbox") {
-        let position = element.name;
-        if (element.checked === true) {
-          newArrayAccess[position] = 1;
-        } else {
-          newArrayAccess[position] = 0;
-        }
-      }
-    }
-    let accessFormated = newArrayAccess.join('').toString();
     return accessFormated;
   }
 
   async function handleEditUser(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
-
-    console.log(access);
-    console.log(userPermissions);
 
     const data = {
       username: userData.username,
@@ -254,6 +245,7 @@ export default function EditUser(props) {
         const newArrayAccess = changeSizePermissionArray(userGroup.acess.split(''));
         setAccess(newArrayAccess);
       }
+      return null;
     });
   }
 
@@ -280,26 +272,20 @@ export default function EditUser(props) {
 
   };
 
-
-  /* 
+  /*
     Method for changing the size of the group's access array. Leaves the same size as the permissions array.
 
     Avoids errors in rendering group permissions.
   */
   function changeSizePermissionArray(arrayForChange) {
-    let count = 0;
-    const lengthArrayForChange = arrayForChange.length;
-    const lengthUserPermissions = userPermissions.length;
-    const totalRepetitions = lengthUserPermissions - lengthArrayForChange;
-
     let newArrayAccess = Array.from(arrayForChange);
 
-    if (lengthUserPermissions > lengthArrayForChange) {
-      while (count < totalRepetitions) {
+    userPermissions.map((permission) => {
+      if (access[permission.posicao_rotina - 1] === undefined) {
         newArrayAccess.push('0');
-        count++;
       }
-    }
+      return null;
+    });
 
     return newArrayAccess;
   }
@@ -332,7 +318,6 @@ export default function EditUser(props) {
             id="form-edit"
             onSubmit={(e) => handleEditUser(e)}
           >
-            <CSRFToken />
             <Card className={classes.cardContent}>
               <CardContent>
                 <Grid

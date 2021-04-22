@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react';
+import React, { useEffect, useState, useRef, useContext, useCallback } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -74,7 +74,7 @@ export default function Users(props) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-  const [defaultButton, setDefaultButton] = useState(false);
+  // const [defaultButton, setDefaultButton] = useState(false);
   const [loadingDisableUser, setLoadingDisableUser] = useState(false);
   const [successDisableUser, setSuccessDisableUser] = useState(false);
   const [errorDisableUser, setErrorDisableUser] = useState(false);
@@ -96,12 +96,13 @@ export default function Users(props) {
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
-    [classes.buttonDefault]: defaultButton
+    // [classes.buttonDefault]: defaultButton
   });
 
   const handleClickOpenModal = (id) => {
     setOpenModal(true);
   };
+
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -151,7 +152,6 @@ export default function Users(props) {
     }
   };
 
-
   useEffect(() => {
     (async () => {
       try {
@@ -162,7 +162,6 @@ export default function Users(props) {
           }
         });
         setUserData(data);
-        setAccess(data.acess.split(''));
       } catch (err) {
         const { data, status } = err.response;
         toast.error(`${data.detail}`);
@@ -173,7 +172,7 @@ export default function Users(props) {
         }
       }
     })();
-  }, [idUser]);
+  }, [idUser, handleLogout]);
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
@@ -189,17 +188,31 @@ export default function Users(props) {
   }, []);
 
   useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-    api.get('/permissions/', {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const csrfToken = getCookie('csrftoken');
+        const { data } = await api.get('/permissions/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserPermissions(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3500);
+        }
       }
-    }).then(response => {
-      setUserPermissions(response.data);
-    }).catch(reject => {
-      console.log(reject);
-    });
-  }, []);
+    })();
+  }, [handleLogout]);
+
+  useEffect(() => {
+    const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
+    setAccess(newArrayAccess);
+  }, [userData.acess, userPermissions, changeSizePermissionArray]);
 
   function changeInputsUser(e) {
     const { value, name } = e.target;
@@ -263,6 +276,25 @@ export default function Users(props) {
     }
   }
 
+  /*
+    Method for changing the size of the group's access array. Leaves the same size as the permissions array.
+
+    Avoids errors in rendering group permissions.
+  */
+  function changeSizePermissionArray(arrayForChange) {
+    let newArrayAccess = Array.from(arrayForChange);
+
+    userPermissions.map((permission) => {
+      if (access[permission.posicao_rotina - 1] === undefined) {
+        newArrayAccess.push('0');
+      }
+
+      return null;
+    });
+
+    return newArrayAccess;
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -279,15 +311,19 @@ export default function Users(props) {
                 justifyContent="flex-start"
               >
                 <Link to="/users" className="link">
-                  <IconButton>
-                    <ArrowBack />
-                  </IconButton>
+                  <Tooltip title="Voltar">
+                    <IconButton>
+                      <ArrowBack />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
 
                 <Link to={`/users/edit/${idUser}`} className="link" >
-                  <IconButton>
-                    <Edit style={{ color: orange[300] }} />
-                  </IconButton>
+                  <Tooltip title="Editar">
+                    <IconButton>
+                      <Edit style={{ color: orange[300] }} />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
 
                 <Tooltip title="Deletar">
@@ -437,7 +473,7 @@ export default function Users(props) {
                     <Select
                       labelId="user-group-select"
                       id="user-group"
-                      value={userData.idgrp_id}
+                      value={userData.idgrp_id || 0}
                       onChange={(e) => changeInputsUser(e)}
                       label="Grupo"
                       name="idgrp_id"
@@ -476,7 +512,7 @@ export default function Users(props) {
                     <List >
                       <h2>Permissões do usuário</h2>
                       <Divider />
-                      {userPermissions.map(permission => (
+                      {userPermissions.map((permission, index) => (
                         <ListItem key={permission.id} role={undefined} dense button>
                           <ListItemText primary={permission.descr} />
                           <ListItemSecondaryAction>
