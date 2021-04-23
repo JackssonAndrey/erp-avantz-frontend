@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -54,6 +54,19 @@ const initialStateUser = {
   access: ''
 };
 
+const initialStateAccess = [
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+]
+
 export default function RegisterUser() {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
@@ -62,7 +75,7 @@ export default function RegisterUser() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [userData, setUserData] = useState(initialStateUser);
-  const [access, setAccess] = useState([]);
+  const [access, setAccess] = useState(['0']);
   const [userGroups, setUserGroups] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
   const [persons, setPersons] = useState([]);
@@ -72,13 +85,23 @@ export default function RegisterUser() {
   const [passwordNotIsEquals, setPasswordNotIsEquals] = useState(false);
 
   const handleToggle = (value) => () => {
-    if (access[value] === '1') {
-      access.splice(value, 1, '0');
-      let newArray = [...access];
-      setAccess(newArray);
+    const indexExists = access.find((element, index) => {
+      return index === value;
+    });
+
+    if (indexExists !== undefined) {
+      if (access[value] === '1') {
+        access.splice(value, 1, '0');
+        let newArray = [...access];
+        setAccess(newArray);
+      } else {
+        access.splice(value, 1, '1');
+        let newArray = [...access];
+        setAccess(newArray);
+      }
     } else {
-      access.splice(value, 1, '1');
-      let newArray = [...access];
+      const newArray = Array.from(access);
+      newArray.push('0');
       setAccess(newArray);
     }
   };
@@ -116,20 +139,24 @@ export default function RegisterUser() {
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
 
-    api.get('/permissions/', {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get('/permissions/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserPermissions(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 4000);
+        }
       }
-    }).then(response => {
-      setUserPermissions(response.data);
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      setTimeout(() => {
-        handleLogout();
-      }, 5000);
-      console.log(data);
-    });
+    })();
   }, [handleLogout]);
 
   useEffect(() => {
@@ -151,15 +178,9 @@ export default function RegisterUser() {
     });
   }, [handleLogout]);
 
-  useEffect(() => {
-    let userAccess = userGroups.filter(userGroup => {
-      return userGroup.id_grupo === userData.idGroup;
-    });
-    if (userAccess.length > 0) {
-      let userAccessArray = userAccess[0].acess.split('');
-      setAccess(userAccessArray);
-    }
-  }, [userData.idGroup, userGroups]);
+  useCallback(() => {
+    changeSizePermissionArray(['0']);
+  }, [userPermissions]);
 
   function changeInputsUser(e) {
     const { value, name } = e.target;
@@ -191,50 +212,38 @@ export default function RegisterUser() {
   }
 
   function handleFormatAccessUserArrayToString() {
-    let elements = document.getElementById("form-register").elements;
-    let newArrayAccess = [];
-
-    for (let i = 0; i < elements.length; i++) {
-      let element = elements[i];
-      if (element.type === "checkbox") {
-        let position = element.name;
-        if (element.checked === true) {
-          newArrayAccess[position] = 1;
-        } else {
-          newArrayAccess[position] = 0;
-        }
-      }
-    }
-    let accessFormated = newArrayAccess.join('').toString();
+    let accessFormated = access.join('').toString();
     return accessFormated;
   }
 
-  function handleRegisterNewUser(e) {
+  async function handleRegisterNewUser(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
     const csrfToken = getCookie('csrftoken');
     const { instit_id } = JSON.parse(localStorage.getItem('user'));
 
-    api.post('/users/register', { ...userData, access: accessFormated, idInstitution: instit_id }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(response => {
+    const data = { ...userData, access: accessFormated, idInstitution: instit_id }
+
+    try {
+      await api.post('/users/register', data, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Usuário cadastrado com sucesso!');
       }, 2000);
       setTimeout(() => {
         history.push('/users');
-      }, 7000);
-    }).catch(reject => {
-      const { data } = reject.response;
+      }, 4000);
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
-
+    }
   }
 
   function handleButtonClickProgressError() {
@@ -275,6 +284,31 @@ export default function RegisterUser() {
     }
     const senhaGerada = senhaArray.join('').slice(0, qtd);
     setUserData({ ...userData, password: senhaGerada });
+  }
+
+  /*
+    Method for changing the size of the group's access array. Leaves the same size as the permissions array.
+
+    Avoids errors in rendering group permissions.
+  */
+  const changeSizePermissionArray = useCallback((arrayForChange) => {
+    if (arrayForChange.length <= userPermissions.length) {
+      while (arrayForChange.length <= userPermissions.length + 2) {
+        arrayForChange.push('0');
+      }
+    }
+    setAccess(arrayForChange);
+  }, [userPermissions, userData.acess]);
+
+  function handleChangeGroup(value) {
+    setUserData({ ...userData, idGroup: value });
+
+    userGroups.filter((userGroup) => {
+      if (userGroup.id_grupo === value) {
+        changeSizePermissionArray(userGroup.acess.split(''));
+      }
+      return null;
+    });
   }
 
   return (
@@ -319,7 +353,7 @@ export default function RegisterUser() {
                   >
                     <TextField
                       fullWidth
-                      required
+
                       label="Primeiro nome"
                       name="firstName"
                       variant="outlined"
@@ -369,7 +403,7 @@ export default function RegisterUser() {
                   >
                     <TextField
                       fullWidth
-                      required
+
                       label="Username"
                       name="username"
                       variant="outlined"
@@ -387,7 +421,7 @@ export default function RegisterUser() {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      required
+
                     >
                       <InputLabel id="isactive-select">Usuário ativo</InputLabel>
                       <Select
@@ -419,7 +453,7 @@ export default function RegisterUser() {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      required
+
                     >
                       <InputLabel id="register-person-select" >Registro de pessoa</InputLabel>
                       <Select
@@ -450,14 +484,14 @@ export default function RegisterUser() {
                     <FormControl
                       variant="outlined"
                       fullWidth
-                      required
+
                     >
                       <InputLabel id="user-group-select" >Grupo</InputLabel>
                       <Select
                         labelId="user-group-select"
                         id="user-group"
                         value={userData.idGroup || ''}
-                        onChange={(e) => changeInputsUser(e)}
+                        onChange={(e) => handleChangeGroup(e.target.value)}
                         label="Grupo"
                         name="idGroup"
                       >
@@ -578,42 +612,15 @@ export default function RegisterUser() {
                           <ListItem key={permission.id} role={undefined} dense button>
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
-                              {/* {
-                                access[permission.id - 1] === '1'
-                                  ? (
-                                    <Checkbox
-                                      edge="end"
-                                      defaultChecked
-                                      checked={checked.indexOf(permission.id) !== -1}
-                                      onClick={handleToggle(permission.id)}
-                                      tabIndex={-1}
-                                      name={`${permission.id - 1}`}
-                                      disableRipple
-                                      color="primary"
-                                      inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
-                                    />
-                                  ) : (
-                                    <Checkbox
-                                      edge="end"
-                                      tabIndex={-1}
-                                      onClick={handleToggle(permission.id)}
-                                      checked={checked.indexOf(permission.id) !== -1}
-                                      name={`${permission.id - 1}`}
-                                      disableRipple
-                                      color="primary"
-                                      inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
-                                    />
-                                  )
-                              } */}
                               <Checkbox
                                 edge="end"
-                                name={`${permission.id - 1}`}
-                                checked={access[permission.id - 1] === '1' ? true : false}
+                                disabled={userData.idGroup === '' ? true : false}
+                                name={`${permission.posicao_rotina}`}
+                                checked={access[permission.posicao_rotina - 1] === '1' ? true : false}
                                 tabIndex={-1}
                                 disableRipple
                                 color="primary"
-                                inputProps={{ 'aria-labelledby': `checkbox-list-label-${permission.id}` }}
-                                onClick={handleToggle(permission.id - 1)}
+                                onClick={handleToggle(permission.posicao_rotina - 1)}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>

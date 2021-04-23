@@ -162,6 +162,7 @@ export default function Users(props) {
           }
         });
         setUserData(data);
+        changeSizePermissionArray(data.acess.split(''));
       } catch (err) {
         const { data, status } = err.response;
         toast.error(`${data.detail}`);
@@ -209,10 +210,6 @@ export default function Users(props) {
     })();
   }, [handleLogout]);
 
-  useEffect(() => {
-    const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
-    setAccess(newArrayAccess);
-  }, [userData.acess, userPermissions, changeSizePermissionArray]);
 
   function changeInputsUser(e) {
     const { value, name } = e.target;
@@ -281,19 +278,15 @@ export default function Users(props) {
 
     Avoids errors in rendering group permissions.
   */
-  function changeSizePermissionArray(arrayForChange) {
-    let newArrayAccess = Array.from(arrayForChange);
-
-    userPermissions.map((permission) => {
-      if (access[permission.posicao_rotina - 1] === undefined) {
-        newArrayAccess.push('0');
+  const changeSizePermissionArray = useCallback((arrayForChange) => {
+    if (arrayForChange.length <= userPermissions.length) {
+      while (arrayForChange.length <= userPermissions.length + 2) {
+        arrayForChange.push('0');
       }
+    }
 
-      return null;
-    });
-
-    return newArrayAccess;
-  }
+    setAccess(arrayForChange);
+  }, [userPermissions.length]);
 
   return (
     <div className={classes.root}>

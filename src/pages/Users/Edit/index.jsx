@@ -35,6 +35,7 @@ import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
 import history from '../../../services/history';
+import { useCallback } from 'react';
 
 const initialStateUser = {
   id: '',
@@ -82,6 +83,7 @@ export default function EditUser(props) {
           }
         });
         setUserData(data);
+        changeSizePermissionArray(data.acess.split(''));
       } catch (err) {
         const { data, status } = err.response;
         toast.error(`${data.detail}`);
@@ -160,10 +162,10 @@ export default function EditUser(props) {
     };
   }, []);
 
-  useEffect(() => {
-    const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
-    setAccess(newArrayAccess);
-  }, [userData.acess, userPermissions, changeSizePermissionArray]);
+  // useEffect(() => {
+  //   const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
+  //   setAccess(newArrayAccess);
+  // }, [userData.acess, userPermissions, changeSizePermissionArray]);
 
   function changeInputsUser(e) {
     const { value, name } = e.target;
@@ -242,8 +244,7 @@ export default function EditUser(props) {
 
     userGroups.filter((userGroup) => {
       if (userGroup.id_grupo === value) {
-        const newArrayAccess = changeSizePermissionArray(userGroup.acess.split(''));
-        setAccess(newArrayAccess);
+        changeSizePermissionArray(userGroup.acess.split(''));
       }
       return null;
     });
@@ -277,18 +278,14 @@ export default function EditUser(props) {
 
     Avoids errors in rendering group permissions.
   */
-  function changeSizePermissionArray(arrayForChange) {
-    let newArrayAccess = Array.from(arrayForChange);
-
-    userPermissions.map((permission) => {
-      if (access[permission.posicao_rotina - 1] === undefined) {
-        newArrayAccess.push('0');
+  const changeSizePermissionArray = useCallback((arrayForChange) => {
+    if (arrayForChange.length <= userPermissions.length) {
+      while (arrayForChange.length <= userPermissions.length + 2) {
+        arrayForChange.push('0');
       }
-      return null;
-    });
-
-    return newArrayAccess;
-  }
+    }
+    setAccess(arrayForChange);
+  }, [userPermissions, userData.acess]);
 
   return (
     <div className={classes.root}>
@@ -508,7 +505,13 @@ export default function EditUser(props) {
                         <h2>Permissões do usuário</h2>
                         <Divider />
                         {userPermissions.map(permission => (
-                          <ListItem key={permission.id} role={undefined} dense button>
+                          <ListItem
+                            key={permission.id}
+                            role={undefined}
+                            dense
+                            button
+                            divider
+                          >
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
                               <Checkbox
