@@ -1,5 +1,5 @@
 import { lighten, makeStyles } from '@material-ui/core/styles';
-import { red, blue, green, grey } from '@material-ui/core/colors';
+import { red, blue, green } from '@material-ui/core/colors';
 
 const useToolbarStyles = makeStyles((theme) => ({
   root: {

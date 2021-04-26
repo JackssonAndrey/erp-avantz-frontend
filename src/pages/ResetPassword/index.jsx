@@ -53,6 +53,7 @@ function ResetPassword() {
       setTimeout(() => {
         data.email.map(error => {
           toast.error(`${error}`);
+          return null;
         });
       }, 2000);
     }

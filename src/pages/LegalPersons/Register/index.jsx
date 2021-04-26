@@ -40,7 +40,7 @@ import moment from 'moment';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
 
-import { ArrowBack, Delete, SignalCellularNoSimOutlined } from '@material-ui/icons';
+import { ArrowBack, Delete } from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';

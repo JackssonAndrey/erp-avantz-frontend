@@ -2053,9 +2053,9 @@ export default function EditLegalPerson(props) {
 
                           <Grid
                             item
-                            xs={4}
-                            sm={4}
-                            xl={4}
+                            xs={3}
+                            sm={3}
+                            xl={3}
                           >
                             <TextField
                               fullWidth
@@ -2178,33 +2178,33 @@ export default function EditLegalPerson(props) {
                     </Grid>
                   </Grid>
                 </TabPanel>
-
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  xl={12}
-                >
-                  <Divider style={{ marginTop: '20px' }} />
-                  <Box
-                    display="flex"
-                    justifyContent="flex-start"
-                    alignItems="flex-end"
-                    padding="20px"
-                  >
-                    <Button
-                      color="primary"
-                      variant="contained"
-                      type="submit"
-                      className={buttonClassname}
-                      disabled={loading}
-                    >
-                      Salvar
-                      {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
-                    </Button>
-                  </Box>
-                </Grid>
               </SwipeableViews>
+
+              <Grid
+                item
+                xs={12}
+                sm={12}
+                xl={12}
+              >
+                <Divider style={{ marginTop: '20px' }} />
+                <Box
+                  display="flex"
+                  justifyContent="flex-start"
+                  alignItems="flex-end"
+                  padding="20px"
+                >
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    type="submit"
+                    className={buttonClassname}
+                    disabled={loading}
+                  >
+                    Salvar
+                    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                  </Button>
+                </Box>
+              </Grid>
             </form>
           </div>
         </Container>

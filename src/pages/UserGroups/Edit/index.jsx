@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useContext
+} from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -28,15 +34,17 @@ import api from '../../../services/api';
 import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
+import { Context } from '../../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
 
 export default function EditUserGroup(props) {
   const classes = useStyles();
+  const { handleLogout } = useContext(Context);
   const timer = useRef();
   const [group, setGroup] = useState('');
   const [userPermissions, setUserPermissions] = useState([]);
-  const [access, setAccess] = useState([]);
+  const [access, setAccess] = useState(['0']);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -56,77 +64,93 @@ export default function EditUserGroup(props) {
   }, []);
 
   useEffect(() => {
-    api.get(`/groups/details/${idGroup}`, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(result => {
-      setGroup(result.data.grupo);
-      setAccess(result.data.acess.split(''));
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      console.log(data);
-    });
-  }, [idGroup, csrfToken]);
+    (async () => {
+      try {
+        const { data } = await api.get(`/groups/details/${idGroup}`, {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setGroup(data.grupo);
+        changeSizePermissionArray(data.acess.split(''));
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
 
-  useEffect(() => {
-    api.get('/permissions/', {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(result => {
-      setUserPermissions(result.data);
-    }).catch(reject => {
-      console.log(reject);
-    });
-  }, [csrfToken]);
-
-  function handleFormatAccessUserArrayToString() {
-    let elements = document.getElementById("edit-group-form").elements;
-    let newArrayAccess = [];
-
-    for (let i = 0; elements.length < i; i++) {
-      let element = elements[i];
-      if (element.type === "checkbox") {
-        let position = element.name;
-        if (element.checked === true) {
-          newArrayAccess[position] = 1;
-        } else {
-          newArrayAccess[position] = 0;
+        console.error(data);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3500);
         }
       }
-    }
-    let accessFormated = newArrayAccess.join('').toString();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idGroup, csrfToken, handleLogout, userPermissions]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/permissions/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setUserPermissions(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+
+        console.error(data.detail);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 5000);
+        }
+      }
+    })();
+  }, [csrfToken, handleLogout]);
+
+  function handleFormatAccessUserArrayToString() {
+    let accessFormated = access.join('').toString();
     return accessFormated;
   }
 
-  function handleEditUserGroup(e) {
+  async function handleEditUserGroup(e) {
     e.preventDefault();
     const accessFormated = handleFormatAccessUserArrayToString();
 
-    api.put(`groups/edit/${idGroup}`, { "nameGroup": group, "accessGroup": accessFormated }, {
-      headers: {
-        'X-CSRFToken': csrfToken
-      }
-    }).then(result => {
+    const dataGorup = {
+      nameGroup: group,
+      accessGroup: accessFormated
+    }
+
+    console.log(dataGorup);
+
+    try {
+      await api.put(`groups/edit/${idGroup}`, dataGorup, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+
       handleButtonClickProgress();
       setTimeout(() => {
         toast.success('Grupo atualizado com sucesso!');
       }, 2000);
       setTimeout(() => {
         history.push('/users');
-      }, 7000);
-    }).catch(reject => {
-      const { data } = reject.response;
+      }, 4000);
+    } catch (err) {
+      const { data } = err.response;
       handleButtonClickProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
-    });
+    }
   }
 
-  const handleButtonClickProgress = () => {
+  function handleButtonClickProgress() {
     if (!loading) {
       setSuccess(false);
       setLoading(true);
@@ -147,6 +171,47 @@ export default function EditUserGroup(props) {
       }, 2000);
     }
   }
+
+  const handleToggle = (value) => () => {
+    const indexExists = access.find((element, index) => {
+      return index === value;
+    });
+
+    if (indexExists !== undefined) {
+      if (access[value] === '1') {
+        access.splice(value, 1, '0');
+        let newArray = [...access];
+        setAccess(newArray);
+      } else {
+        access.splice(value, 1, '1');
+        let newArray = [...access];
+        setAccess(newArray);
+      }
+    } else {
+      const newArray = Array.from(access);
+      newArray.push('0');
+      setAccess(newArray);
+    }
+  };
+
+  /*
+    Method for changing the size of the group's access array. Leaves the same size as the permissions array.
+
+    Avoids errors in rendering group permissions.
+  */
+  const changeSizePermissionArray = useCallback((arrayForChange) => {
+    console.log(arrayForChange.length);
+    console.log(userPermissions.length);
+
+    if (arrayForChange.length <= userPermissions.length) {
+      console.log('array diferentes');
+      while (arrayForChange.length <= userPermissions.length + 2) {
+        arrayForChange.push('0');
+        console.log('adicionou');
+      }
+    }
+    setAccess(arrayForChange);
+  }, [userPermissions]);
 
   return (
     <div className={classes.root}>
@@ -222,31 +287,24 @@ export default function EditUserGroup(props) {
                         <h2>Permissões do grupo</h2>
                         <Divider />
                         {userPermissions.map(permission => (
-                          <ListItem key={permission.id} role={undefined} dense button>
+                          <ListItem
+                            key={permission.id}
+                            role={undefined}
+                            dense
+                            button
+                            divider
+                          >
                             <ListItemText primary={permission.descr} />
                             <ListItemSecondaryAction>
-                              {
-                                access[permission.id - 1] === '1'
-                                  ? (
-                                    <Checkbox
-                                      edge="end"
-                                      name={`${permission.id - 1}`}
-                                      defaultChecked
-                                      tabIndex={-1}
-                                      disableRipple
-                                      color="primary"
-                                    />
-                                  )
-                                  : (
-                                    <Checkbox
-                                      edge="end"
-                                      name={`${permission.id - 1}`}
-                                      tabIndex={-1}
-                                      disableRipple
-                                      color="primary"
-                                    />
-                                  )
-                              }
+                              <Checkbox
+                                edge="end"
+                                name={`${permission.posicao_rotina}`}
+                                checked={access[permission.posicao_rotina - 1] === '1' ? true : false}
+                                tabIndex={-1}
+                                disableRipple
+                                color="primary"
+                                onClick={handleToggle(permission.posicao_rotina - 1)}
+                              />
                             </ListItemSecondaryAction>
                           </ListItem>
                         ))}

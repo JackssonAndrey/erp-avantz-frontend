@@ -1457,7 +1457,7 @@ export default function EditPhysicalPerson(props) {
                         />
                         }
                       />
-                      {/* 
+                      {/*
                       <FormControl variant="outlined" className={classes.formControl}>
                         <InputLabel id="select-naturalidade-label">Naturalidade</InputLabel>
                         <Select
@@ -2617,9 +2617,9 @@ export default function EditPhysicalPerson(props) {
 
                           <Grid
                             item
-                            xs={4}
-                            sm={4}
-                            xl={4}
+                            xs={3}
+                            sm={3}
+                            xl={3}
                           >
                             <TextField
                               fullWidth

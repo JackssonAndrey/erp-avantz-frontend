@@ -94,6 +94,7 @@ export default function EditUser(props) {
         }
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idUser, csrfToken, handleLogout]);
 
   useEffect(() => {
@@ -140,20 +141,20 @@ export default function EditUser(props) {
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
-    api.get('/persons/', {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get('/persons/', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setPersons(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(`${data.detail}`);
+        console.error(data);
       }
-    }).then(response => {
-      setPersons(response.data);
-    }).catch(reject => {
-      const { data } = reject.response;
-      toast.error(`${data.detail}`);
-      setTimeout(() => {
-        handleLogout();
-      }, 5000);
-      console.log(data);
-    });
+    })();
   }, [csrfToken, handleLogout]);
 
   useEffect(() => {
@@ -161,11 +162,6 @@ export default function EditUser(props) {
       clearTimeout(timer.current);
     };
   }, []);
-
-  // useEffect(() => {
-  //   const newArrayAccess = changeSizePermissionArray(userData.acess.split(''));
-  //   setAccess(newArrayAccess);
-  // }, [userData.acess, userPermissions, changeSizePermissionArray]);
 
   function changeInputsUser(e) {
     const { value, name } = e.target;
@@ -285,7 +281,7 @@ export default function EditUser(props) {
       }
     }
     setAccess(arrayForChange);
-  }, [userPermissions, userData.acess]);
+  }, [userPermissions]);
 
   return (
     <div className={classes.root}>

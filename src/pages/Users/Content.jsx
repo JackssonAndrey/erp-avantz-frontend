@@ -409,6 +409,7 @@ export default function EnhancedTable() {
       setUsers(data);
       setTimeout(() => {
         handleCloseModal();
+        setDefaultButton();
       }, 3500);
     } catch (err) {
       const { data } = err.response;

@@ -54,19 +54,6 @@ const initialStateUser = {
   access: ''
 };
 
-const initialStateAccess = [
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-  '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-]
-
 export default function RegisterUser() {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
@@ -178,8 +165,9 @@ export default function RegisterUser() {
     });
   }, [handleLogout]);
 
-  useCallback(() => {
+  useEffect(() => {
     changeSizePermissionArray(['0']);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userPermissions]);
 
   function changeInputsUser(e) {
@@ -298,7 +286,7 @@ export default function RegisterUser() {
       }
     }
     setAccess(arrayForChange);
-  }, [userPermissions, userData.acess]);
+  }, [userPermissions]);
 
   function handleChangeGroup(value) {
     setUserData({ ...userData, idGroup: value });
