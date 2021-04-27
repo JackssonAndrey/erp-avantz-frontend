@@ -130,7 +130,7 @@ export default function Menus(props) {
         </div>
         <Divider />
         <List>
-          <MainListItems access={accessUser} />
+          <MainListItems access={accessUser} menuOpen={open} />
         </List>
         <Divider />
         {/* <List>{secondaryListItems}</List> */}
