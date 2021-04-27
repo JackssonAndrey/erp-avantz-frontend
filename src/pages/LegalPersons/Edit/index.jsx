@@ -1651,7 +1651,7 @@ export default function EditLegalPerson(props) {
                                 required
                                 label="Telefone"
                                 value={phone.tel}
-                                name="phoneNumber"
+                                name="tel"
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <Tooltip title="Deletar">
@@ -1729,7 +1729,7 @@ export default function EditLegalPerson(props) {
                                 required
                                 value={mail.email}
                                 label="E-mail"
-                                name="userMail"
+                                name="email"
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <Tooltip title="Deletar">
@@ -1825,13 +1825,12 @@ export default function EditLegalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Nome"
                               name="nome"
                               variant="outlined"
                               value={reference.nome}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -1843,13 +1842,12 @@ export default function EditLegalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Tipo"
                               name="tipo"
                               variant="outlined"
                               value={reference.tipo}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -1861,13 +1859,12 @@ export default function EditLegalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Telefone"
                               name="tel"
                               variant="outlined"
                               value={reference.tel}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -1879,13 +1876,12 @@ export default function EditLegalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Endereço"
                               name="endereco"
                               variant="outlined"
                               value={reference.endereco}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
                         </Grid>
@@ -1967,7 +1963,7 @@ export default function EditLegalPerson(props) {
                               <Select
                                 labelId="select-banks-registered"
                                 value={banking.id_bancos_fk}
-                                onChange={(e) => handleChangeInputsBankingReferences(e)}
+                                onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                                 label="Banco"
                                 name="id_bancos_fk"
                                 required
@@ -2023,13 +2019,12 @@ export default function EditLegalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Conta"
                               name="conta"
                               variant="outlined"
                               value={banking.conta}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
 
@@ -2047,7 +2042,7 @@ export default function EditLegalPerson(props) {
                               name="agencia"
                               variant="outlined"
                               value={banking.agencia}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
 
@@ -2065,7 +2060,7 @@ export default function EditLegalPerson(props) {
                               name="abertura"
                               variant="outlined"
                               value={moment(banking.abertura).format('YYYY-MM-DD')}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
                         </Grid>

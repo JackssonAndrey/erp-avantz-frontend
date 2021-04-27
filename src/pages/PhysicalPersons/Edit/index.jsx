@@ -2054,7 +2054,7 @@ export default function EditPhysicalPerson(props) {
                               name="rua"
                               variant="outlined"
                               value={address.rua}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -2072,7 +2072,7 @@ export default function EditPhysicalPerson(props) {
                               name="bairro"
                               variant="outlined"
                               value={address.bairro}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -2084,13 +2084,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Número"
                               name="numero"
                               variant="outlined"
                               value={address.numero}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -2102,13 +2101,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Complemento"
                               name="complemento"
                               variant="outlined"
                               value={address.complemento === null ? 'Não informado' : address.complemento}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -2120,13 +2118,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Cidade"
                               name="cidade"
                               variant="outlined"
                               value={address.cidade}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
 
@@ -2138,13 +2135,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Estado"
                               name="estado_endereco"
                               variant="outlined"
                               value={address.estado_endereco}
-                              onChange={(e) => handleChangeInputsAddress(e)}
+                              onChange={(e) => handleChangeInputsAddress(e, index)}
                             />
                           </Grid>
                         </Grid>
@@ -2208,7 +2204,7 @@ export default function EditPhysicalPerson(props) {
                                 required
                                 label="Telefone"
                                 value={phone.tel}
-                                name="phoneNumber"
+                                name="tel"
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <Tooltip title="Deletar">
@@ -2286,7 +2282,7 @@ export default function EditPhysicalPerson(props) {
                                 required
                                 value={mail.email}
                                 label="E-mail"
-                                name="userMail"
+                                name="email"
                                 endAdornment={
                                   <InputAdornment position="end">
                                     <Tooltip title="Deletar">
@@ -2390,7 +2386,7 @@ export default function EditPhysicalPerson(props) {
                               name="nome"
                               variant="outlined"
                               value={reference.nome}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -2408,7 +2404,7 @@ export default function EditPhysicalPerson(props) {
                               name="tipo"
                               variant="outlined"
                               value={reference.tipo}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -2426,7 +2422,7 @@ export default function EditPhysicalPerson(props) {
                               name="tel"
                               variant="outlined"
                               value={reference.tel}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
 
@@ -2444,7 +2440,7 @@ export default function EditPhysicalPerson(props) {
                               name="endereco"
                               variant="outlined"
                               value={reference.endereco}
-                              onChange={(e) => handleChangeInputsReferences(e)}
+                              onChange={(e) => handleChangeInputsReferences(e, index)}
                             />
                           </Grid>
                         </Grid>
@@ -2555,7 +2551,7 @@ export default function EditPhysicalPerson(props) {
                                 labelId="select-ref-banco-label"
                                 id="select-ref-banco"
                                 value={banking.tipo}
-                                onChange={(e) => handleChangeInputsBankingReferences(e)}
+                                onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                                 label="Tipo"
                                 name="tipo"
                                 required
@@ -2587,13 +2583,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Conta"
                               name="conta"
                               variant="outlined"
                               value={banking.conta}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
 
@@ -2605,13 +2600,12 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               label="Agência"
                               name="agencia"
                               variant="outlined"
                               value={banking.agencia}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
 
@@ -2623,14 +2617,13 @@ export default function EditPhysicalPerson(props) {
                           >
                             <TextField
                               fullWidth
-
                               required
                               type="date"
                               label="Abertura"
                               name="abertura"
                               variant="outlined"
                               value={moment(banking.abertura).format('YYYY-MM-DD')}
-                              onChange={(e) => handleChangeInputsBankingReferences(e)}
+                              onChange={(e) => handleChangeInputsBankingReferences(e, index)}
                             />
                           </Grid>
                         </Grid>
