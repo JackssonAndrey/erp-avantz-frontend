@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
@@ -41,12 +41,15 @@ import {
   DeleteForever as DeleteForeverIcon
 } from '@material-ui/icons';
 
+import moment from 'moment';
+
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
 import api from '../../../services/api';
 import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
+import { Context } from '../../../Context/AuthContext';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -117,6 +120,7 @@ export default function LegalPersonDetails(props) {
   const classes = useStyles();
   const theme = useTheme();
   const timer = useRef();
+  const { handleLogout } = useContext(Context);
   const idPerson = props.match.params.id;
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -180,23 +184,32 @@ export default function LegalPersonDetails(props) {
 
   useEffect(() => {
     const csrfToken = getCookie('csrftoken');
-    api.get(`/persons/legal/details/${idPerson}`, {
-      headers: {
-        'X-CSRFToken': csrfToken
+    (async () => {
+      try {
+        const { data } = await api.get(`/persons/legal/details/${idPerson}`, {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setBankingReferences(data.bankingReferences);
+        setPerson(data.person);
+        setPersonAddress(data.personAdress);
+        setPersonMail(data.personMail);
+        setPersonPhone(data.personPhone);
+        setLegalPerson(data.legalPerson);
+        setPersonReferences(data.personReferences);
+      } catch (err) {
+        const { data, status } = err.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 3000);
+        }
       }
-    }).then(response => {
-      const { data } = response;
-      setBankingReferences(data.bankingReferences);
-      setPerson(data.person);
-      setPersonAddress(data.personAdress);
-      setPersonMail(data.personMail);
-      setPersonPhone(data.personPhone);
-      setLegalPerson(data.legalPerson);
-      setPersonReferences(data.personReferences);
-    }).catch(reject => {
-      console.log(reject);
-    });
-  }, [idPerson]);
+    })();
+  }, [idPerson, handleLogout]);
+
 
   useEffect(() => {
     (async function () {
@@ -446,6 +459,7 @@ export default function LegalPersonDetails(props) {
                     <TextField
                       fullWidth
                       required
+                      type="date"
                       label="Data de abertura"
                       name="data_abertura"
                       variant="outlined"
@@ -479,15 +493,71 @@ export default function LegalPersonDetails(props) {
                     sm={4}
                     xl={4}
                   >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-company-type">Tipo da empresa</InputLabel>
+                      <Select
+                        labelId="select-company-type"
+                        value={legalPerson.tipo_empresa}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        label="Tipo da empresa"
+                        name="tipo_empresa"
+                        disabled
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                        <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                        <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                        <MenuItem value="Microempreendedor Individual">Microempreendedor Individual</MenuItem>
+                        <MenuItem value="Sociedade Simples">Sociedade Simples</MenuItem>
+                        <MenuItem value="Sociedade Anônima">Sociedade Anônima</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={3}
+                    sm={3}
+                    xl={3}
+                  >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-taxation">Tributação</InputLabel>
+                      <Select
+                        labelId="select-taxation"
+                        value={legalPerson.tribut}
+                        onChange={(e) => handleChangeInputsLegalPerson(e)}
+                        label="Tributação"
+                        name="tribut"
+                        disabled
+                      >
+                        <MenuItem value={1}>
+                          <em>Não especificado</em>
+                        </MenuItem>
+                        <MenuItem value={2}>Simples Nacional</MenuItem>
+                        <MenuItem value={3}>Lucro Real</MenuItem>
+                        <MenuItem value={4}>Lucro Presumido</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={4}
+                    sm={4}
+                    xl={4}
+                  >
                     <TextField
                       fullWidth
                       required
-                      label="Tipo da empresa"
-                      name="tipo_empresa"
-                      variant="outlined"
-                      value={legalPerson.tipo_empresa}
-                      onChange={(e) => handleChangeInputsLegalPerson(e)}
                       disabled
+                      label="Contato na empresa"
+                      name="contato"
+                      variant="outlined"
+                      value={legalPerson.contato}
+                      onChange={(e) => handleChangeInputsLegalPerson(e)}
+
                     />
                   </Grid>
                 </Grid>
@@ -943,18 +1013,19 @@ export default function LegalPersonDetails(props) {
 
                         <Grid
                           item
-                          xs={4}
-                          sm={4}
-                          xl={4}
+                          xs={3}
+                          sm={3}
+                          xl={3}
                         >
                           <TextField
                             fullWidth
                             disabled
                             required
+                            type="date"
                             label="Abertura"
                             name="abertura"
                             variant="outlined"
-                            value={banking.abertura}
+                            value={moment(banking.abertura).format('YYYY-MM-DD')}
                             onChange={(e) => handleChangeInputsBankingReferences(e)}
                           />
                         </Grid>
