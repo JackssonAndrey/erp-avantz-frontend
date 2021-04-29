@@ -15,7 +15,6 @@ import {
   InputLabel,
   Dialog,
   DialogContent,
-  DialogContentText,
   DialogTitle,
 } from '@material-ui/core';
 import {
@@ -42,6 +41,7 @@ export default function Dashboard() {
   const { handleLogout } = useContext(Context);
   const [productName, setProductName] = useState('');
   const [products, setProducts] = useState([]);
+  const [stock, setStock] = useState([]);
   const [open, setOpen] = React.useState(false);
 
   async function handleSearchProducts(e) {
@@ -50,8 +50,9 @@ export default function Dashboard() {
 
     try {
       const { data } = await api.get(`/products/${productName}`);
-      setProducts(data);
-      console.table(data);
+      setProducts(data.produtos);
+      setStock(data.estoque);
+      // console.table(data);
     } catch (err) {
       const { data, status } = err.response;
       toast.error(`${data.detail}`);
@@ -69,6 +70,9 @@ export default function Dashboard() {
 
   const handleClose = () => {
     setOpen(false);
+    setProductName('');
+    setProducts([]);
+    setStock([]);
   };
 
   return (
@@ -147,7 +151,7 @@ export default function Dashboard() {
         open={open}
         keepMounted
         onClose={handleClose}
-        maxWidth="lg"
+        maxWidth="xl"
         fullWidth
       >
         <DialogTitle>
@@ -157,7 +161,7 @@ export default function Dashboard() {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          <ProductsTable products={products} />
+          <ProductsTable products={products} stock={stock} />
         </DialogContent>
       </Dialog>
     </div>

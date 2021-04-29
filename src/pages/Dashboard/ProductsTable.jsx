@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { lighten, makeStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
-import TableSortLabel from '@material-ui/core/TableSortLabel';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableSortLabel,
+  Toolbar,
+  Typography,
+  Paper,
+  TableRow
+} from '@material-ui/core';
+
+import api from '../../services/api';
 
 import useStyles from './styles';
 
@@ -48,6 +52,11 @@ const headCells = [
   { id: 'barra', numeric: true, disablePadding: false, label: 'Código barras' },
   { id: 'fornecedor', numeric: false, disablePadding: false, label: 'Fornecedor' },
   { id: 'fabricante', numeric: false, disablePadding: false, label: 'Fabricante' },
+  { id: 'estoque_frente', numeric: false, disablePadding: false, label: 'Estoque Frente' },
+  { id: 'preco1', numeric: false, disablePadding: false, label: 'Preço 1' },
+  { id: 'preco2', numeric: false, disablePadding: false, label: 'Preço 2' },
+  { id: 'preco3', numeric: false, disablePadding: false, label: 'Preço 3' },
+  { id: 'locavel', numeric: false, disablePadding: false, label: 'Locável' },
 ];
 
 function EnhancedTableHead(props) {
@@ -125,12 +134,15 @@ const EnhancedTableToolbar = (props) => {
   );
 };
 
-export default function ProductsTable({ products }) {
+export default function ProductsTable({ products, stock }) {
   const classes = useStyles();
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [units, setUnits] = useState([]);
+  const [fabricators, setFabricators] = useState([]);
+  const [providers, setProviders] = useState([]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -146,6 +158,42 @@ export default function ProductsTable({ products }) {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/units');
+        setUnits(data);
+      } catch (err) {
+        const { data, status } = err.response;
+        console.error(data.detail, status);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/fabricator');
+        setFabricators(data);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(data.detail);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/persons/providers');
+        setProviders(data);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(data.detail);
+      }
+    })();
+  }, []);
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, products.length - page * rowsPerPage);
 
@@ -168,6 +216,15 @@ export default function ProductsTable({ products }) {
               rowCount={products.length}
             />
             <TableBody>
+              {
+                products.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan="12" align="center">
+                      Nenhum registro foi encontrado.
+                    </TableCell>
+                  </TableRow>
+                )
+              }
               {stableSort(products, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((product, index) => {
@@ -185,10 +242,83 @@ export default function ProductsTable({ products }) {
                       <TableCell component="th" id={labelId} scope="row" padding="none">
                         {product.descres}
                       </TableCell>
-                      <TableCell align="right">{product.und}</TableCell>
+                      <TableCell align="right">
+                        {
+                          units.map((unit) => {
+                            if (unit.id === product.und) {
+                              return unit.und;
+                            }
+                          })
+                        }
+                      </TableCell>
                       <TableCell align="right">{product.codbarra}</TableCell>
-                      <TableCell align="left">{product.forn}</TableCell>
-                      <TableCell align="left">{product.fabr}</TableCell>
+                      <TableCell align="left">
+                        {
+                          providers.map((provider) => {
+                            if (provider.id_pessoa_cod === product.forn) {
+                              return provider.nomeorrazaosocial;
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          fabricators.map(fabricator => {
+                            if (fabricator.id === product.fabr) {
+                              return fabricator.marca;
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          stock.map(item => {
+                            if (item.id_produtos === product.id) {
+                              return item.est_frente;
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          stock.map(item => {
+                            if (item.id_produtos === product.id) {
+                              return item.prvenda1.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          stock.map(item => {
+                            if (item.id_produtos === product.id) {
+                              return item.prvenda2.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          stock.map(item => {
+                            if (item.id_produtos === product.id) {
+                              return item.prvenda3.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                            }
+                          })
+                        }
+                      </TableCell>
+                      <TableCell align="left">
+                        {
+                          stock.map(item => {
+                            if (item.id_produtos === product.id) {
+                              if (item.locavel === 2) {
+                                return 'Sim';
+                              } else {
+                                return 'Não';
+                              }
+                            }
+                          })
+                        }
+                      </TableCell>
                     </TableRow>
                   );
                 })}
