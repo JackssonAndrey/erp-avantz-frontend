@@ -45,25 +45,39 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-const headCells = [
-  { id: 'codigo', numeric: false, disablePadding: true, label: 'Código' },
-  { id: 'descricao', numeric: false, disablePadding: false, label: 'Descrição Resumida' },
-  { id: 'unidade', numeric: true, disablePadding: false, label: 'Unidade' },
-  { id: 'barra', numeric: true, disablePadding: false, label: 'Código barras' },
-  { id: 'fornecedor', numeric: false, disablePadding: false, label: 'Fornecedor' },
-  { id: 'fabricante', numeric: false, disablePadding: false, label: 'Fabricante' },
-  { id: 'estoque_frente', numeric: false, disablePadding: false, label: 'Estoque Frente' },
-  { id: 'preco1', numeric: false, disablePadding: false, label: 'Preço 1' },
-  { id: 'preco2', numeric: false, disablePadding: false, label: 'Preço 2' },
-  { id: 'preco3', numeric: false, disablePadding: false, label: 'Preço 3' },
-  { id: 'locavel', numeric: false, disablePadding: false, label: 'Locável' },
-];
 
 function EnhancedTableHead(props) {
   const { classes, order, orderBy, onRequestSort } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
+  const [settings, setSettings] = useState({});
+
+  const headCells = [
+    { id: 'codigo', numeric: false, disablePadding: true, label: 'Código' },
+    { id: 'descricao', numeric: false, disablePadding: false, label: 'Descrição Resumida' },
+    { id: 'unidade', numeric: true, disablePadding: false, label: 'Unidade' },
+    { id: 'barra', numeric: true, disablePadding: false, label: 'Código barras' },
+    { id: 'fornecedor', numeric: false, disablePadding: false, label: 'Fornecedor' },
+    { id: 'fabricante', numeric: false, disablePadding: false, label: 'Fabricante' },
+    { id: 'estoque_frente', numeric: false, disablePadding: false, label: 'Estoque Frente' },
+    { id: 'preco1', numeric: false, disablePadding: false, label: settings.cfg19 },
+    { id: 'preco2', numeric: false, disablePadding: false, label: settings.cfg20 },
+    { id: 'preco3', numeric: false, disablePadding: false, label: settings.cfg21 },
+    { id: 'locavel', numeric: false, disablePadding: false, label: 'Locável' },
+  ];
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/settings');
+        setSettings(data);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(data.detail);
+      }
+    })();
+  }, []);
 
   return (
     <TableHead>
