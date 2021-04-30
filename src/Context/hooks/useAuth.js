@@ -28,6 +28,7 @@ export default function useAuth() {
       let cookie = data.access_token;
       localStorage.setItem('token', JSON.stringify(cookie));
       localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('institution', JSON.stringify(data.institution));
       api.defaults.headers.Authorization = `Bearer ${cookie}`;
       api.defaults.xsrfCookieName = 'csrftoken';
       api.defaults.xsrfHeaderName = 'X-CSRFToken';

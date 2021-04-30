@@ -80,7 +80,7 @@ export default function Menus(props) {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            {props.title}
+            {JSON.parse(localStorage.getItem('institution'))} - {props.title}
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="secondary">
@@ -130,7 +130,7 @@ export default function Menus(props) {
         </div>
         <Divider />
         <List>
-          <MainListItems access={accessUser} />
+          <MainListItems access={accessUser} menuOpen={open} />
         </List>
         <Divider />
         {/* <List>{secondaryListItems}</List> */}

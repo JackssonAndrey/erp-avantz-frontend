@@ -2,73 +2,82 @@ import React from 'react';
 import {
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Tooltip
 } from '@material-ui/core';
 // import ListSubheader from '@material-ui/core/ListSubheader';
 import {
   Dashboard as DashboardIcon,
-  ShoppingCart as ShoppingCartIcon,
+  // ShoppingCart as ShoppingCartIcon,
   People as PeopleIcon,
   Person,
-  BarChart as BarChartIcon,
-  Layers as LayersIcon
+  // BarChart as BarChartIcon,
+  // Layers as LayersIcon
 } from '@material-ui/icons';
 // import AssignmentIcon from '@material-ui/icons/Assignment';
 import { Link } from 'react-router-dom';
 
 import '../../global/global.css';
 
-export default function mainListItems(props) {
+export default function mainListItems({ access, menuOpen }) {
   return (
     <div>
       <Link to="/dashboard" className="link">
-        <ListItem button>
-          <ListItemIcon>
-            <DashboardIcon />
-          </ListItemIcon>
-          <ListItemText primary="Dashboard" />
-        </ListItem>
+        <Tooltip title="Início" arrow disableHoverListener={menuOpen && true}>
+          <ListItem button>
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItem>
+        </Tooltip>
       </Link>
       {
-        props.access[14] === '1'
+        access[14] === '1'
         && (
           <Link to="/users" className="link">
-            <ListItem button>
-              <ListItemIcon>
-                <PeopleIcon />
-              </ListItemIcon>
-              <ListItemText primary="Usuários" />
-            </ListItem>
+            <Tooltip title="Usuários" arrow disableHoverListener={menuOpen && true}>
+              <ListItem button>
+                <ListItemIcon>
+                  <PeopleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Usuários" />
+              </ListItem>
+            </Tooltip>
           </Link>
         )
       }
       {
-        props.access[39] === '1'
+        access[39] === '1'
         && (
           <Link to="/legal/persons" className="link">
-            <ListItem button>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-              <ListItemText primary="Pessoa Jurídica" />
-            </ListItem>
+            <Tooltip title="Pessoa Jurídica" arrow disableHoverListener={menuOpen && true}>
+              <ListItem button>
+                <ListItemIcon>
+                  <Person />
+                </ListItemIcon>
+                <ListItemText primary="Pessoa Jurídica" />
+              </ListItem>
+            </Tooltip>
           </Link>
         )
       }
       {
-        props.access[40] === '1'
+        access[40] === '1'
         && (
           <Link to="/physical/persons" className="link">
-            <ListItem button>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-              <ListItemText primary="Pessoa Física" />
-            </ListItem>
+            <Tooltip title="Pessoa Física" arrow disableHoverListener={menuOpen && true}>
+              <ListItem button>
+                <ListItemIcon>
+                  <Person />
+                </ListItemIcon>
+                <ListItemText primary="Pessoa Física" />
+              </ListItem>
+            </Tooltip>
           </Link>
         )
       }
-      <ListItem button>
+      {/* <ListItem button>
         <ListItemIcon>
           <ShoppingCartIcon />
         </ListItemIcon>
@@ -85,7 +94,7 @@ export default function mainListItems(props) {
           <LayersIcon />
         </ListItemIcon>
         <ListItemText primary="Integrations" />
-      </ListItem>
+      </ListItem> */}
     </div>
   );
 }

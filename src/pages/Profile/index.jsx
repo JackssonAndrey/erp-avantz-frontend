@@ -20,6 +20,7 @@ import {
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import SaveIcon from '@material-ui/icons/Save';
 import { toast, ToastContainer } from 'react-toastify';
+import moment from 'moment';
 
 import api from '../../services/api';
 
@@ -45,7 +46,6 @@ export default function Profile() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [institution, setInstituition] = useState('');
   const [dateJoined, setDateJoined] = useState('');
   const [imagePerfil, setImagePerfil] = useState('');
   const [image, setImage] = useState();
@@ -66,7 +66,6 @@ export default function Profile() {
         setFirstName(data.user.first_name);
         setLastName(data.user.last_name);
         setEmail(data.user.email);
-        setInstituition(data.user.instit_id);
         setDateJoined(data.user.date_joined);
         setUsername(data.user.username);
         setImagePerfil(data.user.foto);
@@ -220,7 +219,7 @@ export default function Profile() {
                     display="flex"
                     flexDirection="column"
                   >
-                    <Avatar alt="Remy Sharp" src={`http://localhost:8000${imagePerfil}`} className={classes.large} />
+                    <Avatar src={`http://localhost:8000${imagePerfil}`} className={classes.large} />
 
                     <Typography
                       color="textPrimary"
@@ -234,9 +233,7 @@ export default function Profile() {
                       color="textSecondary"
                       variant="body1"
                     >
-                      {
-                        dateJoined
-                      }
+                      Data de criação - {moment(dateJoined).format('DD/MM/YYYY')}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -245,7 +242,9 @@ export default function Profile() {
                   <form
                     autoComplete="off"
                     noValidate
-                    onSubmit={(e) => handleChangeImagePerfil(e)}>
+                    onSubmit={(e) => handleChangeImagePerfil(e)}
+                    style={{ width: '100%' }}
+                  >
                     <Grid
                       container
                       spacing={3}
@@ -267,7 +266,13 @@ export default function Profile() {
                           onChange={(e) => setImage(e.target.files[0])}
                         />
                         <label htmlFor="contained-button-file">
-                          <Button fullWidth variant="text" color="primary" component="span" startIcon={<CloudUploadIcon />}>
+                          <Button
+                            fullWidth
+                            variant="outlined"
+                            color="primary"
+                            component="span"
+                            startIcon={<CloudUploadIcon />}
+                          >
                             Selecionar
                           </Button>
                         </label>
@@ -376,8 +381,7 @@ export default function Profile() {
                           name="instituicao"
                           disabled
                           variant="outlined"
-                          value={institution}
-                          onChange={(e) => setInstituition(e.target.value)}
+                          value={JSON.parse(localStorage.getItem('institution'))}
                         />
                       </Grid>
                     </Grid>
@@ -405,10 +409,10 @@ export default function Profile() {
             </Grid>
           </Grid>
 
-          <Box pt={4}>
-            <Copyright />
-          </Box>
         </Container>
+        <Box pt={4}>
+          <Copyright />
+        </Box>
       </main>
     </div>
   );

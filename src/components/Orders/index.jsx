@@ -1,68 +1,78 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Link,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TableRow
+  TableRow,
+  Badge
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import Title from '../Title';
 
-// Generate Order Data
-function createData(id, date, name, shipTo, paymentMethod, amount) {
-  return { id, date, name, shipTo, paymentMethod, amount };
-}
-
-const rows = [
-  createData(0, '16 Mar, 2019', 'Elvis Presley', 'Tupelo, MS', 'VISA ⠀•••• 3719', 312.44),
-  createData(1, '16 Mar, 2019', 'Paul McCartney', 'London, UK', 'VISA ⠀•••• 2574', 866.99),
-  createData(2, '16 Mar, 2019', 'Tom Scholz', 'Boston, MA', 'MC ⠀•••• 1253', 100.81),
-  createData(3, '16 Mar, 2019', 'Michael Jackson', 'Gary, IN', 'AMEX ⠀•••• 2000', 654.39),
-  createData(4, '15 Mar, 2019', 'Bruce Springsteen', 'Long Branch, NJ', 'VISA ⠀•••• 5919', 212.79),
-];
-
-function preventDefault(event) {
-  event.preventDefault();
-}
+import api from '../../services/api';
 
 const useStyles = makeStyles((theme) => ({
   seeMore: {
     marginTop: theme.spacing(3),
   },
+  link: {
+    textDecoration: 'none',
+    '&:hover': {
+      textDecoration: 'underline'
+    }
+  }
 }));
 
 export default function Orders() {
   const classes = useStyles();
+  const [physicalPersons, setPhysicalPersons] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/persons/physical/last/');
+        setPhysicalPersons(data);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(data.detail);
+      }
+    })();
+  }, []);
+
   return (
     <React.Fragment>
-      <Title>Recent Orders</Title>
+      <Title>Últimas pessoas física cadastradas</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Date</TableCell>
-            <TableCell>Name</TableCell>
-            <TableCell>Ship To</TableCell>
-            <TableCell>Payment Method</TableCell>
-            <TableCell align="right">Sale Amount</TableCell>
+            <TableCell>CPF</TableCell>
+            <TableCell>Nome</TableCell>
+            <TableCell align="center">Fornecedor</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.date}</TableCell>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.shipTo}</TableCell>
-              <TableCell>{row.paymentMethod}</TableCell>
-              <TableCell align="right">{row.amount}</TableCell>
+          {physicalPersons.map((person) => (
+            <TableRow key={person.id_pessoa_cod}>
+              <TableCell>{person.cpfcnpj}</TableCell>
+              <TableCell>{person.nomeorrazaosocial}</TableCell>
+              <TableCell align="center">
+                {
+                  person.forn === 1 ? (
+                    <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                  ) : (
+                    <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                  )
+                }
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       <div className={classes.seeMore}>
-        <Link color="primary" href="#" onClick={preventDefault}>
-          See more orders
+        <Link color="primary" to="/physical/persons" className={classes.link}>
+          Ver mais
         </Link>
       </div>
     </React.Fragment>
