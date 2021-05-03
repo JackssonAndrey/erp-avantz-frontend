@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import clsx from 'clsx';
 import { ToastContainer, toast } from 'react-toastify';
 import {
@@ -16,15 +16,16 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Typography
 } from '@material-ui/core';
 import {
   Search as SearchIcon,
   Close as CloseIcon
 } from '@material-ui/icons';
 
-import Chart from '../../components/Chart';
-import Deposits from '../../components/Deposits';
-import Orders from '../../components/Orders';
+import CardProviders from '../../components/CardProviders';
+import CardTotalUsers from '../../components/CardTotalUsers';
+import CardPhysicalPerson from '../../components/CardPhysicalPerson';
 import Copyright from '../../components/Copyright';
 import Menus from '../../components/Menus';
 import useStyles from './styles';
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [products, setProducts] = useState([]);
   const [stock, setStock] = useState([]);
   const [open, setOpen] = React.useState(false);
+  const [userPermissions, setUserPermissions] = useState([]);
 
   async function handleSearchProducts(e) {
     e.preventDefault();
@@ -63,6 +65,18 @@ export default function Dashboard() {
       }
     }
   }
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -87,59 +101,92 @@ export default function Dashboard() {
           <Grid container spacing={3}>
             <Grid
               item
+              xs={12}
+              xl={12}
+              md={12}
+              sm={12}
+              lg={12}
+            >
+              <>
+                <Typography variant="h4" color="textSecondary">
+                  Olá, {JSON.parse(localStorage.getItem('user')).first_name}
+                </Typography>
+                <Typography variant="subtitle1" color="textSecondary">
+                  Este é seu dashboard, ele é construído de acordo com suas permissões no sistema.
+                </Typography>
+              </>
+            </Grid>
+            <Grid
+              item
               xs={5}
               xl={5}
               md={5}
               sm={5}
               lg={5}
             >
-              <Paper>
-                <form onSubmit={(e) => handleSearchProducts(e)}>
-                  <FormControl variant="outlined" fullWidth size="small" >
-                    <InputLabel>Pesquisa rápida de produtos</InputLabel>
-                    <OutlinedInput
-                      value={productName}
-                      onChange={(e) => setProductName(e.target.value)}
-                      fullWidth
-                      label="Pesquisa rápida de produtos"
-                      name="searchPerson"
-                      endAdornment={
-                        <InputAdornment position="end">
-                          <Tooltip title="Pesquisar">
-                            <IconButton
-                              aria-label="Pesquisar"
-                              edge="end"
-                              type="submit"
-                            >
-                              <SearchIcon size={8} color="primary" />
-                            </IconButton>
-                          </Tooltip>
-                        </InputAdornment>
-                      }
-                      labelWidth={70}
-                    />
-                  </FormControl>
-                </form>
-              </Paper>
+              {
+                userPermissions[109] === '1' && (
+                  <Paper>
+                    <form onSubmit={(e) => handleSearchProducts(e)}>
+                      <FormControl variant="outlined" fullWidth size="small" >
+                        <InputLabel>Pesquisa rápida de produtos</InputLabel>
+                        <OutlinedInput
+                          value={productName}
+                          onChange={(e) => setProductName(e.target.value)}
+                          fullWidth
+                          label="Pesquisa rápida de produtos"
+                          name="searchPerson"
+                          endAdornment={
+                            <InputAdornment position="end">
+                              <Tooltip title="Pesquisar">
+                                <IconButton
+                                  aria-label="Pesquisar"
+                                  edge="end"
+                                  type="submit"
+                                >
+                                  <SearchIcon size={8} color="primary" />
+                                </IconButton>
+                              </Tooltip>
+                            </InputAdornment>
+                          }
+                          labelWidth={70}
+                        />
+                      </FormControl>
+                    </form>
+                  </Paper>
+                )
+              }
             </Grid>
-            {/* Chart */}
-            <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                <Chart />
-              </Paper>
-            </Grid>
-            {/* Recent Deposits */}
-            <Grid item xs={12} md={4} lg={3}>
-              <Paper className={fixedHeightPaper}>
-                <Deposits />
-              </Paper>
-            </Grid>
-            {/* Recent Orders */}
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Orders />
-              </Paper>
-            </Grid>
+            {/* CardProviders */}
+            {
+              userPermissions[40] === '1' && (
+                <Grid item xs={12} md={8} lg={9}>
+                  <Paper className={fixedHeightPaper}>
+                    <CardProviders />
+                  </Paper>
+                </Grid>
+              )
+            }
+            {/* CardTotalUsers */}
+            {
+              userPermissions[49] === '1' && (
+                <Grid item xs={12} md={4} lg={3}>
+                  <Paper className={fixedHeightPaper}>
+                    <CardTotalUsers />
+                  </Paper>
+                </Grid>
+              )
+            }
+            {/* CardPhysicalPerson */}
+            {
+              userPermissions[39] === '1' && (
+                <Grid item xs={12}>
+                  <Paper className={classes.paper}>
+                    <CardPhysicalPerson />
+                  </Paper>
+                </Grid>
+              )
+            }
           </Grid>
           <Box pt={4}>
             <Copyright />

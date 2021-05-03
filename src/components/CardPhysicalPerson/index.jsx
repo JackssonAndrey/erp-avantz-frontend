@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function Orders() {
+export default function CardPhysicalPerson() {
   const classes = useStyles();
   const [physicalPersons, setPhysicalPersons] = useState([]);
 

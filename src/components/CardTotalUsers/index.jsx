@@ -18,7 +18,7 @@ const useStyles = makeStyles({
   }
 });
 
-export default function Deposits() {
+export default function CardTotalUsers() {
   const classes = useStyles();
   const [countUsers, setCountUsers] = useState(0);
 
