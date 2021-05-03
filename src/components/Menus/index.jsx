@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import clsx from 'clsx';
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -32,6 +33,7 @@ import {
 
 import MainListItems from '../ItemsLeftMenu';
 import { Context } from '../../Context/AuthContext';
+import api from '../../services/api';
 import useStyles from './styles';
 
 import '../../global/global.css';
@@ -42,7 +44,8 @@ export default function Menus(props) {
   const [openModal, setOpenModal] = useState(false);
   const { handleLogout } = useContext(Context);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [accessUser, setAccessUser] = useState('');
+  const [userPermissions, setUserPermissions] = useState([]);
+
 
   const handleDrawerClick = () => {
     open ? setOpen(false) : setOpen(true)
@@ -62,8 +65,15 @@ export default function Menus(props) {
   };
 
   useEffect(() => {
-    const { acess } = JSON.parse(localStorage.getItem('user'));
-    setAccessUser(acess);
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
   }, []);
 
   return (
@@ -130,7 +140,7 @@ export default function Menus(props) {
         </div>
         <Divider />
         <List>
-          <MainListItems access={accessUser} menuOpen={open} />
+          <MainListItems access={userPermissions} menuOpen={open} />
         </List>
         <Divider />
         {/* <List>{secondaryListItems}</List> */}

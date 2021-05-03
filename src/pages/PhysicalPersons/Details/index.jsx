@@ -157,6 +157,7 @@ export default function PhysicalPersonDetails(props) {
   const [registeredBanks, setRegisteredBanks] = useState([]);
   const [counties, setCounties] = useState([{}]);
   const [openModal, setOpenModal] = useState(false);
+  const [userPermissions, setUserPermissions] = useState([]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -258,6 +259,19 @@ export default function PhysicalPersonDetails(props) {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
+
+
   function handleChangeInputsPerson(e) {
     const { name, value } = e.target;
     setPerson({ ...person, [name]: value });
@@ -335,26 +349,34 @@ export default function PhysicalPersonDetails(props) {
                 justifyContent="flex-start"
               >
                 <Link to="/physical/persons/" className="link">
-                  <Tooltip title="Voltar">
+                  <Tooltip title="Voltar" arrow>
                     <IconButton>
                       <ArrowBack />
                     </IconButton>
                   </Tooltip>
                 </Link>
 
-                <Link to={`/physical/person/edit/${idPerson}`} className="link" >
-                  <Tooltip title="Editar">
-                    <IconButton >
-                      <Edit style={{ color: orange[300] }} />
-                    </IconButton>
-                  </Tooltip>
-                </Link>
+                {
+                  userPermissions[1] === '1' && (
+                    <Link to={`/physical/person/edit/${idPerson}`} className="link" >
+                      <Tooltip title="Editar" arrow>
+                        <IconButton >
+                          <Edit style={{ color: orange[300] }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Link>
+                  )
+                }
 
-                <Tooltip title="Deletar">
-                  <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
-                    <Delete style={{ color: red[300] }} />
-                  </IconButton>
-                </Tooltip>
+                {
+                  userPermissions[134] === '1' && (
+                    <Tooltip title="Deletar" arrow>
+                      <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
+                        <Delete style={{ color: red[300] }} />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
               </Box>
             </CardContent>
           </Card>

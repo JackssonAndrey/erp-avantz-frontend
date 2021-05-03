@@ -31,10 +31,15 @@ import {
   InputLabel,
   OutlinedInput,
   InputAdornment,
-  FormHelperText
+  FormHelperText,
+  DialogContentText
 } from '@material-ui/core';
 import SwipeableViews from 'react-swipeable-views';
-import { ArrowBack, Delete } from '@material-ui/icons';
+import {
+  ArrowBack,
+  Delete,
+  DeleteForever as DeleteForeverIcon
+} from '@material-ui/icons';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import InputMask from 'react-input-mask';
@@ -146,11 +151,18 @@ export default function EditLegalPerson(props) {
   const timer = useRef();
   const theme = useTheme();
   const idPerson = props.match.params.id;
+  const [userPermissions, setUserPermissions] = useState([]);
 
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+
+  const [loadingPerson, setLoadingPerson] = useState(false);
+  const [successPerson, setSuccessPerson] = useState(false);
+  const [errorPerson, setErrorPerson] = useState(false);
+  const [defaultButtonPerson, setDefaultButtonPerson] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [successAddress, setSuccessAddress] = useState(false);
@@ -333,6 +345,12 @@ export default function EditLegalPerson(props) {
     setValueTab(newValue);
   };
 
+  const buttonClassnamePerson = clsx({
+    [classes.buttonSuccess]: successPerson,
+    [classes.buttonError]: errorPerson,
+    [classes.buttonDefault]: defaultButtonPerson
+  });
+
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
@@ -436,6 +454,27 @@ export default function EditLegalPerson(props) {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
+
+  const handleClickOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setDefaultButtonPerson(true);
+  };
 
   // FUNCTION FOR THE INPUTS CHANGE
   function handleChangeInputsPerson(e) {
@@ -923,6 +962,28 @@ export default function EditLegalPerson(props) {
     }
   }
 
+  function handleButtonPersonClickProgressError() {
+    if (!loadingPerson) {
+      setSuccessPerson(false);
+      setLoadingPerson(true);
+      timer.current = window.setTimeout(() => {
+        setErrorPerson(true);
+        setLoadingPerson(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonPersonClickProgress() {
+    if (!loadingPerson) {
+      setSuccessPerson(false);
+      setLoadingPerson(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessPerson(true);
+        setLoadingPerson(false);
+      }, 2000);
+    }
+  };
+
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
 
   // ----------------- REMOVE PERSON DATA -----------------
@@ -1154,6 +1215,32 @@ export default function EditLegalPerson(props) {
     });
   }
 
+  async function handleDeletePerson(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/persons/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonPersonClickProgress();
+      setTimeout(() => {
+        toast.success('Registro da pessoa deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+        history.push('/legal/persons');
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonPersonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -1170,10 +1257,22 @@ export default function EditLegalPerson(props) {
                 justifyContent="flex-start"
               >
                 <Link to="/legal/persons/" className="link">
-                  <IconButton>
-                    <ArrowBack />
-                  </IconButton>
+                  <Tooltip title="Voltar" arrow>
+                    <IconButton>
+                      <ArrowBack />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
+
+                {
+                  userPermissions[136] === '1' && (
+                    <Tooltip title="Deletar" arrow>
+                      <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
+                        <Delete style={{ color: red[300] }} />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
               </Box>
             </CardContent>
           </Card>
@@ -2975,6 +3074,41 @@ export default function EditLegalPerson(props) {
             </Box>
           </DialogActions>
         </Dialog>
+
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+              <p>Você realmente deseja deletar este registro? Esta operação não pode ser desfeita.</p>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button
+              onClick={() => handleDeletePerson(idPerson)}
+              color="secondary"
+              className={buttonClassnamePerson}
+              disabled={loadingPerson}
+              variant="contained"
+            >
+              Deletar
+              {loadingPerson && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+            <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Box pt={4}>
           <Copyright />
         </Box>
