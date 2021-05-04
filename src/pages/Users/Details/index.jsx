@@ -86,6 +86,19 @@ export default function Users(props) {
   const [userPermissions, setUserPermissions] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const idUser = props.match.params.id;
+  const [userLoggedPermissions, setUserLoggedPermissions] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserLoggedPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
 
   const buttonClassNameDisableUser = clsx({
     [classes.buttonSuccess]: successDisableUser,
@@ -312,19 +325,28 @@ export default function Users(props) {
                   </Tooltip>
                 </Link>
 
-                <Link to={`/users/edit/${idUser}`} className="link" >
-                  <Tooltip title="Editar">
-                    <IconButton>
-                      <Edit style={{ color: orange[300] }} />
-                    </IconButton>
-                  </Tooltip>
-                </Link>
+                {
+                  userLoggedPermissions[131] === '1' && (
+                    <Link to={`/users/edit/${idUser}`} className="link" >
+                      <Tooltip title="Editar" arrow>
+                        <IconButton>
+                          <Edit style={{ color: orange[300] }} />
+                        </IconButton>
+                      </Tooltip>
+                    </Link>
+                  )
+                }
 
-                <Tooltip title="Deletar">
-                  <IconButton onClick={() => handleClickOpenModal(idUser)} aria-label="Deletar">
-                    <DeleteIcon size={8} style={{ color: red[300] }} />
-                  </IconButton>
-                </Tooltip>
+                {
+                  userLoggedPermissions[132] === '1' && (
+                    <Tooltip title="Deletar" arrow>
+                      <IconButton onClick={() => handleClickOpenModal(idUser)} aria-label="Deletar">
+                        <DeleteIcon size={8} style={{ color: red[300] }} />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
+
               </Box>
             </CardContent>
           </Card>

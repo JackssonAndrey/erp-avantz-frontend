@@ -176,6 +176,7 @@ export default function EnhancedTable() {
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState(0);
   const [userSearch, setUserSearch] = useState('');
+  const [userPermissions, setUserPermissions] = useState([]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -342,6 +343,18 @@ export default function EnhancedTable() {
     }
     getAllUsers();
   }, [handleLogout]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -525,22 +538,30 @@ export default function EnhancedTable() {
                 display="flex"
                 justifyContent="flex-end"
               >
-                <Button
-                  className={classes.groupButton}
-                  onClick={handleClickOpen}
-                  color="default"
-                  variant="contained"
-                >
-                  Grupos
-                </Button>
-                <Link to="/users/register" className="link" >
-                  <Button
-                    color="primary"
-                    variant="contained"
-                  >
-                    Adicionar usuário
-                  </Button>
-                </Link>
+                {
+                  userPermissions[11] === '1' && (
+                    <Button
+                      className={classes.groupButton}
+                      onClick={handleClickOpen}
+                      color="default"
+                      variant="contained"
+                    >
+                      Grupos
+                    </Button>
+                  )
+                }
+                {
+                  userPermissions[14] === '1' && (
+                    <Link to="/users/register" className="link" >
+                      <Button
+                        color="primary"
+                        variant="contained"
+                      >
+                        Adicionar usuário
+                      </Button>
+                    </Link>
+                  )
+                }
               </Box>
             </Grid>
           </Grid>
@@ -607,7 +628,7 @@ export default function EnhancedTable() {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size="medium"
+            size="small"
             aria-label="enhanced table"
           >
             <EnhancedTableHead
@@ -647,21 +668,33 @@ export default function EnhancedTable() {
                         }
                       </TableCell>
                       <TableCell padding="default" align="right">
-                        <Tooltip title="Editar">
-                          <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
-                            <EditIcon size={8} style={{ color: orange[300] }} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Detalhes">
-                          <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
-                            <DetailIcon size={8} style={{ color: lightBlue[300] }} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Deletar">
-                          <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
-                            <DeleteIcon size={8} style={{ color: red[300] }} />
-                          </IconButton>
-                        </Tooltip>
+                        {
+                          userPermissions[131] === '1' && (
+                            <Tooltip title="Editar">
+                              <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
+                                <EditIcon size={8} style={{ color: orange[300] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
+                        {
+                          userPermissions[133] === '1' && (
+                            <Tooltip title="Detalhes">
+                              <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
+                                <DetailIcon size={8} style={{ color: lightBlue[300] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
+                        {
+                          userPermissions[132] === '1' && (
+                            <Tooltip title="Deletar">
+                              <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
+                                <DeleteIcon size={8} style={{ color: red[300] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
                       </TableCell>
                     </TableRow>
                   );

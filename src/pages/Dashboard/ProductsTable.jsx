@@ -262,6 +262,7 @@ export default function ProductsTable({ products, stock }) {
                             if (unit.id === product.und) {
                               return unit.und;
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -272,6 +273,7 @@ export default function ProductsTable({ products, stock }) {
                             if (provider.id_pessoa_cod === product.forn) {
                               return provider.nomeorrazaosocial;
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -281,6 +283,7 @@ export default function ProductsTable({ products, stock }) {
                             if (fabricator.id === product.fabr) {
                               return fabricator.marca;
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -290,6 +293,7 @@ export default function ProductsTable({ products, stock }) {
                             if (item.id_produtos === product.id) {
                               return item.est_frente;
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -299,6 +303,7 @@ export default function ProductsTable({ products, stock }) {
                             if (item.id_produtos === product.id) {
                               return item.prvenda1.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -308,6 +313,7 @@ export default function ProductsTable({ products, stock }) {
                             if (item.id_produtos === product.id) {
                               return item.prvenda2.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -317,6 +323,7 @@ export default function ProductsTable({ products, stock }) {
                             if (item.id_produtos === product.id) {
                               return item.prvenda3.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                             }
+                            return null;
                           })
                         }
                       </TableCell>
@@ -330,6 +337,7 @@ export default function ProductsTable({ products, stock }) {
                                 return 'Não';
                               }
                             }
+                            return null;
                           })
                         }
                       </TableCell>

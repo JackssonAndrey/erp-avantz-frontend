@@ -33,7 +33,7 @@ export default function mainListItems({ access, menuOpen }) {
         </Tooltip>
       </Link>
       {
-        access[14] === '1'
+        access[96] === '1'
         && (
           <Link to="/users" className="link">
             <Tooltip title="Usuários" arrow disableHoverListener={menuOpen && true}>

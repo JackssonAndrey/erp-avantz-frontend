@@ -157,12 +157,25 @@ export default function EnhancedTable() {
   const [openModal, setOpenModal] = useState(false);
   const [defaultButton, setDefaultButton] = useState(true);
   const [personSearch, setPersonSearch] = useState('');
+  const [userPermissions, setUserPermissions] = useState([]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
   });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -356,15 +369,18 @@ export default function EnhancedTable() {
                   display="flex"
                   justifyContent="flex-end"
                 >
-
-                  <Link to="/legal/person/register" className="link" >
-                    <Button
-                      color="primary"
-                      variant="contained"
-                    >
-                      Adicionar Pessoa
-                    </Button>
-                  </Link>
+                  {
+                    userPermissions[2] === '1' && (
+                      <Link to="/legal/person/register" className="link" >
+                        <Button
+                          color="primary"
+                          variant="contained"
+                        >
+                          Adicionar Pessoa
+                        </Button>
+                      </Link>
+                    )
+                  }
                 </Box>
               </Grid>
             </Grid>
@@ -378,7 +394,7 @@ export default function EnhancedTable() {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size="medium"
+            size="small"
             aria-label="enhanced table"
           >
             <EnhancedTableHead
@@ -417,21 +433,33 @@ export default function EnhancedTable() {
                         }
                       </TableCell>
                       <TableCell padding="default" align="right">
-                        <Tooltip title="Editar">
-                          <IconButton onClick={() => handleEditPerson(person.id_pessoa_cod)} aria-label="Editar">
-                            <EditIcon size={8} style={{ color: orange[300] }} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Detalhes">
-                          <IconButton onClick={() => handleDetailsPerson(person.id_pessoa_cod)} aria-label="Detalhes">
-                            <DetailIcon size={8} style={{ color: lightBlue[600] }} />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Deletar">
-                          <IconButton onClick={() => handleClickOpenModal(person.id_pessoa_cod)} aria-label="Deletar">
-                            <DeleteIcon size={8} style={{ color: red[200] }} />
-                          </IconButton>
-                        </Tooltip>
+                        {
+                          userPermissions[3] === '1' && (
+                            <Tooltip title="Editar" arrow>
+                              <IconButton onClick={() => handleEditPerson(person.id_pessoa_cod)} aria-label="Editar">
+                                <EditIcon size={8} style={{ color: orange[300] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
+                        {
+                          userPermissions[137] === '1' && (
+                            <Tooltip title="Detalhes" arrow>
+                              <IconButton onClick={() => handleDetailsPerson(person.id_pessoa_cod)} aria-label="Detalhes">
+                                <DetailIcon size={8} style={{ color: lightBlue[600] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
+                        {
+                          userPermissions[136] === '1' && (
+                            <Tooltip title="Deletar" arrow>
+                              <IconButton onClick={() => handleClickOpenModal(person.id_pessoa_cod)} aria-label="Deletar">
+                                <DeleteIcon size={8} style={{ color: red[200] }} />
+                              </IconButton>
+                            </Tooltip>
+                          )
+                        }
                       </TableCell>
                     </TableRow>
                   );

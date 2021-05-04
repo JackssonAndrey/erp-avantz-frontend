@@ -32,10 +32,15 @@ import {
   DialogActions,
   FormHelperText,
   OutlinedInput,
-  InputAdornment
+  InputAdornment,
+  DialogContentText
 } from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { ArrowBack, Delete } from '@material-ui/icons';
+import {
+  ArrowBack,
+  Delete,
+  DeleteForever as DeleteForeverIcon
+} from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
@@ -172,10 +177,16 @@ export default function EditPhysicalPerson(props) {
   const theme = useTheme();
   const timer = useRef();
   const idPerson = props.match.params.id;
+  const [userPermissions, setUserPermissions] = useState([]);
   // SUCCESS AND ERRORS BUTTONS STATES
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+
+  const [loadingPerson, setLoadingPerson] = useState(false);
+  const [successPerson, setSuccessPerson] = useState(false);
+  const [errorPerson, setErrorPerson] = useState(false);
+  const [defaultButtonPerson, setDefaultButtonPerson] = useState(false);
 
   const [loadingAddress, setLoadingAddress] = useState(false);
   const [successAddress, setSuccessAddress] = useState(false);
@@ -248,6 +259,7 @@ export default function EditPhysicalPerson(props) {
   const [openModalRemoveReference, setOpenModalRemoveReference] = useState(false);
   const [openModalBankingReference, setOpenModalBankingReference] = useState(false);
   const [openModalRemoveBankingReference, setOpenModalRemoveBankingReference] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   // REGISTER STATE
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -256,9 +268,15 @@ export default function EditPhysicalPerson(props) {
   const [reference, setReference] = useState(initialStateReference);
   const [banking, setBanking] = useState(initialStateBankingReference);
 
+  const buttonClassNamePerson = clsx({
+    [classes.buttonSuccessPerson]: successPerson,
+    [classes.buttonErrorPerson]: errorPerson,
+    [classes.buttonDefaultPerson]: defaultButtonPerson
+  });
+
   const buttonClassName = clsx({
     [classes.buttonSuccess]: success,
-    [classes.buttonError]: error,
+    [classes.buttonError]: error
   });
 
   const buttonClassnameAddress = clsx({
@@ -320,6 +338,15 @@ export default function EditPhysicalPerson(props) {
     [classes.buttonErrorRemoveBankingReference]: errorRemoveBankingReference,
     [classes.buttonDefault]: defaultButtonBankingReference
   });
+
+  const handleClickOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setDefaultButtonPerson(true);
+  };
 
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
@@ -429,6 +456,18 @@ export default function EditPhysicalPerson(props) {
     return () => {
       clearTimeout(timer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -976,6 +1015,28 @@ export default function EditPhysicalPerson(props) {
     }
   }
 
+  function handleButtonPersonClickProgressError() {
+    if (!loadingPerson) {
+      setSuccessPerson(false);
+      setLoadingPerson(true);
+      timer.current = window.setTimeout(() => {
+        setErrorPerson(true);
+        setLoadingPerson(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonPersonClickProgress() {
+    if (!loadingPerson) {
+      setSuccessPerson(false);
+      setLoadingPerson(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessPerson(true);
+        setLoadingPerson(false);
+      }, 2000);
+    }
+  };
+
   // ----------------- FUNCTIONS FOR THE BUTTONS ANIMATIONS -----------------
 
   // ----------------- REMOVE PERSON DATA -----------------
@@ -1211,6 +1272,32 @@ export default function EditPhysicalPerson(props) {
 
   }
 
+  async function handleDeletePerson(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/persons/delete/${id}`, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonPersonClickProgress();
+      setTimeout(() => {
+        toast.success('Registro da pessoa deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+        history.push('/physical/persons');
+      }, 3000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonPersonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -1227,10 +1314,21 @@ export default function EditPhysicalPerson(props) {
                 justifyContent="flex-start"
               >
                 <Link to="/physical/persons/" className="link">
-                  <IconButton>
-                    <ArrowBack />
-                  </IconButton>
+                  <Tooltip title="Voltar" arrow>
+                    <IconButton>
+                      <ArrowBack />
+                    </IconButton>
+                  </Tooltip>
                 </Link>
+                {
+                  userPermissions[134] === '1' && (
+                    <Tooltip title="Deletar" arrow>
+                      <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
+                        <Delete style={{ color: red[300] }} />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
               </Box>
             </CardContent>
           </Card>
@@ -3540,6 +3638,40 @@ export default function EditPhysicalPerson(props) {
                 {loadingRemoveReference && <CircularProgress size={24} className={classes.buttonProgressRemoveBankingReference} />}
               </Button>
             </Box>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+              <p>Você realmente deseja deletar este registro? Esta operação não pode ser desfeita.</p>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button
+              onClick={() => handleDeletePerson(idPerson)}
+              color="secondary"
+              className={buttonClassNamePerson}
+              disabled={loadingPerson}
+              variant="contained"
+            >
+              Deletar
+              {loadingPerson && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+            <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
           </DialogActions>
         </Dialog>
 

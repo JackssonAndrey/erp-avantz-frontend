@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext, useRef } from 'react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
+import { red } from '@material-ui/core/colors';
 import {
   Box,
   Container,
@@ -22,9 +23,21 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  CircularProgress
+  CircularProgress,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@material-ui/core';
-import { ArrowBack, Info as InfoIcon } from '@material-ui/icons';
+import {
+  ArrowBack,
+  Info as InfoIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+  DeleteForever as DeleteForeverIcon
+} from '@material-ui/icons';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -60,6 +73,12 @@ export default function EditUser(props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [userData, setUserData] = useState(initialStateUser);
+  const [openModal, setOpenModal] = useState(false);
+
+  const [loadingDisableUser, setLoadingDisableUser] = useState(false);
+  const [successDisableUser, setSuccessDisableUser] = useState(false);
+  const [errorDisableUser, setErrorDisableUser] = useState(false);
+  const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
 
   const [access, setAccess] = useState([]);
   const [userGroups, setUserGroups] = useState([]);
@@ -68,10 +87,18 @@ export default function EditUser(props) {
 
   const idUser = props.match.params.id;
   const csrfToken = getCookie('csrftoken');
+  const [userLoggedPermissions, setUserLoggedPermissions] = useState([]);
+
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
+  });
+
+  const buttonClassNameDisableUser = clsx({
+    [classes.buttonSuccess]: successDisableUser,
+    [classes.buttonError]: errorDisableUser,
+    [classes.buttonDefault]: defaultButtonDisableUser
   });
 
   useEffect(() => {
@@ -163,6 +190,18 @@ export default function EditUser(props) {
     };
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserLoggedPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
+
   function changeInputsUser(e) {
     const { value, name } = e.target;
     setUserData({ ...userData, [name]: value });
@@ -246,6 +285,38 @@ export default function EditUser(props) {
     });
   }
 
+  const handleClickOpenModal = (id) => {
+    setOpenModal(true);
+  };
+
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+
+  function handleButtonDisableUserProgressError() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setErrorDisableUser(true);
+        setLoadingDisableUser(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonDisableUserProgress() {
+    if (!loadingDisableUser) {
+      setSuccessDisableUser(false);
+      setLoadingDisableUser(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessDisableUser(true);
+        setLoadingDisableUser(false);
+      }, 2000);
+    }
+  };
+
   const handleToggle = (value) => () => {
     const indexExists = access.find((element, index) => {
       return index === value;
@@ -268,6 +339,63 @@ export default function EditUser(props) {
     }
 
   };
+
+  async function handleDisableUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/users/disable/${id}`, { idUser }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonDisableUserProgress();
+      setTimeout(() => {
+        toast.success('Usuário desabilitado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+        setDefaultButtonDisableUser(true);
+      }, 3500);
+      setTimeout(() => {
+        history.push('/users');
+      }, 3800);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonDisableUserProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleDeleteUser(id) {
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      await api.put(`/users/delete/${id}`, { idUser }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Usuário deletado com sucesso!');
+      }, 2000);
+      setTimeout(() => {
+        handleCloseModal();
+      }, 3500);
+      setTimeout(() => {
+        history.push('/users');
+      }, 3800);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
 
   /*
     Method for changing the size of the group's access array. Leaves the same size as the permissions array.
@@ -303,6 +431,17 @@ export default function EditUser(props) {
                     <ArrowBack />
                   </IconButton>
                 </Link>
+
+                {
+                  userLoggedPermissions[132] === '1' && (
+                    <Tooltip title="Deletar" arrow>
+                      <IconButton onClick={() => handleClickOpenModal(idUser)} aria-label="Deletar">
+                        <DeleteIcon size={8} style={{ color: red[300] }} />
+                      </IconButton>
+                    </Tooltip>
+                  )
+                }
+
               </Box>
             </CardContent>
           </Card>
@@ -563,6 +702,55 @@ export default function EditUser(props) {
             </Card>
           </form>
         </Container>
+        {/* DELETE USER MODAL */}
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            Deletar usuário
+            <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent className={classes.modalContent} dividers>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText variant="h6" id="alert-dialog-description" className={classes.modalContentText}>
+              Você realmente deseja deletar este usuário? Esta operação não pode ser desfeita.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => handleDisableUser(idUser)}
+              color="primary"
+              className={buttonClassNameDisableUser}
+              disabled={loadingDisableUser}
+              variant="contained"
+            >
+              Apenas desativar
+              {loadingDisableUser && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+
+            <Button
+              onClick={() => handleDeleteUser(idUser)}
+              color="secondary"
+              className={buttonClassname}
+              disabled={loading}
+              variant="contained"
+            >
+              Deletar
+              {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+
+            <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Box pt={4}>
           <Copyright />
         </Box>
