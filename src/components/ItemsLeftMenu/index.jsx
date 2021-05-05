@@ -3,14 +3,17 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Tooltip
+  Tooltip,
+  Divider,
+  ListSubheader
 } from '@material-ui/core';
 // import ListSubheader from '@material-ui/core/ListSubheader';
 import {
   Dashboard as DashboardIcon,
-  // ShoppingCart as ShoppingCartIcon,
   People as PeopleIcon,
   Person,
+  Business as BusinessIcon
+  // ShoppingCart as ShoppingCartIcon,
   // BarChart as BarChartIcon,
   // Layers as LayersIcon
 } from '@material-ui/icons';
@@ -19,7 +22,7 @@ import { Link } from 'react-router-dom';
 
 import '../../global/global.css';
 
-export default function mainListItems({ access, menuOpen }) {
+export default function mainListItems({ access, menuOpen, isSuperuser }) {
   return (
     <div>
       <Link to="/dashboard" className="link">
@@ -75,6 +78,24 @@ export default function mainListItems({ access, menuOpen }) {
               </ListItem>
             </Tooltip>
           </Link>
+        )
+      }
+      {
+        isSuperuser && (
+          <>
+            <Divider />
+            <ListSubheader inset>Admin</ListSubheader>
+            <Link to="/institutions" className="link">
+              <Tooltip title="Instituições" arrow disableHoverListener={menuOpen && true}>
+                <ListItem button>
+                  <ListItemIcon>
+                    <BusinessIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Instituições" />
+                </ListItem>
+              </Tooltip>
+            </Link>
+          </>
         )
       }
       {/* <ListItem button>

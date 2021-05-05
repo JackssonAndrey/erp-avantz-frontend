@@ -35,6 +35,7 @@ import MainListItems from '../ItemsLeftMenu';
 import { Context } from '../../Context/AuthContext';
 import api from '../../services/api';
 import useStyles from './styles';
+import getCookie from '../../utils/functions';
 
 import '../../global/global.css';
 
@@ -45,7 +46,7 @@ export default function Menus(props) {
   const { handleLogout } = useContext(Context);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userPermissions, setUserPermissions] = useState([]);
-
+  const [isSuperuser, setIsSuperuser] = useState(false);
 
   const handleDrawerClick = () => {
     open ? setOpen(false) : setOpen(true)
@@ -61,8 +62,27 @@ export default function Menus(props) {
   };
 
   const handleToggleModal = () => {
-    openModal ? setOpenModal(false) : setOpenModal(true)
+    openModal ? setOpenModal(false) : setOpenModal(true);
   };
+
+  useEffect(() => {
+    (async () => {
+      const idUser = JSON.parse(localStorage.getItem('user')).id;
+
+      try {
+        const csrfToken = getCookie('csrftoken');
+        const { data } = await api.get(`/users/details/${idUser}`, {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setIsSuperuser(data.is_superuser);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(data.detail);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -140,7 +160,7 @@ export default function Menus(props) {
         </div>
         <Divider />
         <List>
-          <MainListItems access={userPermissions} menuOpen={open} />
+          <MainListItems access={userPermissions} menuOpen={open} isSuperuser={isSuperuser} />
         </List>
         <Divider />
         {/* <List>{secondaryListItems}</List> */}
