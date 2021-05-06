@@ -372,7 +372,7 @@ export default function EnhancedTable() {
                   display="flex"
                   justifyContent="flex-end"
                 >
-                  <Link to="/institution/register" className="link" >
+                  <Link to="/institutions/register" className="link" >
                     <Button
                       color="primary"
                       variant="contained"
