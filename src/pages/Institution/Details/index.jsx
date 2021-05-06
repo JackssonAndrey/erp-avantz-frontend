@@ -23,6 +23,10 @@ import {
   CircularProgress,
   Button,
   Badge,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@material-ui/core';
 
 import {
@@ -45,6 +49,8 @@ import { Context } from '../../../Context/AuthContext';
 import 'react-toastify/dist/ReactToastify.css';
 
 const initialStateInstitution = {
+  idmatriz: 0,
+  idpjur: 0,
   ativo: 0,
   nome: "",
   razsoc: "",
@@ -78,8 +84,11 @@ export default function DetailsInstitution(props) {
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
   const [openModal, setOpenModal] = useState(false);
-  const [userPermissions, setUserPermissions] = useState([]);
   const [institution, setInstitution] = useState(initialStateInstitution);
+  const [institutions, setInstitutions] = useState([]);
+  const [counties, setCounties] = useState([{}]);
+  const [cities, setCities] = useState([{}]);
+  const [legalPersons, setLegalPersons] = useState([{}]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -119,18 +128,6 @@ export default function DetailsInstitution(props) {
   };
 
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/users/access');
-        setUserPermissions(data.acess.split(''));
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(data.detail);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
     return () => {
       clearTimeout(timer.current);
     };
@@ -158,6 +155,74 @@ export default function DetailsInstitution(props) {
       }
     })();
   }, [idInstitution, handleLogout]);
+
+  useEffect(() => {
+    (async () => {
+      const csrftoken = getCookie('csrftoken');
+
+      try {
+        const { data } = await api.get('/institution', {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+
+        setInstitutions(data);
+      } catch (err) {
+        const { data, status } = error.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 4000);
+        }
+      }
+    })();
+  }, [handleLogout]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/counties/ufs');
+        setCounties(data);
+      } catch (err) {
+        // const { data } = err.response;
+        toast.error('Não foi possível pesquisar os dados dos municípios.');
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get(`/counties/cities/${institution.uf}`);
+        setCities(data);
+      } catch (err) {
+        const { data } = err.response;
+        console.error(`${data.detail}`);
+      }
+    })();
+  }, [institution.uf]);
+
+  useEffect(() => {
+    (async () => {
+      const csrftoken = getCookie('csrftoken');
+      try {
+        const { data } = await api.get('/persons/legal', {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setLegalPersons(data);
+      } catch (error) {
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
+        setTimeout(() => {
+          handleLogout();
+        }, 5000);
+      }
+    })();
+  }, [handleLogout]);
 
   function handleChangeInputsInstitution(e) {
     const { name, value } = e.target;
@@ -214,7 +279,7 @@ export default function DetailsInstitution(props) {
                   </Tooltip>
                 </Link>
 
-                <Link to={`/institution/edit/${idInstitution}`} className="link" >
+                <Link to={`/institutions/edit/${idInstitution}`} className="link" >
                   <Tooltip title="Editar" arrow>
                     <IconButton>
                       <Edit style={{ color: orange[300] }} />
@@ -241,27 +306,89 @@ export default function DetailsInstitution(props) {
                 >
                   <Grid
                     item
-                    xs={12}
-                    sm={12}
-                    xl={12}
+                    xs={2}
+                    sm={2}
+                    xl={2}
                   >
-                    {
-                      institution.ativo === 1 ? (
-                        <Badge
-                          color="primary"
-                          badgeContent="Ativo"
-                          overlap="rectangle"
-                          style={{ marginLeft: theme.spacing(3) }}
-                        />
-                      ) : (
-                        <Badge
-                          color="secondary"
-                          badgeContent="Desativada"
-                          overlap="rectangle"
-                          style={{ marginLeft: theme.spacing(3) }}
-                        />
-                      )
-                    }
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-ativo-label">Ativo</InputLabel>
+                      <Select
+                        fullWidth
+                        disabled
+                        labelId="select-ativo-label"
+                        id="select-ativo"
+                        value={institution.ativo}
+                        onChange={(e) => handleChangeInputsInstitution(e)}
+                        label="Ativo"
+                        name="ativo"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Sim</MenuItem>
+                        <MenuItem value={0}>Não</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={5}
+                    sm={5}
+                    xl={5}
+                  >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-matriz-label">Selecione a Matriz</InputLabel>
+                      <Select
+                        fullWidth
+                        disabled
+                        labelId="select-matriz-label"
+                        id="select-matriz"
+                        value={institution.idmatriz || ""}
+                        onChange={(e) => handleChangeInputsInstitution(e)}
+                        label="Selecione a matriz"
+                        name="idmatriz"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {
+                          institutions.map((instit, index) => (
+                            <MenuItem value={instit.id_instituicao} key={index}>{instit.razsoc}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid
+                    item
+                    xs={5}
+                    sm={5}
+                    xl={5}
+                  >
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-idpjur-label">Registro da pessoa</InputLabel>
+                      <Select
+                        fullWidth
+                        disabled
+                        labelId="select-idpjur-label"
+                        id="select-idpjur"
+                        value={institution.idpjur || ""}
+                        onChange={(e) => handleChangeInputsInstitution(e)}
+                        label="Registro da pessoa"
+                        name="idpjur"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {
+                          legalPersons.map((person, index) => (
+                            <MenuItem value={person.id_pessoa_cod} key={index}>{person.nomeorrazaosocial}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -348,8 +475,14 @@ export default function DetailsInstitution(props) {
                       onChange={(e) => handleChangeInputsInstitution(e)}
                     />
                   </Grid>
+                </Grid>
 
-                  <Divider />
+                <Divider style={{ margin: theme.spacing(3) }} />
+
+                <Grid
+                  container
+                  spacing={3}
+                >
 
                   <Grid
                     item
@@ -374,15 +507,28 @@ export default function DetailsInstitution(props) {
                     sm={2}
                     xl={2}
                   >
-                    <TextField
-                      fullWidth
-                      disabled
-                      label="UF"
-                      name="uf"
-                      variant="outlined"
-                      value={institution.uf === null ? 'Não informado' : institution.uf}
-                      onChange={(e) => handleChangeInputsInstitution(e)}
-                    />
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-uf-label">UF</InputLabel>
+                      <Select
+                        fullWidth
+                        labelId="select-uf-label"
+                        id="select-uf"
+                        value={institution.uf}
+                        onChange={(e) => handleChangeInputsInstitution(e)}
+                        label="UF"
+                        disabled
+                        name="uf"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {
+                          counties.map((countie, index) => (
+                            <MenuItem key={index} value={countie.id_municipios}>{countie.uf_sigla}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -391,15 +537,28 @@ export default function DetailsInstitution(props) {
                     sm={4}
                     xl={4}
                   >
-                    <TextField
-                      fullWidth
-                      disabled
-                      label="Cidade"
-                      name="cidade"
-                      variant="outlined"
-                      value={institution.cidade === null ? 'Não informado' : institution.cidade}
-                      onChange={(e) => handleChangeInputsInstitution(e)}
-                    />
+                    <FormControl variant="outlined" className={classes.formControl}>
+                      <InputLabel id="select-cidade-label">Cidade</InputLabel>
+                      <Select
+                        fullWidth
+                        labelId="select-cidade-label"
+                        id="select-cidade"
+                        value={institution.cidade}
+                        onChange={(e) => handleChangeInputsInstitution(e)}
+                        label="Cidade"
+                        disabled
+                        name="cidade"
+                      >
+                        <MenuItem value="">
+                          <em>None</em>
+                        </MenuItem>
+                        {
+                          cities.map((citie, index) => (
+                            <MenuItem key={index} value={citie.id_municipios}>{citie.descr}</MenuItem>
+                          ))
+                        }
+                      </Select>
+                    </FormControl>
                   </Grid>
 
                   <Grid
@@ -468,9 +627,14 @@ export default function DetailsInstitution(props) {
                       onChange={(e) => handleChangeInputsInstitution(e)}
                     />
                   </Grid>
+                </Grid>
 
-                  <Divider />
+                <Divider style={{ margin: theme.spacing(3) }} />
 
+                <Grid
+                  container
+                  spacing={3}
+                >
                   <Grid
                     item
                     xs={4}
@@ -504,9 +668,14 @@ export default function DetailsInstitution(props) {
                       onChange={(e) => handleChangeInputsInstitution(e)}
                     />
                   </Grid>
+                </Grid>
 
-                  <Divider />
+                <Divider style={{ margin: theme.spacing(3) }} />
 
+                <Grid
+                  container
+                  spacing={3}
+                >
                   <Grid
                     item
                     xs={3}
@@ -557,14 +726,19 @@ export default function DetailsInstitution(props) {
                       onChange={(e) => handleChangeInputsInstitution(e)}
                     />
                   </Grid>
+                </Grid>
 
-                  <Divider variant="fullWidth" />
+                <Divider style={{ margin: theme.spacing(3) }} />
 
+                <Grid
+                  container
+                  spacing={3}
+                >
                   <Grid
                     item
-                    xs={4}
-                    sm={4}
-                    xl={4}
+                    xs={6}
+                    sm={6}
+                    xl={6}
                   >
                     <TextField
                       fullWidth
@@ -622,6 +796,6 @@ export default function DetailsInstitution(props) {
           </DialogActions>
         </Dialog>
       </main>
-    </div>
+    </div >
   );
 }

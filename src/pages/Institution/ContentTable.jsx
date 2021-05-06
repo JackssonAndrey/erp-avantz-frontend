@@ -267,7 +267,7 @@ export default function EnhancedTable() {
     const csrftoken = getCookie('csrftoken');
 
     try {
-      const { data } = await api.put(`/institution/deactivate/${id}`, {
+      const { data } = await api.put(`/institution/deactivate/${id}/`, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -497,7 +497,7 @@ export default function EnhancedTable() {
             className={buttonClassname}
             disabled={loading}
           >
-            Deletar
+            Desativar
             {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
           <Button onClick={handleCloseModal} color="primary" variant="outlined" autoFocus>

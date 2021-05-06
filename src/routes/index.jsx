@@ -26,6 +26,7 @@ import EditPhysicalPerson from '../pages/PhysicalPersons/Edit';
 import RegisterPhysicalPerson from '../pages/PhysicalPersons/Register';
 import Institution from '../pages/Institution';
 import DetailsInstitution from '../pages/Institution/Details';
+import EditInstitution from '../pages/Institution/Edit';
 
 export default function Routes() {
   return (
@@ -59,6 +60,8 @@ export default function Routes() {
 
       <CustomRoute isPrivate exact path="/institutions" component={Institution} />
       <CustomRoute isPrivate exact path="/institutions/details/:id" component={DetailsInstitution} />
+      <CustomRoute isPrivate exact path="/institutions/edit/:id" component={EditInstitution} />
+
     </Switch>
   );
 }
