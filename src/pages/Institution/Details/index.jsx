@@ -22,7 +22,6 @@ import {
   DialogActions,
   CircularProgress,
   Button,
-  Badge,
   FormControl,
   InputLabel,
   Select,
@@ -35,8 +34,6 @@ import {
   Delete,
   DeleteForever as DeleteForeverIcon
 } from '@material-ui/icons';
-
-import moment from 'moment';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -59,8 +56,8 @@ const initialStateInstitution = {
   endcompl: "",
   bairro: "",
   cep: "",
-  cidade: 0,
-  uf: 0,
+  id_municipio: 0,
+  id_uf: 0,
   cnpj: "",
   iest: "",
   imun: "",
@@ -195,14 +192,14 @@ export default function DetailsInstitution(props) {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/counties/cities/${institution.uf}`);
+        const { data } = await api.get(`/counties/cities/${institution.id_uf}`);
         setCities(data);
       } catch (err) {
         const { data } = err.response;
         console.error(`${data.detail}`);
       }
     })();
-  }, [institution.uf]);
+  }, [institution.id_uf]);
 
   useEffect(() => {
     (async () => {
@@ -344,7 +341,7 @@ export default function DetailsInstitution(props) {
                         disabled
                         labelId="select-matriz-label"
                         id="select-matriz"
-                        value={institution.idmatriz || ""}
+                        value={institution.idmatriz || 0}
                         onChange={(e) => handleChangeInputsInstitution(e)}
                         label="Selecione a matriz"
                         name="idmatriz"
@@ -352,6 +349,7 @@ export default function DetailsInstitution(props) {
                         <MenuItem value="">
                           <em>None</em>
                         </MenuItem>
+
                         {
                           institutions.map((instit, index) => (
                             <MenuItem value={instit.id_instituicao} key={index}>{instit.razsoc}</MenuItem>
@@ -513,11 +511,11 @@ export default function DetailsInstitution(props) {
                         fullWidth
                         labelId="select-uf-label"
                         id="select-uf"
-                        value={institution.uf}
+                        value={institution.id_uf}
                         onChange={(e) => handleChangeInputsInstitution(e)}
                         label="UF"
                         disabled
-                        name="uf"
+                        name="id_uf"
                       >
                         <MenuItem value="">
                           <em>None</em>
@@ -543,11 +541,11 @@ export default function DetailsInstitution(props) {
                         fullWidth
                         labelId="select-cidade-label"
                         id="select-cidade"
-                        value={institution.cidade}
+                        value={institution.id_municipio}
                         onChange={(e) => handleChangeInputsInstitution(e)}
                         label="Cidade"
                         disabled
-                        name="cidade"
+                        name="id_municipio"
                       >
                         <MenuItem value="">
                           <em>None</em>

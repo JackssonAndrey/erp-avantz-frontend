@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useRef, useContext, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
+import cep from 'cep-promise';
+
 import { ToastContainer, toast } from 'react-toastify';
 import { useTheme } from '@material-ui/core/styles';
 import { blue } from '@material-ui/core/colors';
+import InputMask from 'react-input-mask';
 
 import {
   Box,
@@ -19,27 +22,19 @@ import {
   Tooltip,
   Dialog,
   DialogTitle,
-  DialogContentText,
   DialogContent,
-  DialogActions,
   CircularProgress,
   Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  ListItem,
-  ListItemText,
-  List,
-  AppBar,
-  Toolbar,
-  Typography,
-  Slide
+  Slide,
+  FormHelperText
 } from '@material-ui/core';
 
 import {
   ArrowBack,
-  Close as CloseIcon,
   Add as AddIcon
 } from '@material-ui/icons';
 
@@ -65,8 +60,8 @@ const initialStateInstitution = {
   endcompl: "",
   bairro: "",
   cep: "",
-  cidade: "",
-  uf: "",
+  id_municipio: "",
+  id_uf: "",
   cnpj: "",
   iest: "",
   imun: "",
@@ -98,6 +93,8 @@ export default function RegisterInstitution() {
   const [counties, setCounties] = useState([{}]);
   const [cities, setCities] = useState([{}]);
   const [legalPersons, setLegalPersons] = useState([{}]);
+  const [isZipCodeValid, setIsZipCodeValid] = useState(true);
+  const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -182,14 +179,14 @@ export default function RegisterInstitution() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/counties/cities/${institution.uf}`);
+        const { data } = await api.get(`/counties/cities/${institution.id_uf}`);
         setCities(data);
       } catch (err) {
         const { data } = err.response;
         console.error(`${data.detail}`);
       }
     })();
-  }, [institution.uf]);
+  }, [institution.id_uf]);
 
   useEffect(() => {
     searchLegalPersons();
@@ -220,7 +217,7 @@ export default function RegisterInstitution() {
     const csrftoken = getCookie('csrftoken');
 
     try {
-      await api.post('/institution/', institution, {
+      await api.post('/institution/create', institution, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -239,6 +236,21 @@ export default function RegisterInstitution() {
         toast.error(`${data.detail}`);
       }, 2000);
     }
+  }
+
+  function searchZipCode(zipCode) {
+    cep(zipCode).then((response) => {
+      const { neighborhood, street } = response;
+
+      setInstitution({ ...institution, ['bairro']: neighborhood });
+      setInstitution({ ...institution, ['end']: street });
+
+      setIsZipCodeValid(true);
+    }).catch((response) => {
+      const { message } = response;
+      setErrorMessageZipCode(message);
+      setIsZipCodeValid(false);
+    });
   }
 
   return (
@@ -313,7 +325,7 @@ export default function RegisterInstitution() {
                           fullWidth
                           labelId="select-matriz-label"
                           id="select-matriz"
-                          value={institution.idmatriz || ""}
+                          value={institution.idmatriz || 0}
                           onChange={(e) => handleChangeInputsInstitution(e)}
                           label="Selecione a matriz"
                           name="idmatriz"
@@ -321,6 +333,7 @@ export default function RegisterInstitution() {
                           <MenuItem value="">
                             <em>None</em>
                           </MenuItem>
+                          <MenuItem value={0}>Esta é a matriz</MenuItem>
                           {
                             institutions.map((instit, index) => (
                               <MenuItem value={instit.id_instituicao} key={index}>{instit.razsoc}</MenuItem>
@@ -413,14 +426,14 @@ export default function RegisterInstitution() {
                       sm={4}
                       xl={4}
                     >
-                      <TextField
-                        fullWidth
-                        label="CNPJ"
-                        name="cnpj"
-                        variant="outlined"
-                        value={institution.cnpj}
-                        onChange={(e) => handleChangeInputsInstitution(e)}
-                      />
+                      <InputMask mask="99.999.999/9999-99" value={institution.cnpj} onChange={(e) => handleChangeInputsInstitution(e)}>
+                        <TextField
+                          fullWidth
+                          label="CNPJ"
+                          name="cnpj"
+                          variant="outlined"
+                        />
+                      </InputMask>
                     </Grid>
 
                     <Grid
@@ -469,14 +482,21 @@ export default function RegisterInstitution() {
                       sm={3}
                       xl={3}
                     >
-                      <TextField
-                        fullWidth
-                        label="CEP"
-                        name="cep"
-                        variant="outlined"
-                        value={institution.cep === null ? 'Não informado' : institution.cep}
-                        onChange={(e) => handleChangeInputsInstitution(e)}
-                      />
+                      <InputMask mask="99.999-999" value={institution.cep} onChange={(e) => handleChangeInputsInstitution(e)}>
+                        <TextField
+                          fullWidth
+                          error={!isZipCodeValid}
+                          autoComplete="off"
+                          label="CEP"
+                          name="cep"
+                          variant="outlined"
+                        />
+                      </InputMask>
+                      {
+                        (!isZipCodeValid) && (
+                          <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                        )
+                      }
                     </Grid>
 
                     <Grid
@@ -491,10 +511,10 @@ export default function RegisterInstitution() {
                           fullWidth
                           labelId="select-uf-label"
                           id="select-uf"
-                          value={institution.uf || ""}
+                          value={institution.id_uf || ""}
                           onChange={(e) => handleChangeInputsInstitution(e)}
                           label="UF"
-                          name="uf"
+                          name="id_uf"
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -520,10 +540,10 @@ export default function RegisterInstitution() {
                           fullWidth
                           labelId="select-cidade-label"
                           id="select-cidade"
-                          value={institution.cidade || ""}
+                          value={institution.id_municipio || ""}
                           onChange={(e) => handleChangeInputsInstitution(e)}
                           label="Cidade"
-                          name="cidade"
+                          name="id_municipio"
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -545,6 +565,7 @@ export default function RegisterInstitution() {
                     >
                       <TextField
                         fullWidth
+                        onFocus={(e) => searchZipCode(institution.cep)}
                         label="Rua"
                         name="end"
                         variant="outlined"
@@ -580,7 +601,7 @@ export default function RegisterInstitution() {
                         label="Bairro"
                         name="bairro"
                         variant="outlined"
-                        value={institution.bairro === null ? 'Não informado' : institution.bairro}
+                        value={institution.bairro}
                         onChange={(e) => handleChangeInputsInstitution(e)}
                       />
                     </Grid>

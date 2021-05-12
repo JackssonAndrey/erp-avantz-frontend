@@ -4,6 +4,9 @@ import clsx from 'clsx';
 import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
 import { useTheme } from '@material-ui/core/styles';
+import InputMask from 'react-input-mask';
+import cep from 'cep-promise';
+
 import {
   Box,
   Container,
@@ -23,11 +26,11 @@ import {
   DialogActions,
   CircularProgress,
   Button,
-  Badge,
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  FormHelperText
 } from '@material-ui/core';
 
 import {
@@ -57,8 +60,8 @@ const initialStateInstitution = {
   endcompl: "",
   bairro: "",
   cep: "",
-  cidade: "",
-  uf: "",
+  id_municipio: "",
+  id_uf: "",
   cnpj: "",
   iest: "",
   imun: "",
@@ -87,6 +90,8 @@ export default function EditInstitution(props) {
   const [counties, setCounties] = useState([{}]);
   const [cities, setCities] = useState([{}]);
   const [legalPersons, setLegalPersons] = useState([{}]);
+  const [isZipCodeValid, setIsZipCodeValid] = useState(true);
+  const [errorMessageZipCode, setErrorMessageZipCode] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -193,14 +198,14 @@ export default function EditInstitution(props) {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await api.get(`/counties/cities/${institution.uf}`);
+        const { data } = await api.get(`/counties/cities/${institution.id_uf}`);
         setCities(data);
       } catch (err) {
         const { data } = err.response;
         console.error(`${data.detail}`);
       }
     })();
-  }, [institution.uf]);
+  }, [institution.id_uf]);
 
   useEffect(() => {
     (async () => {
@@ -269,7 +274,7 @@ export default function EditInstitution(props) {
       }, 2000);
       setTimeout(() => {
         history.push(`/institutions/details/${idInstitution}`);
-      }, 3000);
+      }, 4000);
     } catch (err) {
       const { data } = err.response;
       handleButtonClickProgressError();
@@ -280,6 +285,21 @@ export default function EditInstitution(props) {
         setDefaultButton();
       }, 4000);
     }
+  }
+
+  function searchZipCode(zipCode) {
+    cep(zipCode).then((response) => {
+      const { neighborhood, street } = response;
+
+      setInstitution({ ...institution, ['bairro']: neighborhood });
+      setInstitution({ ...institution, ['end']: street });
+
+      setIsZipCodeValid(true);
+    }).catch((response) => {
+      const { message } = response;
+      setErrorMessageZipCode(message);
+      setIsZipCodeValid(false);
+    });
   }
 
   return (
@@ -369,6 +389,7 @@ export default function EditInstitution(props) {
                           <MenuItem value="">
                             <em>None</em>
                           </MenuItem>
+                          <MenuItem value={0}>Esta é a matriz</MenuItem>
                           {
                             institutions.map((instit, index) => (
                               <MenuItem value={instit.id_instituicao} key={index}>{instit.razsoc}</MenuItem>
@@ -445,14 +466,14 @@ export default function EditInstitution(props) {
                       sm={4}
                       xl={4}
                     >
-                      <TextField
-                        fullWidth
-                        label="CNPJ"
-                        name="cnpj"
-                        variant="outlined"
-                        value={institution.cnpj}
-                        onChange={(e) => handleChangeInputsInstitution(e)}
-                      />
+                      <InputMask mask="99.999.999/9999-99" value={institution.cnpj} onChange={(e) => handleChangeInputsInstitution(e)}>
+                        <TextField
+                          fullWidth
+                          label="CNPJ"
+                          name="cnpj"
+                          variant="outlined"
+                        />
+                      </InputMask>
                     </Grid>
 
                     <Grid
@@ -501,14 +522,19 @@ export default function EditInstitution(props) {
                       sm={3}
                       xl={3}
                     >
-                      <TextField
-                        fullWidth
-                        label="CEP"
-                        name="cep"
-                        variant="outlined"
-                        value={institution.cep === null ? 'Não informado' : institution.cep}
-                        onChange={(e) => handleChangeInputsInstitution(e)}
-                      />
+                      <InputMask mask="99.999-999" value={institution.cep} onChange={(e) => handleChangeInputsInstitution(e)}>
+                        <TextField
+                          fullWidth
+                          label="CEP"
+                          name="cep"
+                          variant="outlined"
+                        />
+                      </InputMask>
+                      {
+                        (!isZipCodeValid) && (
+                          <FormHelperText error >{errorMessageZipCode}</FormHelperText>
+                        )
+                      }
                     </Grid>
 
                     <Grid
@@ -523,10 +549,10 @@ export default function EditInstitution(props) {
                           fullWidth
                           labelId="select-uf-label"
                           id="select-uf"
-                          value={institution.uf || ""}
+                          value={institution.id_uf || ""}
                           onChange={(e) => handleChangeInputsInstitution(e)}
                           label="UF"
-                          name="uf"
+                          name="id_uf"
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -552,10 +578,10 @@ export default function EditInstitution(props) {
                           fullWidth
                           labelId="select-cidade-label"
                           id="select-cidade"
-                          value={institution.cidade || ""}
+                          value={institution.id_municipio || ""}
                           onChange={(e) => handleChangeInputsInstitution(e)}
                           label="Cidade"
-                          name="cidade"
+                          name="id_municipio"
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -577,6 +603,7 @@ export default function EditInstitution(props) {
                     >
                       <TextField
                         fullWidth
+                        onFocus={() => searchZipCode(institution.cep)}
                         label="Rua"
                         name="end"
                         variant="outlined"
