@@ -14,7 +14,6 @@ import {
   Paper,
   IconButton,
   Tooltip,
-  Avatar,
   Dialog,
   DialogActions,
   DialogContent,
@@ -157,25 +156,12 @@ export default function EnhancedTable() {
   const [openModal, setOpenModal] = useState(false);
   const [defaultButton, setDefaultButton] = useState(true);
   const [institutionSearch, setInstitutionSearch] = useState('');
-  const [userPermissions, setUserPermissions] = useState([]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
   });
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/users/access');
-        setUserPermissions(data.acess.split(''));
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(data.detail);
-      }
-    })();
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -229,7 +215,7 @@ export default function EnhancedTable() {
 
         setInstitutions(data);
       } catch (err) {
-        const { data, status } = error.response;
+        const { data, status } = err.response;
         toast.error(`${data.detail}`);
         if (status === 401) {
           setTimeout(() => {

@@ -172,7 +172,7 @@ export default function EditInstitution(props) {
 
         setInstitutions(data);
       } catch (err) {
-        const { data, status } = error.response;
+        const { data, status } = err.response;
         toast.error(`${data.detail}`);
         if (status === 401) {
           setTimeout(() => {
@@ -291,8 +291,8 @@ export default function EditInstitution(props) {
     cep(zipCode).then((response) => {
       const { neighborhood, street } = response;
 
-      setInstitution({ ...institution, ['bairro']: neighborhood });
-      setInstitution({ ...institution, ['end']: street });
+      setInstitution({ ...institution, bairro: neighborhood });
+      setInstitution({ ...institution, end: street });
 
       setIsZipCodeValid(true);
     }).catch((response) => {

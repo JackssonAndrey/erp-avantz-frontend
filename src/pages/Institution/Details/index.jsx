@@ -166,7 +166,7 @@ export default function DetailsInstitution(props) {
 
         setInstitutions(data);
       } catch (err) {
-        const { data, status } = error.response;
+        const { data, status } = err.response;
         toast.error(`${data.detail}`);
         if (status === 401) {
           setTimeout(() => {

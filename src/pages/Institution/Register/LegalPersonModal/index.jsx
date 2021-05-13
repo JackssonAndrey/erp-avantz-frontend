@@ -1,14 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
-import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import { red } from '@material-ui/core/colors';
 import {
   Box,
-  Container,
   CssBaseline,
-  Card,
-  CardContent,
   IconButton,
   Grid,
   TextField,
@@ -40,12 +36,9 @@ import moment from 'moment';
 import InputMask from 'react-input-mask';
 import cep from 'cep-promise';
 
-import { ArrowBack, Delete } from '@material-ui/icons';
+import { Delete } from '@material-ui/icons';
 
-import Menus from '../../../../components/Menus';
-import Copyright from '../../../../components/Copyright';
 import api from '../../../../services/api';
-import history from '../../../../services/history';
 import getCookie from '../../../../utils/functions';
 import useStyles from './styles';
 
