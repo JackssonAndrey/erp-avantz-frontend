@@ -57,13 +57,6 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: red[800],
     },
   },
-  buttonDefault: {
-    background: '#f44336',
-    color: '#FFF',
-    '&:hover': {
-      backgroundColor: '#ba000d'
-    }
-  },
   cardContent: {
     marginTop: theme.spacing(3)
   },

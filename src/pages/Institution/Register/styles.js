@@ -12,9 +12,6 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
     overflow: 'auto',
   },
-  appBar: {
-    background: '#f44336'
-  },
   title: {
     marginLeft: theme.spacing(2),
     flex: 1,
@@ -97,13 +94,6 @@ const useStyles = makeStyles((theme) => ({
   },
   dividerVertical: {
     margin: 'auto'
-  },
-  buttonDefault: {
-    background: '#3f51b5',
-    color: '#FFF',
-    '&:hover': {
-      backgroundColor: '#002984'
-    }
   },
   modalContent: {
     display: 'flex',
