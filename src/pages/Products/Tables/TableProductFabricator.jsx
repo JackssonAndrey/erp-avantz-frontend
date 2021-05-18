@@ -133,7 +133,7 @@ TableFabricatorHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-export default function TableProductFabricator() {
+export default function TableProductFabricator({ fabricators }) {
   const { handleLogout } = useContext(Context);
   const classes = useStyles();
   const timer = useRef();
@@ -141,7 +141,6 @@ export default function TableProductFabricator() {
   const [orderBy, setOrderBy] = useState('marca');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [fabricators, setFabricators] = useState([{}]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
@@ -153,17 +152,7 @@ export default function TableProductFabricator() {
     };
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/fabricator');
-        setFabricators(data);
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(`${data.detail}`);
-      }
-    })();
-  }, []);
+
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,

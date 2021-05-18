@@ -193,6 +193,7 @@ export default function EnhancedTable() {
   const [openModalFabricator, setOpenModalFabricator] = useState(false);
   const [nameFabricator, setNameFabricator] = useState('');
   const [brandFabricator, setBrandFabricator] = useState('');
+  const [fabricators, setFabricators] = useState([{}]);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -210,6 +211,18 @@ export default function EnhancedTable() {
     return () => {
       clearTimeout(timer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/fabricator');
+        setFabricators(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
   }, []);
 
   const handleClickOpenModal = (id) => {
@@ -442,7 +455,6 @@ export default function EnhancedTable() {
     }
   }
 
-
   function handleClickOpenModalGroup() {
     setOpenModalGroup(true);
   };
@@ -450,6 +462,23 @@ export default function EnhancedTable() {
   function handleCloseModalGroup() {
     setOpenModalGroup(false);
   };
+
+  async function handleCreateFabricator() {
+    try {
+      const { data } = await api.post('/fabricator/create', { marca: brandFabricator, fabr: nameFabricator });
+      setFabricators(data);
+      setTimeout(() => {
+        toast.success('Fabricante cadastrado com sucesso!');
+        setBrandFabricator('');
+        setNameFabricator('');
+      }, 2000);
+    } catch (err) {
+      const { data } = err.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
 
   return (
     <div className={classes.root}>
@@ -579,7 +608,11 @@ export default function EnhancedTable() {
                       key={product.id}
                     >
                       <TableCell padding="checkbox" size="small" align="left">
-                        <Avatar src={`${product.foto}`}></Avatar>
+                        <Avatar
+                          variant="rounded"
+                          src="./semImagem.png"
+                          style={{ width: '50px', height: '50px' }}
+                        ></Avatar>
                       </TableCell>
                       <TableCell padding="none" align="left">{product.codprod}</TableCell>
                       <TableCell padding="none" align="left">
@@ -981,7 +1014,7 @@ export default function EnhancedTable() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL UNITS */}
+      {/* MODAL FABRICATORS */}
       <Dialog open={openModalFabricator} onClose={handleCloseModalFabricator} className={classes.fabricatorModal} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">
           <Typography variant="h6" >Fabricante de produtos</Typography>
@@ -1038,6 +1071,7 @@ export default function EnhancedTable() {
                   type="button"
                   color="primary"
                   fullWidth
+                  onClick={handleCreateFabricator}
                 >
                   <SaveIcon size={8} color="primary" />
                 </Button>
@@ -1057,7 +1091,7 @@ export default function EnhancedTable() {
                 xl={12}
                 sm={12}
               >
-                <TableProductFabricator />
+                <TableProductFabricator fabricators={fabricators} />
               </Grid>
             </Grid>
           </Box>
