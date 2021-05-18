@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
   Table,
@@ -56,14 +57,45 @@ import getCookie from '../../../utils/functions';
 import { Context } from '../../../Context/AuthContext';
 import { useStyles } from './styles';
 
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+function stableSort(array, comparator) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  return stabilizedThis.map((el) => el[0]);
+}
+
 const headCellsTableGroups = [
-  { id: 'grupo', numeric: false, disablePadding: false, label: 'Grupo' },
-  { id: 'sub1', numeric: false, disablePadding: false, label: 'Subgrupo 1' },
-  { id: 'sub2', numeric: false, disablePadding: false, label: 'Subgrupo 2' },
+  { id: 'grupo', numeric: false, disablePadding: false, label: 'Seção' },
+  { id: 'sub1', numeric: false, disablePadding: false, label: 'Grupo' },
+  { id: 'sub2', numeric: false, disablePadding: false, label: 'Subgrupo' },
   { id: 'action', numeric: false, disablePadding: false, label: '' },
 ];
 
-function TableHeadGroup() {
+function TableHeadGroup(props) {
+  const { classes, order, orderBy, onRequestSort } = props;
+  const createSortHandler = (property) => (event) => {
+    onRequestSort(event, property);
+  };
+
   return (
     <TableHead>
       <TableRow>
@@ -72,14 +104,34 @@ function TableHeadGroup() {
             key={headCell.id}
             align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'default'}
+            sortDirection={orderBy === headCell.id ? order : false}
           >
-            {headCell.label}
+            <TableSortLabel
+              active={orderBy === headCell.id}
+              direction={orderBy === headCell.id ? order : 'asc'}
+              onClick={createSortHandler(headCell.id)}
+            >
+              {headCell.label}
+              {orderBy === headCell.id ? (
+                <span className={classes.visuallyHidden}>
+                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                </span>
+              ) : null}
+            </TableSortLabel>
           </TableCell>
         ))}
       </TableRow>
     </TableHead>
   );
 }
+
+TableHeadGroup.propTypes = {
+  classes: PropTypes.object.isRequired,
+  onRequestSort: PropTypes.func.isRequired,
+  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
+  orderBy: PropTypes.string.isRequired,
+  rowCount: PropTypes.number.isRequired,
+};
 
 export default function TableProductGroups() {
   const classes = useStyles();
@@ -92,6 +144,8 @@ export default function TableProductGroups() {
   const [loadingModalGroup, setLoadingModalGroup] = useState(false);
   const [successModalGroup, setSuccessModalGroup] = useState(false);
   const [errorModalGroup, setErrorModalGroup] = useState(false);
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('grupo');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -162,6 +216,12 @@ export default function TableProductGroups() {
     history.push(`/products/groups/edit/${id}`);
   }
 
+  const handleRequestSort = (event, property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -170,6 +230,7 @@ export default function TableProductGroups() {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+
 
   const handleClickOpenModalGroup = (id) => {
     setGroupId(id);
@@ -208,61 +269,84 @@ export default function TableProductGroups() {
     }
   }
 
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, groups.length - page * rowsPerPage);
+
   return (
     <>
       <TableContainer>
-        <Table size="small">
-          <TableHeadGroup />
+        <Table
+          className={classes.table}
+          aria-labelledby="tableTitle"
+          size="small"
+          aria-label="enhanced table"
+        >
+          <TableHeadGroup
+            classes={classes}
+            order={order}
+            orderBy={orderBy}
+            onRequestSort={handleRequestSort}
+            rowCount={groups.length}
+          />
           <TableBody>
             {
-              groups.map((group) => (
-                <TableRow
-                  hover
-                  key={group.id}
-                >
-                  <TableCell>{group.nv1}</TableCell>
-                  <TableCell>{group.nv2}</TableCell>
-                  <TableCell>{group.nv3}</TableCell>
-                  <TableCell padding="default" align="right">
-                    <IconButton color="inherit" onClick={handleClick} >
-                      <MoreVertIcon />
-                    </IconButton>
-                    <Menu
-                      id="fade-menu"
-                      anchorEl={anchorEl}
-                      keepMounted
-                      open={openMenuSettingGroup}
-                      onClose={handleCloseMenuSettingsGroup}
-                      TransitionComponent={Fade}
+              stableSort(groups, getComparator(order, orderBy))
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((group, index) => {
+                  return (
+                    <TableRow
+                      hover
+                      key={group.id}
                     >
-                      <MenuItem onClick={() => handleEditGroup(group.id)}>
-                        Editar
-                      </MenuItem>
-
-                      <MenuItem onClick={() => handleClickOpenModalGroup(group.id)}>
-                        Deletar
-                      </MenuItem>
-
-                      {
-                        group.nv2 === '' || group.nv2 === null && (
-                          <MenuItem>
-                            Adicionar subgrupo 1
+                      <TableCell>{group.nv1}</TableCell>
+                      <TableCell>{group.nv2}</TableCell>
+                      <TableCell>{group.nv3}</TableCell>
+                      <TableCell padding="default" align="right">
+                        <IconButton color="inherit" onClick={handleClick} >
+                          <MoreVertIcon />
+                        </IconButton>
+                        <Menu
+                          id="fade-menu"
+                          anchorEl={anchorEl}
+                          keepMounted
+                          open={openMenuSettingGroup}
+                          onClose={handleCloseMenuSettingsGroup}
+                          TransitionComponent={Fade}
+                        >
+                          <MenuItem onClick={() => handleEditGroup(group.id)}>
+                            Editar
                           </MenuItem>
-                        )
-                      }
 
-                      {
-                        group.nv3 === '' || group.nv3 === null && (
-                          <MenuItem>
-                            Adicionar subgrupo 2
+                          <MenuItem onClick={() => handleClickOpenModalGroup(group.id)}>
+                            Deletar
                           </MenuItem>
-                        )
-                      }
-                    </Menu>
-                  </TableCell>
-                </TableRow>
-              ))
+
+                          {
+                            group.nv2 === '' || group.nv2 === null && (
+                              <MenuItem>
+                                Adicionar subgrupo 1
+                              </MenuItem>
+                            )
+                          }
+
+                          {
+                            group.nv3 === '' || group.nv3 === null && (
+                              <MenuItem>
+                                Adicionar subgrupo 2
+                              </MenuItem>
+                            )
+                          }
+                        </Menu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                }
+                )
             }
+            {emptyRows > 0 && (
+              <TableRow style={{ height: 33 * emptyRows }}>
+                <TableCell colSpan={6} />
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme) => ({
   },
   groupButton: {
     marginRight: theme.spacing(2)
+  },
+  formControl: {
+    width: '100%'
   }
 }));
 

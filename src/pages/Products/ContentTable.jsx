@@ -33,7 +33,10 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  TextField
+  TextField,
+  Divider,
+  Select,
+  MenuItem
 } from '@material-ui/core';
 import {
   Delete as DeleteIcon,
@@ -41,7 +44,8 @@ import {
   More as DetailIcon,
   DeleteForever as DeleteForeverIcon,
   Search as SearchIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Save as SaveIcon
 } from '@material-ui/icons';
 
 import { orange, lightBlue, red } from '@material-ui/core/colors';
@@ -52,7 +56,9 @@ import { Context } from '../../Context/AuthContext';
 import { toast } from 'react-toastify';
 import history from '../../services/history';
 import { useToolbarStyles, useStyles } from './styles/tableStyles';
-import TableProductGroups from './Dialogs/TableProductGroups';
+import TableProductGroups from './Tables/TableProductGroups';
+import TableProductUnits from './Tables/TableProductUnits';
+import TableProductFabricator from './Tables/TableProductFabricator';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -171,8 +177,22 @@ export default function EnhancedTable() {
   const [productsUnits, setProductsUnits] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
 
-  const [openModalAddGroup, setOpenModalAddGroup] = useState(false);
+  const [nameSection, setNameSection] = useState('');
+  const [sections, setSections] = useState([]);
+
+  const [groups, setGroups] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
+
+  const [nameSubgroup, setNameSubgroup] = useState('');
+
+  const [openModalUnits, setOpenModalUnits] = useState(false);
+  const [unitsInitials, setUnitsInitials] = useState('');
+  const [unitsDescription, setUnitsDescription] = useState('');
+  const [unitType, setUnitType] = useState(1);
+
+  const [openModalFabricator, setOpenModalFabricator] = useState(false);
+  const [nameFabricator, setNameFabricator] = useState('');
+  const [brandFabricator, setBrandFabricator] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -205,6 +225,22 @@ export default function EnhancedTable() {
   function handleClickOpenModalGroup() {
     setOpenModalGroup(true);
   };
+
+  function handleCloseModalUnits() {
+    setOpenModalUnits(false);
+  }
+
+  function handleOpenModalUnits() {
+    setOpenModalUnits(true);
+  }
+
+  function handleOpenModalFabricator() {
+    setOpenModalFabricator(true);
+  }
+
+  function handleCloseModalFabricator() {
+    setOpenModalFabricator(false);
+  }
 
   function handleButtonClickProgressError() {
     if (!loading) {
@@ -415,14 +451,6 @@ export default function EnhancedTable() {
     setOpenModalGroup(false);
   };
 
-  function handleAddGroup() {
-    setOpenModalAddGroup(true);
-  }
-
-  function handleCloseModalAddGroup() {
-    setOpenModalAddGroup(false);
-  }
-
   return (
     <div className={classes.root}>
       <Card>
@@ -476,6 +504,24 @@ export default function EnhancedTable() {
               >
                 <Button
                   className={classes.groupButton}
+                  onClick={handleOpenModalFabricator}
+                  color="default"
+                  variant="contained"
+                >
+                  Fabricante
+                </Button>
+
+                <Button
+                  className={classes.groupButton}
+                  onClick={handleOpenModalUnits}
+                  color="default"
+                  variant="contained"
+                >
+                  Unidades
+                </Button>
+
+                <Button
+                  className={classes.groupButton}
                   onClick={handleClickOpenModalGroup}
                   color="default"
                   variant="contained"
@@ -493,7 +539,7 @@ export default function EnhancedTable() {
                         color="primary"
                         variant="contained"
                       >
-                        Adicionar produto
+                        Novo produto
                       </Button>
                     </Link>
                   )
@@ -668,17 +714,157 @@ export default function EnhancedTable() {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
-          <Box
-            display="flex"
-            justifyContent="flex-end"
-          >
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={handleAddGroup}
+          <Box>
+            <FormControl variant="outlined" className={classes.formControl}>
+              <InputLabel>Adicionar Seção</InputLabel>
+              <OutlinedInput
+                value={nameSection}
+                onChange={(e) => setNameSection(e.target.value)}
+                fullWidth
+                label="Adicionar Seção"
+                name="addSection"
+                endAdornment={
+                  <InputAdornment position="end">
+                    <Tooltip title="Adicionar Seção">
+                      <IconButton
+                        aria-label="Adicionar Seção"
+                        edge="end"
+                        type="submit"
+                      >
+                        <SaveIcon size={8} color="primary" />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                }
+                labelWidth={100}
+              />
+            </FormControl>
+
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+            <Grid
+              container
+              spacing={3}
             >
-              Adicionar grupo
-            </Button>
+              <Grid
+                item
+                xs={4}
+                xl={4}
+                sm={4}
+              >
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <InputLabel id="select-company-type">Seção</InputLabel>
+                  <Select
+                    labelId="select-company-type"
+                    value={sections}
+                    label="Seção"
+                    name="section"
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                    <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                    <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid
+                item
+                xs={8}
+                xl={8}
+                sm={8}
+              >
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <InputLabel>Adicionar Grupo</InputLabel>
+                  <OutlinedInput
+                    value={nameGroup}
+                    onChange={(e) => setNameGroup(e.target.value)}
+                    fullWidth
+                    label="Adicionar Grupo"
+                    name="addGroup"
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <Tooltip title="Adicionar Grupo">
+                          <IconButton
+                            aria-label="Adicionar Grupo"
+                            edge="end"
+                            type="submit"
+                          >
+                            <SaveIcon size={8} color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    }
+                    labelWidth={70}
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
+
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xs={4}
+                xl={4}
+                sm={4}
+              >
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <InputLabel id="select-company-type">Grupo</InputLabel>
+                  <Select
+                    labelId="select-company-type"
+                    value={groups}
+                    label="Grupo"
+                    name="group"
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
+                    <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
+                    <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid
+                item
+                xs={8}
+                xl={8}
+                sm={8}
+              >
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <InputLabel>Adicionar Subgrupo</InputLabel>
+                  <OutlinedInput
+                    value={nameSubgroup}
+                    onChange={(e) => setNameSubgroup(e.target.value)}
+                    fullWidth
+                    label="Adicionar Grupo"
+                    name="addSubgroup"
+                    endAdornment={
+                      <InputAdornment position="end">
+                        <Tooltip title="Adicionar Subgrupo">
+                          <IconButton
+                            aria-label="Adicionar Subgrupo"
+                            edge="end"
+                            type="submit"
+                          >
+                            <SaveIcon size={8} color="primary" />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    }
+                    labelWidth={70}
+                  />
+                </FormControl>
+              </Grid>
+            </Grid>
           </Box>
           <Paper className={classes.paper}>
             <Box>
@@ -688,48 +874,195 @@ export default function EnhancedTable() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL REGISTER GROUPS */}
-      <Dialog open={openModalAddGroup} onClose={handleCloseModalAddGroup} className={classes.groupModal} aria-labelledby="form-dialog-title">
+      {/* MODAL UNITS */}
+      <Dialog open={openModalUnits} onClose={handleCloseModalUnits} className={classes.unitsModal} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title">
-          <Typography variant="h6" >Adicionar grupo</Typography>
-          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalAddGroup}>
+          <Typography variant="h6" >Unidades de produtos</Typography>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalUnits}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Box>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              label="Nome"
-              name="nome"
-              autoFocus
-              value={nameGroup}
-              onChange={(e) => { setNameGroup(e.target.value) }}
-            />
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xs={2}
+                xl={2}
+                sm={2}
+              >
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Sigla"
+                  value={unitsInitials}
+                  onChange={(e) => setUnitsInitials(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={5}
+                xl={5}
+                sm={5}
+              >
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Descrição"
+                  value={unitsDescription}
+                  onChange={(e) => setUnitsDescription(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={5}
+                xl={5}
+                sm={5}
+              >
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <InputLabel id="select-company-type">Tipo</InputLabel>
+                  <Select
+                    labelId="select-company-type"
+                    value={unitType}
+                    label="Tipo"
+                    name="unitType"
+                    onChange={(e) => setUnitType(e.target.value)}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    <MenuItem value={1}>Todos</MenuItem>
+                    <MenuItem value={2}>Produtos</MenuItem>
+                    <MenuItem value={3}>Serviços</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid
+                item
+                xs={12}
+                xl={12}
+                sm={12}
+              >
+                <Button
+                  variant="outlined"
+                  type="button"
+                  color="primary"
+                  fullWidth
+                  startIcon={<SaveIcon size={8} color="primary" />}
+                >
+                  Salvar
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+          <Box>
+            <Grid
+              container
+            >
+              <Grid
+                item
+                xs={12}
+                xl={12}
+                sm={12}
+              >
+                <TableProductUnits />
+              </Grid>
+            </Grid>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button
-            type="button"
-            variant="contained"
-            color="primary"
-          >
-            Adicionar
-          </Button>
-          <Button
-            type="button"
-            variant="contained"
-            color="secondary"
-            onClick={handleCloseModalAddGroup}
-          >
-            Cancelar
-          </Button>
-        </DialogActions>
       </Dialog>
 
+      {/* MODAL UNITS */}
+      <Dialog open={openModalFabricator} onClose={handleCloseModalFabricator} className={classes.fabricatorModal} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">
+          <Typography variant="h6" >Fabricante de produtos</Typography>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalFabricator}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box>
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xs={4}
+                xl={4}
+                sm={4}
+              >
+                <TextField
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  label="Marca"
+                  value={brandFabricator}
+                  onChange={(e) => setBrandFabricator(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={6}
+                xl={6}
+                sm={6}
+              >
+                <TextField
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  label="Nome"
+                  value={nameFabricator}
+                  onChange={(e) => setNameFabricator(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={2}
+                xl={2}
+                sm={2}
+              >
+                <Button
+                  variant="outlined"
+                  type="button"
+                  color="primary"
+                  fullWidth
+                >
+                  <SaveIcon size={8} color="primary" />
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+          <Box>
+            <Grid
+              container
+            >
+              <Grid
+                item
+                xs={12}
+                xl={12}
+                sm={12}
+              >
+                <TableProductFabricator />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(2),
   },
   table: {
-    minWidth: 750,
+    width: '100%'
   },
   visuallyHidden: {
     border: 0,
@@ -114,6 +114,9 @@ const useStyles = makeStyles((theme) => ({
   },
   groupButton: {
     marginRight: theme.spacing(2)
+  },
+  formControl: {
+    width: '100%'
   }
 }));
 
