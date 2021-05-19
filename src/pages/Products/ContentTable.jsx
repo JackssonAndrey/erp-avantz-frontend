@@ -194,6 +194,7 @@ export default function EnhancedTable() {
   const [nameFabricator, setNameFabricator] = useState('');
   const [brandFabricator, setBrandFabricator] = useState('');
   const [fabricators, setFabricators] = useState([{}]);
+  const [fabricatorSearch, setFabricatorSearch] = useState('');
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -477,6 +478,32 @@ export default function EnhancedTable() {
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
+    }
+  }
+
+  async function handleSearchFabricators(e) {
+    e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      if (fabricatorSearch !== '') {
+        const { data } = await api.get(`/fabricator/brand/${fabricatorSearch}`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setFabricators(data);
+      } else {
+        const { data } = await api.get(`/fabricator`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setFabricators(data);
+      }
+    } catch (err) {
+      const { data } = err.response;
+      toast.error(`${data.detail}`);
     }
   }
 
@@ -1036,6 +1063,7 @@ export default function EnhancedTable() {
               >
                 <TextField
                   fullWidth
+                  required
                   size="small"
                   variant="outlined"
                   label="Marca"
@@ -1052,6 +1080,7 @@ export default function EnhancedTable() {
               >
                 <TextField
                   fullWidth
+                  required
                   size="small"
                   variant="outlined"
                   label="Nome"
@@ -1091,12 +1120,56 @@ export default function EnhancedTable() {
                 xl={12}
                 sm={12}
               >
+                <form onSubmit={(e) => handleSearchFabricators(e)}>
+                  <FormControl variant="outlined" fullWidth size="small" >
+                    <InputLabel>Pesquisar por marca</InputLabel>
+                    <OutlinedInput
+                      value={fabricatorSearch}
+                      onChange={(e) => setFabricatorSearch(e.target.value)}
+                      fullWidth
+                      label="Pesquisar por marca"
+                      name="searchFabricator"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Tooltip title="Pesquisar">
+                            <IconButton
+                              aria-label="Pesquisar"
+                              edge="end"
+                              type="submit"
+                            >
+                              <SearchIcon size={8} color="primary" />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      }
+                      labelWidth={70}
+                    />
+                  </FormControl>
+                </form>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+          <Box>
+            <Grid
+              container
+            >
+              <Grid
+                item
+                xs={12}
+                xl={12}
+                sm={12}
+              >
                 <TableProductFabricator fabricators={fabricators} />
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
       </Dialog>
+
+
     </div>
   );
 }

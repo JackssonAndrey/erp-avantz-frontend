@@ -145,6 +145,16 @@ export default function TableProductFabricator({ fabricators }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
+  const [loadingRemoveFabricator, setLoadingRemoveFabricator] = useState(false);
+  const [successRemoveFabricator, setSuccessRemoveFabricator] = useState(false);
+  const [errorRemoveFabricator, setErrorRemoveFabricator] = useState(false);
+  const [defaultButtonRemoveFabricator, setDefaultButtonRemoveFabricator] = useState(false);
+  const [openModalEditFabricator, setOpenModalEditFabricator] = useState(false);
+  const [openModalRemoveFabricator, setOpenModalRemoveFabricator] = useState(false);
+  const [nameFabricator, setNameFabricator] = useState('');
+  const [brandFabricator, setBrandFabricator] = useState('');
+  const [idFabricator, setIdFabricator] = useState('');
+  const [allFabricators, setAllFabricators] = useState(fabricators);
 
   useEffect(() => {
     return () => {
@@ -152,12 +162,89 @@ export default function TableProductFabricator({ fabricators }) {
     };
   }, []);
 
+  useEffect(() => {
+    setAllFabricators(fabricators);
+  }, [fabricators]);
 
+  function handleOpenModalEditFabricator(id, brandFabricator, nameFabricator) {
+    setIdFabricator(id);
+    setBrandFabricator(brandFabricator);
+    setNameFabricator(nameFabricator);
+    setOpenModalEditFabricator(true);
+  }
 
-  const buttonClassname = clsx({
+  function handleCloseModalEditFabricator() {
+    setIdFabricator('');
+    setBrandFabricator('');
+    setNameFabricator('');
+    setOpenModalEditFabricator(false);
+  }
+
+  function handleCloseModalRemoveFabricator() {
+    setOpenModalRemoveFabricator(false);
+    setIdFabricator('');
+    setDefaultButtonRemoveFabricator(true);
+  }
+
+  function handleOpenModalRemoveFabricator(id) {
+    setIdFabricator(id);
+    setOpenModalRemoveFabricator(true);
+  }
+
+  function handleButtonClickProgress() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressError() {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setError(true);
+        setLoading(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressRemoveFabricator() {
+    if (!loadingRemoveFabricator) {
+      setSuccessRemoveFabricator(false);
+      setLoadingRemoveFabricator(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessRemoveFabricator(true);
+        setLoadingRemoveFabricator(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressErrorRemoveFabricator() {
+    if (!loadingRemoveFabricator) {
+      setSuccessRemoveFabricator(false);
+      setLoadingRemoveFabricator(true);
+      timer.current = window.setTimeout(() => {
+        setErrorRemoveFabricator(true);
+        setLoadingRemoveFabricator(false);
+      }, 2000);
+    }
+  }
+
+  const buttonClassName = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
+  });
+
+  const buttonClassnameRemoveFabricator = clsx({
+    [classes.buttonSuccess]: successRemoveFabricator,
+    [classes.buttonError]: errorRemoveFabricator,
+    [classes.buttonDefault]: defaultButtonRemoveFabricator
   });
 
   const handleRequestSort = (event, property) => {
@@ -177,12 +264,40 @@ export default function TableProductFabricator({ fabricators }) {
 
   const emptyRows = rowsPerPage - Math.min(rowsPerPage, fabricators.length - page * rowsPerPage);
 
-  async function handleEdit(id) {
-    console.log(id);
+  async function handleEdit() {
+    try {
+      const { data } = await api.put(`/fabricator/update/${idFabricator}`, { marca: brandFabricator, fabr: nameFabricator });
+      handleButtonClickProgress();
+      setTimeout(() => {
+        toast.success('Fabricante atualizado com sucesso.');
+        handleCloseModalEditFabricator();
+        setAllFabricators(data);
+      }, 2000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
   }
 
-  async function handleClickOpenModal(id) {
-    console.log(id);
+  async function handleDelete(id) {
+    try {
+      const { data } = await api.delete(`/fabricator/delete/${id}`);
+      handleButtonClickProgressRemoveFabricator();
+      setTimeout(() => {
+        toast.success('Fabricante deletado com sucesso!');
+        handleCloseModalRemoveFabricator();
+        setAllFabricators(data);
+      }, 2000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressErrorRemoveFabricator();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
   }
 
   return (
@@ -199,11 +314,11 @@ export default function TableProductFabricator({ fabricators }) {
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
-            rowCount={fabricators.length}
+            rowCount={allFabricators.length}
           />
 
           <TableBody>
-            {stableSort(fabricators, getComparator(order, orderBy))
+            {stableSort(allFabricators, getComparator(order, orderBy))
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((fabricator, index) => {
                 return (
@@ -213,16 +328,16 @@ export default function TableProductFabricator({ fabricators }) {
                     key={fabricator.id}
                   >
                     <TableCell padding="none" align="left">{fabricator.marca}</TableCell>
-                    <TableCell padding="none" align="left">{fabricator.nome}</TableCell>
+                    <TableCell padding="none" align="left">{fabricator.fabr}</TableCell>
                     <TableCell padding="default" align="right">
                       <Tooltip title="Editar">
-                        <IconButton onClick={() => handleEdit(fabricator.id)} aria-label="Editar">
+                        <IconButton onClick={() => handleOpenModalEditFabricator(fabricator.id, fabricator.marca, fabricator.fabr)} aria-label="Editar">
                           <EditIcon size={8} style={{ color: orange[300] }} />
                         </IconButton>
                       </Tooltip>
 
                       <Tooltip title="Deletar">
-                        <IconButton onClick={() => handleClickOpenModal(fabricator.id)} aria-label="Deletar">
+                        <IconButton onClick={() => handleOpenModalRemoveFabricator(fabricator.id)} aria-label="Deletar">
                           <DeleteIcon size={8} style={{ color: red[300] }} />
                         </IconButton>
                       </Tooltip>
@@ -241,13 +356,126 @@ export default function TableProductFabricator({ fabricators }) {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={fabricators.length}
+        count={allFabricators.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
         labelRowsPerPage="Linhas por página"
       />
+
+      {/* MODAL EDIT FABRICATORS */}
+      <Dialog open={openModalEditFabricator} onClose={handleCloseModalEditFabricator} className={classes.fabricatorModal} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">
+          <Typography variant="h6" >Editar fabricante</Typography>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalEditFabricator}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box>
+            <Grid
+              container
+              spacing={3}
+            >
+              <Grid
+                item
+                xs={4}
+                xl={4}
+                sm={4}
+              >
+                <TextField
+                  fullWidth
+                  required
+                  size="small"
+                  variant="outlined"
+                  label="Marca"
+                  value={brandFabricator}
+                  onChange={(e) => setBrandFabricator(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={6}
+                xl={6}
+                sm={6}
+              >
+                <TextField
+                  fullWidth
+                  required
+                  size="small"
+                  variant="outlined"
+                  label="Nome"
+                  value={nameFabricator}
+                  onChange={(e) => setNameFabricator(e.target.value)}
+                />
+              </Grid>
+
+              <Grid
+                item
+                xs={2}
+                xl={2}
+                sm={2}
+              >
+                <Button
+                  variant="outlined"
+                  type="button"
+                  color="primary"
+                  fullWidth
+                  onClick={handleEdit}
+                  className={buttonClassName}
+                  disabled={loading}
+                >
+                  <SaveIcon size={8} color="primary" />
+                  {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL REMOVE FABRICATOR */}
+      <Dialog
+        open={openModalRemoveFabricator}
+        onClose={handleCloseModalRemoveFabricator}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        maxWidth="md"
+      >
+        <DialogTitle id="alert-dialog-title">Remover registro de fabricante do produto</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Deseja realmente excluir este registro de fabricante do produto?
+          </Typography>
+        </DialogContent>
+        <Divider style={{ marginTop: '20px' }} />
+        <DialogActions>
+          <Box
+            display="flex"
+            justifyContent="flex-start"
+            alignItems="flex-end"
+            padding="15px"
+          >
+            <Button onClick={handleCloseModalRemoveFabricator} style={{ color: red[300], marginRight: '10px' }}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              autoFocus
+              className={buttonClassnameRemoveFabricator}
+              disabled={loadingRemoveFabricator}
+              onClick={() => handleDelete(idFabricator)}
+            >
+              Excluir
+              {loadingRemoveFabricator && <CircularProgress size={24} className={classes.buttonProgressRemoveFabricator} />}
+            </Button>
+          </Box>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

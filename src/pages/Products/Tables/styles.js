@@ -46,12 +46,14 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonSuccess: {
     backgroundColor: green[500],
+    color: '#FFF',
     '&:hover': {
       backgroundColor: green[700],
     },
   },
   buttonError: {
     backgroundColor: red[500],
+    color: '#FFF',
     '&:hover': {
       backgroundColor: red[700],
     },
@@ -70,6 +72,14 @@ const useStyles = makeStyles((theme) => ({
     '&:hover': {
       backgroundColor: '#002984'
     }
+  },
+  buttonProgressRemoveFabricator: {
+    color: blue[500],
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -12,
+    marginLeft: -12,
   },
   buttonDefaultSecondary: {
     background: '#f44336',
