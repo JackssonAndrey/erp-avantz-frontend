@@ -46,12 +46,14 @@ const useStyles = makeStyles((theme) => ({
   },
   buttonSuccess: {
     backgroundColor: green[500],
+    color: '#FFF',
     '&:hover': {
       backgroundColor: green[700],
     },
   },
   buttonError: {
     backgroundColor: red[500],
+    color: '#FFF',
     '&:hover': {
       backgroundColor: red[700],
     },

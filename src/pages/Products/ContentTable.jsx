@@ -185,10 +185,15 @@ export default function EnhancedTable() {
 
   const [nameSubgroup, setNameSubgroup] = useState('');
 
+  const [units, setUnits] = useState([{}]);
   const [openModalUnits, setOpenModalUnits] = useState(false);
   const [unitsInitials, setUnitsInitials] = useState('');
   const [unitsDescription, setUnitsDescription] = useState('');
   const [unitType, setUnitType] = useState(1);
+  const [loadingCreateUnit, setLoadingCreateUnit] = useState(false);
+  const [successCreateUnit, setSuccessCreateUnit] = useState(false);
+  const [errorCreateUnit, setErrorCreateUnit] = useState(false);
+  const [defaultButtonCreateUnit, setDefaultButtonCreateUnit] = useState(false);
 
   const [openModalFabricator, setOpenModalFabricator] = useState(false);
   const [nameFabricator, setNameFabricator] = useState('');
@@ -200,6 +205,12 @@ export default function EnhancedTable() {
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
+  });
+
+  const buttonClassnameCreateUnit = clsx({
+    [classes.buttonSuccess]: successCreateUnit,
+    [classes.buttonError]: errorCreateUnit,
+    [classes.buttonDefault]: defaultButtonCreateUnit
   });
 
   const buttonClassNameDisableUser = clsx({
@@ -219,6 +230,18 @@ export default function EnhancedTable() {
       try {
         const { data } = await api.get('/fabricator');
         setFabricators(data);
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/units');
+        setUnits(data);
       } catch (err) {
         const { data } = err.response;
         toast.error(`${data.detail}`);
@@ -296,6 +319,28 @@ export default function EnhancedTable() {
       timer.current = window.setTimeout(() => {
         setSuccessDisableUser(true);
         setLoadingDisableUser(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateUnitProgressError() {
+    if (!loadingCreateUnit) {
+      setSuccessCreateUnit(false);
+      setLoadingCreateUnit(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateUnit(true);
+        setLoadingCreateUnit(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateUnitProgress() {
+    if (!loadingCreateUnit) {
+      setSuccessCreateUnit(false);
+      setLoadingCreateUnit(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateUnit(true);
+        setLoadingCreateUnit(false);
       }, 2000);
     }
   };
@@ -475,6 +520,30 @@ export default function EnhancedTable() {
       }, 2000);
     } catch (err) {
       const { data } = err.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateUnits() {
+    try {
+      const { data } = await api.post('/units/create', { und: unitsInitials, descr: unitsDescription, tipo: unitType });
+      handleCreateUnitProgress();
+      setUnits(data);
+      setTimeout(() => {
+        toast.success('Unidade cadastrada com sucesso.');
+      }, 2000);
+
+      setTimeout(() => {
+        setDefaultButtonCreateUnit(true);
+        setUnitsInitials('');
+        setUnitsDescription('');
+        setUnitType(1);
+      }, 3000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateUnitProgressError();
       setTimeout(() => {
         toast.error(`${data.detail}`);
       }, 2000);
@@ -956,6 +1025,7 @@ export default function EnhancedTable() {
               >
                 <TextField
                   fullWidth
+                  required
                   variant="outlined"
                   label="Sigla"
                   value={unitsInitials}
@@ -971,6 +1041,7 @@ export default function EnhancedTable() {
               >
                 <TextField
                   fullWidth
+                  required
                   variant="outlined"
                   label="Descrição"
                   value={unitsDescription}
@@ -991,6 +1062,7 @@ export default function EnhancedTable() {
                     value={unitType}
                     label="Tipo"
                     name="unitType"
+                    required
                     onChange={(e) => setUnitType(e.target.value)}
                   >
                     <MenuItem value="">
@@ -1014,9 +1086,13 @@ export default function EnhancedTable() {
                   type="button"
                   color="primary"
                   fullWidth
+                  onClick={handleCreateUnits}
                   startIcon={<SaveIcon size={8} color="primary" />}
+                  disable={loadingCreateUnit}
+                  className={buttonClassnameCreateUnit}
                 >
                   Salvar
+                  {loadingCreateUnit && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </Button>
               </Grid>
             </Grid>
@@ -1034,7 +1110,7 @@ export default function EnhancedTable() {
                 xl={12}
                 sm={12}
               >
-                <TableProductUnits />
+                <TableProductUnits units={units} />
               </Grid>
             </Grid>
           </Box>
