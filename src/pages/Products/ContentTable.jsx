@@ -179,11 +179,26 @@ export default function EnhancedTable() {
 
   const [nameSection, setNameSection] = useState('');
   const [sections, setSections] = useState([]);
+  const [idSection, setIdSection] = useState(0);
+  const [loadingCreateSection, setLoadingCreateSection] = useState(false);
+  const [successCreateSection, setSuccessCreateSection] = useState(false);
+  const [errorCreateSection, setErrorCreateSection] = useState(false);
+  const [defaultButtonCreateSection, setDefaultButtonCreateSection] = useState(false);
 
   const [groups, setGroups] = useState([]);
+  const [subGroups, setSubGroups] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
+  const [idGroup, setIdGroup] = useState(0);
+  const [loadingCreateGroup, setLoadingCreateGroup] = useState(false);
+  const [successCreateGroup, setSuccessCreateGroup] = useState(false);
+  const [errorCreateGroup, setErrorCreateGroup] = useState(false);
+  const [defaultButtonCreateGroup, setDefaultButtonCreateGroup] = useState(false);
 
   const [nameSubgroup, setNameSubgroup] = useState('');
+  const [loadingCreateSubgroup, setLoadingCreateSubgroup] = useState(false);
+  const [successCreateSubgroup, setSuccessCreateSubgroup] = useState(false);
+  const [errorCreateSubgroup, setErrorCreateSubgroup] = useState(false);
+  const [defaultButtonCreateSubgroup, setDefaultButtonCreateSubgroup] = useState(false);
 
   const [units, setUnits] = useState([{}]);
   const [openModalUnits, setOpenModalUnits] = useState(false);
@@ -211,6 +226,24 @@ export default function EnhancedTable() {
     [classes.buttonSuccess]: successCreateUnit,
     [classes.buttonError]: errorCreateUnit,
     [classes.buttonDefault]: defaultButtonCreateUnit
+  });
+
+  const buttonClassNameCreateSection = clsx({
+    [classes.buttonSuccess]: successCreateSection,
+    [classes.buttonError]: errorCreateSection,
+    [classes.buttonDefault]: defaultButtonCreateSection
+  });
+
+  const buttonClassNameCreateGroup = clsx({
+    [classes.buttonSuccess]: successCreateGroup,
+    [classes.buttonError]: errorCreateGroup,
+    [classes.buttonDefault]: defaultButtonCreateGroup
+  });
+
+  const buttonClassNameCreateSubgroup = clsx({
+    [classes.buttonSuccess]: successCreateSubgroup,
+    [classes.buttonError]: errorCreateSubgroup,
+    [classes.buttonDefault]: defaultButtonCreateSubgroup
   });
 
   const buttonClassNameDisableUser = clsx({
@@ -345,6 +378,72 @@ export default function EnhancedTable() {
     }
   };
 
+  function handleCreateSectionProgressError() {
+    if (!loadingCreateSection) {
+      setSuccessCreateSection(false);
+      setLoadingCreateSection(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateSection(true);
+        setLoadingCreateSection(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateSectionProgress() {
+    if (!loadingCreateSection) {
+      setSuccessCreateSection(false);
+      setLoadingCreateSection(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateSection(true);
+        setLoadingCreateSection(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateGroupProgressError() {
+    if (!loadingCreateGroup) {
+      setSuccessCreateGroup(false);
+      setLoadingCreateGroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateGroup(true);
+        setLoadingCreateGroup(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateGroupProgress() {
+    if (!loadingCreateGroup) {
+      setSuccessCreateGroup(false);
+      setLoadingCreateGroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateGroup(true);
+        setLoadingCreateGroup(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateSubgroupProgressError() {
+    if (!loadingCreateSubgroup) {
+      setSuccessCreateSubgroup(false);
+      setLoadingCreateSubgroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateSubgroup(true);
+        setLoadingCreateSubgroup(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateSubgroupProgress() {
+    if (!loadingCreateSubgroup) {
+      setSuccessCreateSubgroup(false);
+      setLoadingCreateSubgroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateSubgroup(true);
+        setLoadingCreateSubgroup(false);
+      }, 2000);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       const csrftoken = getCookie('csrftoken');
@@ -395,6 +494,46 @@ export default function EnhancedTable() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
+    (async () => {
+      try {
+        const { data } = await api.get('/prod-groups', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setGroups(data);
+        getAllSections();
+        getAllSubgroups();
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
+  }, []);
+
+  async function getAllSections() {
+    try {
+      const { data } = await api.get('/prod-groups/sections');
+      setSections(data);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
+    }
+  }
+
+  async function getAllSubgroups() {
+    try {
+      const { data } = await api.get('/prod-groups/groups');
+      setSubGroups(data);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
+    }
+  }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -508,6 +647,64 @@ export default function EnhancedTable() {
   function handleCloseModalGroup() {
     setOpenModalGroup(false);
   };
+
+  async function handleCreateSection() {
+    try {
+      const { data } = await api.post('/prod-groups/create', { nv1: nameSection });
+      handleCreateSectionProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Seção adicionada com sucesso.');
+        setNameSection('');
+        getAllSections();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateSectionProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateGroup() {
+    try {
+      const { data } = await api.post(`/prod-groups/subgroup/1/create/${idSection}`, { nv2: nameGroup });
+      handleCreateGroupProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Grupo cadastrado com sucesso.');
+        setNameGroup('');
+        setIdSection(0);
+        getAllSubgroups();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateGroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateSubgroup() {
+    try {
+      const { data } = await api.post(`/prod-groups/subgroup/2/create/${idGroup}`, { nv3: nameSubgroup });
+      handleCreateSubgroupProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Subgrupo cadastrado com sucesso.');
+        setNameSubgroup('');
+        setIdGroup(0);
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateSubgroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
 
   async function handleCreateFabricator() {
     try {
@@ -835,14 +1032,20 @@ export default function EnhancedTable() {
       </Dialog>
 
       {/* MODAL GROUPS */}
-      <Dialog open={openModalGroup} onClose={handleCloseModalGroup} className={classes.groupModal} aria-labelledby="form-dialog-title">
+      <Dialog
+        open={openModalGroup}
+        onClose={handleCloseModalGroup}
+        className={classes.groupModal}
+        aria-labelledby="form-dialog-title"
+        maxWidth="lg"
+      >
         <DialogTitle id="form-dialog-title">
           <Typography variant="h6" >Grupos de produtos</Typography>
           <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalGroup}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers style={{ width: '700px' }}>
           <Box>
             <FormControl variant="outlined" className={classes.formControl}>
               <InputLabel>Adicionar Seção</InputLabel>
@@ -859,8 +1062,12 @@ export default function EnhancedTable() {
                         aria-label="Adicionar Seção"
                         edge="end"
                         type="submit"
+                        onClick={handleCreateSection}
+                        className={buttonClassNameCreateSection}
+                        disabled={loadingCreateSection}
                       >
                         <SaveIcon size={8} color="primary" />
+                        {loadingCreateSection && <CircularProgress size={24} className={classes.buttonProgress} />}
                       </IconButton>
                     </Tooltip>
                   </InputAdornment>
@@ -877,33 +1084,34 @@ export default function EnhancedTable() {
             >
               <Grid
                 item
-                xs={4}
-                xl={4}
-                sm={4}
+                xs={5}
+                xl={5}
+                sm={5}
               >
                 <FormControl variant="outlined" className={classes.formControl}>
                   <InputLabel id="select-company-type">Seção</InputLabel>
                   <Select
                     labelId="select-company-type"
-                    value={sections}
+                    value={idSection}
                     label="Seção"
                     name="section"
+                    onChange={(e) => setIdSection(e.target.value)}
                   >
-                    <MenuItem value="">
+                    <MenuItem value={0}>
                       <em>None</em>
                     </MenuItem>
-                    <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
-                    <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
-                    <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                    {sections.map(section => (
+                      <MenuItem value={section.id}>{section.nv1}</MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>
 
               <Grid
                 item
-                xs={8}
-                xl={8}
-                sm={8}
+                xs={7}
+                xl={7}
+                sm={7}
               >
                 <FormControl variant="outlined" className={classes.formControl}>
                   <InputLabel>Adicionar Grupo</InputLabel>
@@ -920,8 +1128,11 @@ export default function EnhancedTable() {
                             aria-label="Adicionar Grupo"
                             edge="end"
                             type="submit"
+                            onClick={handleCreateGroup}
+                            disabled={loadingCreateGroup}
                           >
                             <SaveIcon size={8} color="primary" />
+                            {loadingCreateGroup && <CircularProgress size={24} className={classes.buttonProgress} />}
                           </IconButton>
                         </Tooltip>
                       </InputAdornment>
@@ -940,33 +1151,36 @@ export default function EnhancedTable() {
             >
               <Grid
                 item
-                xs={4}
-                xl={4}
-                sm={4}
+                xs={5}
+                xl={5}
+                sm={5}
               >
                 <FormControl variant="outlined" className={classes.formControl}>
                   <InputLabel id="select-company-type">Grupo</InputLabel>
                   <Select
                     labelId="select-company-type"
-                    value={groups}
+                    value={idGroup}
                     label="Grupo"
                     name="group"
+                    onChange={(e) => setIdGroup(e.target.value)}
                   >
-                    <MenuItem value="">
+                    <MenuItem value={0}>
                       <em>None</em>
                     </MenuItem>
-                    <MenuItem value="Sociedade Empresária Limitada">Sociedade Empresária Limitada</MenuItem>
-                    <MenuItem value="Empresa Individual De Responsabilidade Limitada">Empresa Individual De Responsabilidade Limitada</MenuItem>
-                    <MenuItem value="Empresa Individual">Empresa Individual</MenuItem>
+                    {
+                      subGroups.map(subgroup => (
+                        <MenuItem value={subgroup.id}>{subgroup.nv2}</MenuItem>
+                      ))
+                    }
                   </Select>
                 </FormControl>
               </Grid>
 
               <Grid
                 item
-                xs={8}
-                xl={8}
-                sm={8}
+                xs={7}
+                xl={7}
+                sm={7}
               >
                 <FormControl variant="outlined" className={classes.formControl}>
                   <InputLabel>Adicionar Subgrupo</InputLabel>
@@ -983,8 +1197,11 @@ export default function EnhancedTable() {
                             aria-label="Adicionar Subgrupo"
                             edge="end"
                             type="submit"
+                            onClick={handleCreateSubgroup}
+                            disabled={loadingCreateSubgroup}
                           >
                             <SaveIcon size={8} color="primary" />
+                            {loadingCreateSubgroup && <CircularProgress size={24} className={classes.buttonProgress} />}
                           </IconButton>
                         </Tooltip>
                       </InputAdornment>
@@ -997,7 +1214,7 @@ export default function EnhancedTable() {
           </Box>
           <Paper className={classes.paper}>
             <Box>
-              <TableProductGroups />
+              <TableProductGroups groups={groups} />
             </Box>
           </Paper>
         </DialogContent>

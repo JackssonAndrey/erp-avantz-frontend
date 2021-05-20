@@ -35,7 +35,8 @@ import {
   OutlinedInput,
   Fade,
   Menu,
-  MenuItem
+  MenuItem,
+  TextField
 } from '@material-ui/core';
 
 import {
@@ -133,37 +134,56 @@ TableHeadGroup.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-export default function TableProductGroups() {
+const initialDetailGroup = {
+  id: 0,
+  instit: 0,
+  niv: 0,
+  nv1: "",
+  nv2: "",
+  nv1id: 0,
+  nv3: "",
+  nv2id: 0,
+  data: ""
+};
+
+export default function TableProductGroups({ groups }) {
   const classes = useStyles();
   const timer = useRef();
   const { handleLogout } = useContext(Context);
 
-  const [groups, setGroups] = useState([]);
+  const [allGroups, setAllGroups] = useState(groups);
   const [groupId, setGroupId] = useState(0);
   const [openModalDeleteGroup, setOpenModalDeleteGroup] = useState(false);
   const [loadingModalGroup, setLoadingModalGroup] = useState(false);
   const [successModalGroup, setSuccessModalGroup] = useState(false);
   const [errorModalGroup, setErrorModalGroup] = useState(false);
+  const [defaultButtonRemove, setDefaultButtonRemove] = useState(false);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('grupo');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [detailsGroup, setDetailsGroup] = useState(initialDetailGroup);
+  const [openModalEditGroup, setOpenModalEditGroup] = useState(false);
+  const [loadingModalEditGroup, setLoadingModalEditGroup] = useState(false);
+  const [successModalEditGroup, setSuccessModalEditGroup] = useState(false);
+  const [errorModalEditGroup, setErrorModalEditGroup] = useState(false);
+  const [defaultButtonEdit, setDefaultButtonEdit] = useState(false);
 
   const buttonClassNameModalGroup = clsx({
     [classes.buttonSuccess]: successModalGroup,
     [classes.buttonError]: errorModalGroup,
+    [classes.buttonDefaultSecondary]: defaultButtonRemove
   });
 
-  const openMenuSettingGroup = Boolean(anchorEl);
+  const buttonClassNameModalEditGroup = clsx({
+    [classes.buttonSuccess]: successModalEditGroup,
+    [classes.buttonError]: errorModalEditGroup,
+    [classes.buttonDefaultSecondary]: defaultButtonEdit
+  });
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenuSettingsGroup = () => {
-    setAnchorEl(null);
-  };
+  useEffect(() => {
+    setAllGroups(groups);
+  }, [groups]);
 
   function handleButtonModalGroupProgressError() {
     if (!loadingModalGroup) {
@@ -187,34 +207,27 @@ export default function TableProductGroups() {
     }
   };
 
-  useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-
-    (async () => {
-      try {
-        const { data } = await api.get('/prod-groups', {
-          headers: {
-            'X-CSRFToken': csrfToken
-          }
-        });
-        setGroups(data);
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(`${data.detail}`);
-        setTimeout(() => {
-          handleLogout();
-        }, 5000);
-      }
-    })();
-  }, [groupId, handleLogout]);
-
-  function handleDetailGroup(id) {
-    history.push(`/products/groups/details/${id}`);
+  function handleButtonModalEditGroupProgressError() {
+    if (!loadingModalEditGroup) {
+      setSuccessModalEditGroup(false);
+      setLoadingModalEditGroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorModalEditGroup(true);
+        setLoadingModalEditGroup(false);
+      }, 2000);
+    }
   }
 
-  function handleEditGroup(id) {
-    history.push(`/products/groups/edit/${id}`);
-  }
+  function handleButtonModalEditGroupProgress() {
+    if (!loadingModalEditGroup) {
+      setSuccessModalEditGroup(false);
+      setLoadingModalEditGroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessModalEditGroup(true);
+        setLoadingModalEditGroup(false);
+      }, 2000);
+    }
+  };
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -231,7 +244,6 @@ export default function TableProductGroups() {
     setPage(0);
   };
 
-
   const handleClickOpenModalGroup = (id) => {
     setGroupId(id);
     setOpenModalDeleteGroup(true);
@@ -242,12 +254,38 @@ export default function TableProductGroups() {
     setOpenModalDeleteGroup(false);
   };
 
+  const handleClickOpenModalEditGroup = (id) => {
+    setGroupId(id);
+    handleDetails(id);
+    setOpenModalEditGroup(true);
+  };
+
+  const handleCloseModalEditGroup = () => {
+    setGroupId(0);
+    setOpenModalEditGroup(false);
+    setDetailsGroup(initialDetailGroup);
+  };
+
+  function handleChangeInputs(e) {
+    const { name, value } = e.target;
+    setDetailsGroup({ ...detailsGroup, [name]: value });
+  }
+
+  async function handleDetails(id) {
+    try {
+      const { data } = await api.get(`/prod-groups/details/${id}`);
+      setDetailsGroup(data);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
+    }
+  }
 
   async function handleDeleteGroupProduct(id) {
     const csrftoken = getCookie('csrftoken');
 
     try {
-      await api.delete(`/prod-groups/delete/${id}`, {
+      const { data } = await api.delete(`/prod-groups/delete/${id}`, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -255,10 +293,12 @@ export default function TableProductGroups() {
       handleButtonModalGroupProgress();
       setTimeout(() => {
         toast.success('Grupo deletado com sucesso!');
+        setAllGroups(data);
+        setGroupId(0);
       }, 2000);
-      setGroupId(0);
       setTimeout(() => {
         handleCloseModalDeleteGroup();
+        setDefaultButtonRemove(true);
       }, 3500);
     } catch (err) {
       const { data } = err.response;
@@ -269,7 +309,30 @@ export default function TableProductGroups() {
     }
   }
 
-  const emptyRows = rowsPerPage - Math.min(rowsPerPage, groups.length - page * rowsPerPage);
+  async function handleEdit(id) {
+    try {
+      const dataGroup = {
+        nv1: detailsGroup.nv1,
+        nv2: detailsGroup.nv2,
+        nv3: detailsGroup.nv3
+      }
+      const { data } = await api.put(`/prod-groups/update/${id}`, dataGroup);
+      handleButtonModalEditGroupProgress();
+      setTimeout(() => {
+        toast.success('Registro atualizado com sucesso.');
+        setAllGroups(data);
+        handleCloseModalEditGroup();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleButtonModalEditGroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  const emptyRows = rowsPerPage - Math.min(rowsPerPage, allGroups.length - page * rowsPerPage);
 
   return (
     <>
@@ -285,11 +348,11 @@ export default function TableProductGroups() {
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
-            rowCount={groups.length}
+            rowCount={allGroups.length}
           />
           <TableBody>
             {
-              stableSort(groups, getComparator(order, orderBy))
+              stableSort(allGroups, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((group, index) => {
                   return (
@@ -301,41 +364,17 @@ export default function TableProductGroups() {
                       <TableCell>{group.nv2}</TableCell>
                       <TableCell>{group.nv3}</TableCell>
                       <TableCell padding="default" align="right">
-                        <IconButton color="inherit" onClick={handleClick} >
-                          <MoreVertIcon />
-                        </IconButton>
-                        <Menu
-                          id="fade-menu"
-                          anchorEl={anchorEl}
-                          keepMounted
-                          open={openMenuSettingGroup}
-                          onClose={handleCloseMenuSettingsGroup}
-                          TransitionComponent={Fade}
-                        >
-                          <MenuItem onClick={() => handleEditGroup(group.id)}>
-                            Editar
-                          </MenuItem>
+                        <Tooltip title="Editar" arrow>
+                          <IconButton onClick={() => handleClickOpenModalEditGroup(group.id)}>
+                            <EditIcon size={8} style={{ color: orange[300] }} />
+                          </IconButton>
+                        </Tooltip>
 
-                          <MenuItem onClick={() => handleClickOpenModalGroup(group.id)}>
-                            Deletar
-                          </MenuItem>
-
-                          {
-                            group.nv2 === '' || group.nv2 === null && (
-                              <MenuItem>
-                                Adicionar subgrupo 1
-                              </MenuItem>
-                            )
-                          }
-
-                          {
-                            group.nv3 === '' || group.nv3 === null && (
-                              <MenuItem>
-                                Adicionar subgrupo 2
-                              </MenuItem>
-                            )
-                          }
-                        </Menu>
+                        <Tooltip title="Deletar" arrow>
+                          <IconButton onClick={() => handleClickOpenModalGroup(group.id)}>
+                            <DeleteIcon size={8} style={{ color: red[300] }} />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   )
@@ -353,7 +392,7 @@ export default function TableProductGroups() {
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={groups.length}
+        count={allGroups.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onChangePage={handleChangePage}
@@ -391,13 +430,106 @@ export default function TableProductGroups() {
             variant="contained"
           >
             Deletar
-            {loadingModalGroup && <CircularProgress size={24} className={classes.buttonProgressModalGroups} />}
+            {loadingModalGroup && <CircularProgress size={24} className={classes.buttonProgress} />}
           </Button>
 
           <Button onClick={handleCloseModalDeleteGroup} color="primary" variant="outlined" autoFocus>
             Cancelar
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* MODAL EDIT GROUP */}
+      <Dialog
+        open={openModalEditGroup}
+        onClose={handleCloseModalEditGroup}
+        className={classes.groupModal}
+        aria-labelledby="form-dialog-title"
+        maxWidth="lg"
+      >
+        <DialogTitle id="form-dialog-title">
+          <Typography variant="h6" >Editar grupo</Typography>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalEditGroup}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers style={{ width: '700px' }}>
+          <Grid
+            container
+            spacing={3}
+          >
+            <Grid
+              item
+              xs={4}
+              xl={4}
+              sm={4}
+            >
+              <TextField
+                fullWidth
+                required
+                label="Seção"
+                value={detailsGroup.nv1}
+                name="nv1"
+                onChange={(e) => handleChangeInputs(e)}
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid
+              item
+              xs={4}
+              xl={4}
+              sm={4}
+            >
+              <TextField
+                fullWidth
+                required
+                label="Grupo"
+                name="nv2"
+                value={detailsGroup.nv2}
+                onChange={(e) => handleChangeInputs(e)}
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid
+              item
+              xs={4}
+              xl={4}
+              sm={4}
+            >
+              <TextField
+                fullWidth
+                required
+                label="Subgrupo"
+                name="nv3"
+                value={detailsGroup.nv3}
+                onChange={(e) => handleChangeInputs(e)}
+                variant="outlined"
+              />
+            </Grid>
+
+            <Grid
+              item
+              xs={12}
+              xl={12}
+              sm={12}
+            >
+              <Button
+                type="button"
+                variant="contained"
+                color="primary"
+                className={buttonClassNameModalEditGroup}
+                disabled={loadingModalEditGroup}
+                onClick={() => handleEdit(groupId)}
+              >
+                Salvar alterações
+                {loadingModalEditGroup && <CircularProgress size={24} className={classes.buttonProgress} />}
+              </Button>
+            </Grid>
+          </Grid>
+
+        </DialogContent>
       </Dialog>
     </>
   );

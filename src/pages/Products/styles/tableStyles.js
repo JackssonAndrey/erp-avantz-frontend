@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.grey[500],
   },
   groupModal: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   listGroup: {
     width: '400px'
