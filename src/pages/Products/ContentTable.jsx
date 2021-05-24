@@ -166,7 +166,7 @@ export default function EnhancedTable() {
   const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
 
   const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('first_name');
+  const [orderBy, setOrderBy] = useState('descr');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [products, setProducts] = useState([]);
@@ -551,11 +551,11 @@ export default function EnhancedTable() {
   };
 
   function handleDetails(id) {
-    history.push(`/users/details/${id}`);
+    history.push(`/products/details/${id}`);
   }
 
   function handleEdit(id) {
-    history.push(`/users/edit/${id}`);
+    history.push(`/products/edit/${id}`);
   }
 
   async function handleDisableProduct(id) {

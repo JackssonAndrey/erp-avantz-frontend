@@ -29,6 +29,7 @@ import DetailsInstitution from '../pages/Institution/Details';
 import EditInstitution from '../pages/Institution/Edit';
 import RegisterInstitution from '../pages/Institution/Register';
 import Products from '../pages/Products';
+import DetailsProduct from '../pages/Products/Details';
 
 export default function Routes() {
   return (
@@ -66,6 +67,7 @@ export default function Routes() {
       <CustomRoute isPrivate exact path="/institutions/register" component={RegisterInstitution} />
 
       <CustomRoute isPrivate exact path="/products" component={Products} />
+      <CustomRoute isPrivate exact path="/products/details/:id" component={DetailsProduct} />
     </Switch>
   );
 }
