@@ -86,16 +86,16 @@ function a11yProps(index) {
 
 const initialStateProduct = {
   codprod: 0,
-  ativo: 0,
+  ativo: 2,
   descr: "",
   descres: "",
   und: 0,
   grupo: 0,
-  tam: "",
-  larg: "",
-  alt: "",
-  cubag: "",
-  peso: "",
+  tam: 0,
+  larg: 0,
+  alt: 0,
+  cubag: 0,
+  peso: 0,
   codbarra: "",
   fabr: 0,
   forn: 0,
@@ -110,34 +110,34 @@ const initialStateProductItems = {
   id: 0,
   id_produtos: 0,
   codprod: 0,
-  ativo: 0,
+  ativo: 2,
   bxest: 0,
-  est_minimo: "",
-  est_fiscal: "",
-  est_frente: "",
-  est_dep1: "",
-  est_dep2: "",
-  est_dep3: "",
-  compra: "",
-  frete: "",
-  ipi: "",
+  est_minimo: 0,
+  est_fiscal: 0,
+  est_frente: 0,
+  est_dep1: 0,
+  est_dep2: 0,
+  est_dep3: 0,
+  compra: 0,
+  frete: 0,
+  ipi: 0,
   aliq: 0,
-  custo: "",
-  lucro: "",
-  prvenda1: "",
-  prvenda2: "",
-  prvenda3: "",
+  custo: 0,
+  lucro: 0,
+  prvenda1: 0,
+  prvenda2: 0,
+  prvenda3: 0,
   locavel: 2,
-  prloc: "",
+  prloc: 0,
   vdatac: 0,
-  qtdatac: "",
-  pratac: "",
+  qtdatac: 0,
+  pratac: 0,
   loc_frente: "",
   loc_dep1: "",
   loc_dep2: "",
   loc_dep3: "",
   comissao_atv: 0,
-  comissao_val: ""
+  comissao_val: 0
 }
 
 export default function RegisterProduct() {
@@ -275,12 +275,60 @@ export default function RegisterProduct() {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
+  function calculateProfit() {
+    let profit = parseFloat(productItemData.custo) * (parseFloat(institutionSettings.cfg22) / 100);
+    setProductItemData({ ...productItemData, lucro: profit });
+  }
+
+  function calculateNewProfit() {
+    let profit = parseFloat(productItemData.prvenda3) - parseFloat(productItemData.custo);
+    setProductItemData({ ...productItemData, lucro: profit });
+  }
+
+  function totalCost() {
+    let cost = parseFloat(productItemData.compra) + parseFloat(productItemData.frete);
+    setProductItemData({ ...productItemData, custo: cost });
+  }
+
+  function calculatePriceTable1() {
+    let total = parseFloat(productItemData.lucro) + parseFloat(productItemData.custo);
+    setProductItemData({ ...productItemData, prvenda1: total });
+  }
+
+  function calculatePriceTable2() {
+    // ACRESCIMO
+    if (institutionSettings.cfg23 === '1') {
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg23) / 100);
+      let newValue = parseFloat(productItemData.prvenda1) + percentage;
+      setProductItemData({ ...productItemData, prvenda2: newValue });
+      // DESCONTO
+    } else if (institutionSettings.cfg23 === '2') {
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg23) / 100);
+      let newValue = parseFloat(productItemData.prvenda1) - percentage;
+      setProductItemData({ ...productItemData, prvenda2: newValue });
+    }
+  }
+
+  function calculatePriceTable3() {
+    // ACRESCIMO
+    if (institutionSettings.cfg25 === '1') {
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
+      let newValue = parseFloat(productItemData.prvenda1) + percentage;
+      setProductItemData({ ...productItemData, prvenda2: newValue });
+      // DESCONTO
+    } else if (institutionSettings.cfg25 === '2') {
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
+      let newValue = parseFloat(productItemData.prvenda1) - percentage;
+      setProductItemData({ ...productItemData, prvenda2: newValue });
+    }
+  }
+
   async function handleCreate(e) {
     e.preventDefault();
     const csrftoken = getCookie('csrftoken');
 
     try {
-      await api.put('/products/create', { ...productData, ...productItemData }, {
+      const { data } = await api.post('/products/create/', { ...productData, ...productItemData }, {
         headers: {
           'X-CSRFToken': csrftoken
         }
@@ -290,7 +338,7 @@ export default function RegisterProduct() {
         toast.success('Registro do produto criado com sucesso!');
       }, 2000);
       setTimeout(() => {
-        history.push('/products');
+        history.push(`/products/details/${data.product_id}`);
       }, 3000);
     } catch (err) {
       const { data } = err.response;
@@ -305,7 +353,7 @@ export default function RegisterProduct() {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Detalhes da pessoa" />
+      <Menus title="Cadastro de produto" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
@@ -760,7 +808,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Estoque Depósito 1"
                         name="est_dep1"
                         variant="outlined"
@@ -777,7 +824,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Estoque Depósito 2"
                         name="est_dep2"
                         variant="outlined"
@@ -794,7 +840,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Estoque Depósito 3"
                         name="est_dep3"
                         variant="outlined"
@@ -811,7 +856,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Loc. Estoque Frente"
                         name="loc_frente"
                         variant="outlined"
@@ -828,7 +872,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Loc. Estoque Dep. 1"
                         name="loc_dep1"
                         variant="outlined"
@@ -845,7 +888,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Loc. Estoque Dep. 2"
                         name="loc_dep2"
                         variant="outlined"
@@ -862,7 +904,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Loc. Estoque Dep. 3"
                         name="loc_dep3"
                         variant="outlined"
@@ -910,6 +951,7 @@ export default function RegisterProduct() {
                         name="frete"
                         variant="outlined"
                         value={productItemData.frete}
+                        onKeyUp={totalCost}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -930,6 +972,7 @@ export default function RegisterProduct() {
                         name="custo"
                         variant="outlined"
                         value={productItemData.custo}
+                        onKeyUp={calculateProfit}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -976,6 +1019,7 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productItemData.prvenda1}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
+                        onFocus={calculatePriceTable1}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
                         }}
@@ -996,6 +1040,7 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productItemData.prvenda2}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
+                        onFocus={calculatePriceTable2}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
                         }}
@@ -1015,7 +1060,9 @@ export default function RegisterProduct() {
                         name="prvenda3"
                         variant="outlined"
                         value={productItemData.prvenda3}
+                        onKeyUp={calculateNewProfit}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
+                        onFocus={calculatePriceTable3}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
                         }}
@@ -1056,7 +1103,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Preço Locação"
                         name="prloc"
                         variant="outlined"
@@ -1106,7 +1152,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Quantidade Atacado"
                         name="qtdatac"
                         variant="outlined"
@@ -1123,7 +1168,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Preço Atacado"
                         name="pratac"
                         variant="outlined"
@@ -1148,7 +1192,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="IPI"
                         name="ipi"
                         variant="outlined"
@@ -1220,7 +1263,6 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
-                        required
                         label="Valor Comissão"
                         name="comissao_val"
                         variant="outlined"

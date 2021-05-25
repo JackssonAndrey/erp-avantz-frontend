@@ -395,7 +395,7 @@ export default function EditProduct(props) {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Detalhes da pessoa" />
+      <Menus title="Edição de produto" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">

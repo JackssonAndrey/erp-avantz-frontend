@@ -340,7 +340,7 @@ export default function DetailsProduct(props) {
     <div className={classes.root}>
       <ToastContainer />
       <CssBaseline />
-      <Menus title="Detalhes da pessoa" />
+      <Menus title="Detalhes do produto" />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
