@@ -856,7 +856,7 @@ export default function EnhancedTable() {
                 } */}
                 {
                   userPermissions[14] === '1' && (
-                    <Link to="/product/register" className="link" >
+                    <Link to="/products/register" className="link" >
                       <Button
                         color="primary"
                         variant="contained"
