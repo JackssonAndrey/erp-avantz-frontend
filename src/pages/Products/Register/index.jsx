@@ -32,15 +32,19 @@ import {
   DialogActions,
   CircularProgress,
   Button,
-  InputAdornment
+  InputAdornment,
+  List,
+  ListItem
 } from '@material-ui/core';
 import {
   ArrowBack,
   Edit,
   Delete,
-  DeleteForever as DeleteForeverIcon
+  DeleteForever as DeleteForeverIcon,
+  CloudUpload as CloudUploadIcon
 } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
+import { useDropzone } from 'react-dropzone';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -157,6 +161,18 @@ export default function RegisterProduct() {
   const [groups, setGroups] = useState([]);
   const [institutionSettings, setInstitutionSettings] = useState({});
 
+  const {
+    acceptedFiles,
+    getRootProps,
+    getInputProps
+  } = useDropzone({
+    accept: 'image/jpeg, image/png'
+  });
+
+  const acceptedFileItems = acceptedFiles.map((file, index) => (
+    <ListItem key={file.path} button >{index + 1} - {file.path} - {file.size} bytes</ListItem>
+  ));
+
   useEffect(() => {
     return () => {
       clearTimeout(timer.current);
@@ -193,7 +209,7 @@ export default function RegisterProduct() {
         const { data } = await api.get('/units');
         setProductsUnits(data);
       } catch (err) {
-        const { data } = error.response;
+        const { data } = err.response;
         toast.error(`${data.detail}`);
       }
     })();
@@ -335,18 +351,26 @@ export default function RegisterProduct() {
     const csrftoken = getCookie('csrftoken');
 
     try {
+      handleButtonClickProgress();
+
       const { data } = await api.post('/products/create/', { ...productData, ...productItemData }, {
         headers: {
           'X-CSRFToken': csrftoken
         }
       });
-      handleButtonClickProgress();
+
+      acceptedFiles.map(async (file) => {
+        let formData = new FormData();
+        formData.append('files', file);
+        await api.post(`/photos/upload/${data.product_id}`, formData);
+      });
+
       setTimeout(() => {
         toast.success('Registro do produto criado com sucesso!');
-      }, 2000);
+      }, 3000);
       setTimeout(() => {
         history.push(`/products/details/${data.product_id}`);
-      }, 3000);
+      }, 4000);
     } catch (err) {
       const { data } = err.response;
       handleButtonClickProgressError();
@@ -396,8 +420,8 @@ export default function RegisterProduct() {
                 <Tab label="Dados do produto" {...a11yProps(0)} />
                 <Tab label="Estoque" {...a11yProps(1)} />
                 <Tab label="Preços" {...a11yProps(2)} />
+                <Tab label="Fotos" {...a11yProps(3)} />
                 {/*
-                <Tab label="Endereço" {...a11yProps(3)} />
                 <Tab label="Contatos" {...a11yProps(4)} />
                 <Tab label="Referências" {...a11yProps(5)} />
                 <Tab label="Dados bancários" {...a11yProps(6)} />
@@ -418,26 +442,9 @@ export default function RegisterProduct() {
                   >
                     <Grid
                       item
-                      xl={2}
-                      xs={2}
-                      sm={2}
-                    >
-                      <TextField
-                        fullWidth
-                        required
-                        disabled
-                        label="Código"
-                        name="codprod"
-                        variant="outlined"
-                        value={productData.codprod}
-                        onChange={(e) => handleOnChangeInputsProduct(e)}
-                      />
-                    </Grid>
-                    <Grid
-                      item
-                      xl={5}
-                      xs={5}
-                      sm={5}
+                      xl={6}
+                      xs={6}
+                      sm={6}
                     >
                       <TextField
                         fullWidth
@@ -451,9 +458,9 @@ export default function RegisterProduct() {
                     </Grid>
                     <Grid
                       item
-                      xl={5}
-                      xs={5}
-                      sm={5}
+                      xl={6}
+                      xs={6}
+                      sm={6}
                     >
                       <TextField
                         fullWidth
@@ -621,6 +628,9 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productData.tam}
                         onChange={(e) => handleOnChangeInputsProduct(e)}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">M</InputAdornment>,
+                        }}
                       />
                     </Grid>
 
@@ -637,6 +647,9 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productData.larg}
                         onChange={(e) => handleOnChangeInputsProduct(e)}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">M</InputAdornment>,
+                        }}
                       />
                     </Grid>
 
@@ -653,6 +666,9 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productData.alt}
                         onChange={(e) => handleOnChangeInputsProduct(e)}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">M</InputAdornment>,
+                        }}
                       />
                     </Grid>
 
@@ -685,6 +701,9 @@ export default function RegisterProduct() {
                         variant="outlined"
                         value={productData.peso}
                         onChange={(e) => handleOnChangeInputsProduct(e)}
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">KG</InputAdornment>,
+                        }}
                       />
                     </Grid>
 
@@ -1282,7 +1301,47 @@ export default function RegisterProduct() {
                     </Grid>
                   </Grid>
                 </TabPanel>
+                <TabPanel value={valueTab} index={3}>
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xl={12}
+                      xs={12}
+                      sm={12}
+                    >
+                      <section className={classes.containerImage}>
+                        <div {...getRootProps({ className: 'dropzone' })}>
+                          <input {...getInputProps()} />
+                          <p>Arraste e solte alguns arquivos aqui ou clique para selecionar arquivos</p>
+                          <em>(Somente imagens .jpeg e .png serão aceitas)</em>
+                        </div>
+                        <aside>
 
+                        </aside>
+                      </section>
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xl={6}
+                      xs={6}
+                      sm={6}
+                    >
+                      <h4>Arquivos selecionados</h4>
+                      <List>
+                        {acceptedFileItems}
+                      </List>
+                    </Grid>
+                  </Grid>
+                </TabPanel>
               </SwipeableViews>
               <Grid
                 item

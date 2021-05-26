@@ -32,7 +32,12 @@ import {
   DialogActions,
   CircularProgress,
   Button,
-  InputAdornment
+  InputAdornment,
+  List,
+  ListItem,
+  CardActionArea,
+  CardActions,
+  CardMedia
 } from '@material-ui/core';
 import {
   ArrowBack,
@@ -41,6 +46,7 @@ import {
   DeleteForever as DeleteForeverIcon
 } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
+import { useDropzone } from 'react-dropzone';
 
 import Menus from '../../../components/Menus';
 import Copyright from '../../../components/Copyright';
@@ -162,6 +168,26 @@ export default function EditProduct(props) {
   const [fabricators, setFabricators] = useState([{}]);
   const [groups, setGroups] = useState([]);
   const [institutionSettings, setInstitutionSettings] = useState({});
+  const [photos, setPhotos] = useState([{}]);
+
+  const {
+    acceptedFiles,
+    getRootProps,
+    getInputProps
+  } = useDropzone({
+    accept: 'image/jpeg, image/png'
+  });
+
+  const acceptedFileItems = acceptedFiles.map((file, index) => (
+    <ListItem key={file.path} button >{index + 1} - {file.path} - {file.size} bytes</ListItem>
+  ));
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get(`/photos/${idProduct}`);
+      setPhotos(data);
+    })();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -372,9 +398,16 @@ export default function EditProduct(props) {
     e.preventDefault();
 
     try {
+      handleButtonClickProgressEdit();
+
       await api.put(`/products/update/${idProduct}`, { ...productData, ...productItemData });
 
-      handleButtonClickProgressEdit();
+      acceptedFiles.map(async (file) => {
+        let formData = new FormData();
+        formData.append('files', file);
+        await api.post(`/photos/upload/${idProduct}`, formData);
+      });
+
       setTimeout(() => {
         toast.success('Registro do produto atualizado com sucesso!');
       }, 2000);
@@ -441,6 +474,7 @@ export default function EditProduct(props) {
                 <Tab label="Dados do produto" {...a11yProps(0)} />
                 <Tab label="Estoque" {...a11yProps(1)} />
                 <Tab label="Preços" {...a11yProps(2)} />
+                <Tab label="Fotos" {...a11yProps(3)} />
                 {/*
                 <Tab label="Endereço" {...a11yProps(3)} />
                 <Tab label="Contatos" {...a11yProps(4)} />
@@ -1333,7 +1367,81 @@ export default function EditProduct(props) {
                     </Grid>
                   </Grid>
                 </TabPanel>
+                <TabPanel value={valueTab} index={3}>
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xl={12}
+                      xs={12}
+                      sm={12}
+                    >
+                      <section className={classes.containerImage}>
+                        <div {...getRootProps({ className: 'dropzone' })}>
+                          <input {...getInputProps()} />
+                          <p>Arraste e solte alguns arquivos aqui ou clique para selecionar arquivos</p>
+                          <em>(Somente imagens .jpeg e .png serão aceitas)</em>
+                        </div>
+                        <aside>
 
+                        </aside>
+                      </section>
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    container
+                    spacing={3}
+                  >
+                    <Grid
+                      item
+                      xl={6}
+                      xs={6}
+                      sm={6}
+                    >
+                      <h4>Arquivos selecionados</h4>
+                      <List>
+                        {acceptedFileItems}
+                      </List>
+                    </Grid>
+                  </Grid>
+
+                  <Grid
+                    container
+                    spacing={3}
+                    style={{ marginTop: '20px' }}
+                  >
+                    {
+                      photos.map((photo) => (
+                        <Grid
+                          item
+                          xl={3}
+                          xs={3}
+                          sm={3}
+                        >
+                          <Card className={classes.cardPhoto}>
+                            <CardActionArea>
+                              <CardMedia
+                                component="img"
+                                alt="Imagem Produto"
+                                height="140"
+                                image={`${process.env.REACT_APP_HOST}${photo.nome_arquivo}`}
+                                title="Imagem Produto"
+                              />
+                            </CardActionArea>
+                            <CardActions>
+                              <IconButton>
+                                <Delete size={8} color="secondary" />
+                              </IconButton>
+                            </CardActions>
+                          </Card>
+                        </Grid>
+                      ))
+                    }
+                  </Grid>
+                </TabPanel>
               </SwipeableViews>
               <Grid
                 item

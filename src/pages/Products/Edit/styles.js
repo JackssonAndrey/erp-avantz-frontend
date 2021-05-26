@@ -108,6 +108,20 @@ const useStyles = makeStyles((theme) => ({
   },
   modalContentText: {
     textAlign: 'center'
+  },
+  containerImage: {
+    width: '100%',
+    border: '1px dashed',
+    borderColor: grey[700],
+    borderRadius: '4px',
+    cursor: 'pointer',
+    padding: '20px',
+    color: grey[700],
+    textAlign: 'center'
+  },
+  cardPhoto: {
+    margin: theme.spacing(1),
+    boxShadow: `0px 3px 3px ${grey[500]}`
   }
 }));
 
