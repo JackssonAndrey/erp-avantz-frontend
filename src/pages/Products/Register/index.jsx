@@ -277,49 +277,56 @@ export default function RegisterProduct() {
 
   function calculateProfit() {
     let profit = parseFloat(productItemData.custo) * (parseFloat(institutionSettings.cfg22) / 100);
-    setProductItemData({ ...productItemData, lucro: profit });
+    setProductItemData({ ...productItemData, lucro: profit.toFixed(2) });
   }
 
   function calculateNewProfit() {
-    let profit = parseFloat(productItemData.prvenda3) - parseFloat(productItemData.custo);
-    setProductItemData({ ...productItemData, lucro: profit });
+    let profit = parseFloat(productItemData.prvenda1) - parseFloat(productItemData.custo);
+    if (profit < 0) profit = 0;
+    setProductItemData({ ...productItemData, lucro: profit.toFixed(2) });
   }
 
   function totalCost() {
     let cost = parseFloat(productItemData.compra) + parseFloat(productItemData.frete);
-    setProductItemData({ ...productItemData, custo: cost });
+    setProductItemData({ ...productItemData, custo: cost.toFixed(2) });
   }
 
   function calculatePriceTable1() {
     let total = parseFloat(productItemData.lucro) + parseFloat(productItemData.custo);
-    setProductItemData({ ...productItemData, prvenda1: total });
+    setProductItemData({ ...productItemData, prvenda1: total.toFixed(2) });
   }
 
   function calculatePriceTable2() {
     // ACRESCIMO
     if (institutionSettings.cfg23 === '1') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg23) / 100);
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
       let newValue = parseFloat(productItemData.prvenda1) + percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue });
+      setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
       // DESCONTO
     } else if (institutionSettings.cfg23 === '2') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg23) / 100);
+      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
       let newValue = parseFloat(productItemData.prvenda1) - percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue });
+      setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
     }
   }
+
+  // function calculatePriceTable2Inverse() {
+  //   let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
+  //   let newValue = parseFloat(productItemData.prvenda2) - percentage;
+  //   setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
+  // }
 
   function calculatePriceTable3() {
     // ACRESCIMO
     if (institutionSettings.cfg25 === '1') {
       let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
       let newValue = parseFloat(productItemData.prvenda1) + percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue });
+      setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
       // DESCONTO
     } else if (institutionSettings.cfg25 === '2') {
       let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
       let newValue = parseFloat(productItemData.prvenda1) - percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue });
+      setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
     }
   }
 
@@ -1020,6 +1027,7 @@ export default function RegisterProduct() {
                         value={productItemData.prvenda1}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         onFocus={calculatePriceTable1}
+                        onKeyUp={calculateNewProfit}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
                         }}
@@ -1060,7 +1068,6 @@ export default function RegisterProduct() {
                         name="prvenda3"
                         variant="outlined"
                         value={productItemData.prvenda3}
-                        onKeyUp={calculateNewProfit}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         onFocus={calculatePriceTable3}
                         InputProps={{
