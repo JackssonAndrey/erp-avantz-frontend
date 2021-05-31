@@ -12,7 +12,8 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Person,
-  Business as BusinessIcon
+  Business as BusinessIcon,
+  Store as StoreIcon
   // ShoppingCart as ShoppingCartIcon,
   // BarChart as BarChartIcon,
   // Layers as LayersIcon
@@ -75,6 +76,21 @@ export default function mainListItems({ access, menuOpen, isSuperuser }) {
                   <Person />
                 </ListItemIcon>
                 <ListItemText primary="Pessoa Física" />
+              </ListItem>
+            </Tooltip>
+          </Link>
+        )
+      }
+      {
+        access[40] === '1'
+        && (
+          <Link to="/products" className="link">
+            <Tooltip title="Produtos" arrow disableHoverListener={menuOpen && true}>
+              <ListItem button>
+                <ListItemIcon>
+                  <StoreIcon />
+                </ListItemIcon>
+                <ListItemText primary="Produtos" />
               </ListItem>
             </Tooltip>
           </Link>
