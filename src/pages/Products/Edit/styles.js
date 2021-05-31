@@ -122,7 +122,21 @@ const useStyles = makeStyles((theme) => ({
   cardPhoto: {
     margin: theme.spacing(1),
     boxShadow: `0px 3px 3px ${grey[500]}`
-  }
+  },
+  viewImage: {
+    margin: 'auto',
+    width: '75%',
+    height: '90%'
+  },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+  groupButton: {
+    marginRight: theme.spacing(2)
+  },
 }));
 
 export default useStyles;

@@ -37,13 +37,20 @@ import {
   ListItem,
   CardActionArea,
   CardActions,
-  CardMedia
+  CardMedia,
+  Paper,
+  OutlinedInput
 } from '@material-ui/core';
 import {
   ArrowBack,
   Edit,
   Delete,
-  DeleteForever as DeleteForeverIcon
+  DeleteForever as DeleteForeverIcon,
+  CloudUpload as CloudUploadIcon,
+  Close as CloseIcon,
+  Visibility as VisibilityIcon,
+  Save as SaveIcon,
+  Search as SearchIcon
 } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
 import { useDropzone } from 'react-dropzone';
@@ -54,6 +61,9 @@ import api from '../../../services/api';
 import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
 import useStyles from './styles';
+import TableProductFabricator from '../Tables/TableProductFabricator';
+import TableProductGroups from '../Tables/TableProductGroups';
+import TableProductUnits from '../Tables/TableProductUnits';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -155,6 +165,14 @@ export default function EditProduct(props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
+  const [loadingImage, setLoadingImage] = useState(false);
+  const [successImage, setSuccessImage] = useState(false);
+  const [errorImage, setErrorImage] = useState(false);
+  const [defaultButtonImage, setDefaultButtonImage] = useState(false);
+  const [loadingUploadImage, setLoadingUploadImage] = useState(false);
+  const [successUploadImage, setSuccessUploadImage] = useState(false);
+  const [errorUploadImage, setErrorUploadImage] = useState(false);
+  const [defaultButtonUploadImage, setDefaultButtonUploadImage] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [successEdit, setSuccessEdit] = useState(false);
   const [errorEdit, setErrorEdit] = useState(false);
@@ -169,6 +187,57 @@ export default function EditProduct(props) {
   const [groups, setGroups] = useState([]);
   const [institutionSettings, setInstitutionSettings] = useState({});
   const [photos, setPhotos] = useState([{}]);
+  const [idPhoto, setIdPhoto] = useState(0);
+  const [openModalDeleteImage, setOpenModalDeleteImage] = useState(false);
+  const [nameImage, setNameImage] = useState('');
+  const [openModalViewImage, setOpenModalViewImage] = useState(false);
+  const [openModalFabricator, setOpenModalFabricator] = useState(false);
+  const [nameFabricator, setNameFabricator] = useState('');
+  const [brandFabricator, setBrandFabricator] = useState('');
+  const [openModalUnits, setOpenModalUnits] = useState(false);
+  const [unitsInitials, setUnitsInitials] = useState('');
+  const [unitsDescription, setUnitsDescription] = useState('');
+  const [unitType, setUnitType] = useState(1);
+  const [loadingCreateUnit, setLoadingCreateUnit] = useState(false);
+  const [successCreateUnit, setSuccessCreateUnit] = useState(false);
+  const [errorCreateUnit, setErrorCreateUnit] = useState(false);
+  const [defaultButtonCreateUnit, setDefaultButtonCreateUnit] = useState(false);
+  const [subGroups, setSubGroups] = useState([]);
+  const [nameGroup, setNameGroup] = useState('');
+  const [idGroup, setIdGroup] = useState(0);
+  const [loadingCreateGroup, setLoadingCreateGroup] = useState(false);
+  const [successCreateGroup, setSuccessCreateGroup] = useState(false);
+  const [errorCreateGroup, setErrorCreateGroup] = useState(false);
+  const [defaultButtonCreateGroup, setDefaultButtonCreateGroup] = useState(false);
+  const [openModalGroup, setOpenModalGroup] = useState(false);
+
+  const [nameSubgroup, setNameSubgroup] = useState('');
+  const [loadingCreateSubgroup, setLoadingCreateSubgroup] = useState(false);
+  const [successCreateSubgroup, setSuccessCreateSubgroup] = useState(false);
+  const [errorCreateSubgroup, setErrorCreateSubgroup] = useState(false);
+  const [defaultButtonCreateSubgroup, setDefaultButtonCreateSubgroup] = useState(false);
+
+  const [nameSection, setNameSection] = useState('');
+  const [sections, setSections] = useState([]);
+  const [idSection, setIdSection] = useState(0);
+  const [loadingCreateSection, setLoadingCreateSection] = useState(false);
+  const [successCreateSection, setSuccessCreateSection] = useState(false);
+  const [errorCreateSection, setErrorCreateSection] = useState(false);
+  const [defaultButtonCreateSection, setDefaultButtonCreateSection] = useState(false);
+
+  const [fabricatorSearch, setFabricatorSearch] = useState('');
+
+  const buttonClassnameCreateUnit = clsx({
+    [classes.buttonSuccess]: successCreateUnit,
+    [classes.buttonError]: errorCreateUnit,
+    [classes.buttonDefault]: defaultButtonCreateUnit
+  });
+
+  const buttonClassNameCreateSection = clsx({
+    [classes.buttonSuccess]: successCreateSection,
+    [classes.buttonError]: errorCreateSection,
+    [classes.buttonDefault]: defaultButtonCreateSection
+  });
 
   const {
     acceptedFiles,
@@ -266,6 +335,8 @@ export default function EditProduct(props) {
           }
         });
         setGroups(data);
+        getAllSections();
+        getAllSubgroups();
       } catch (err) {
         const { data } = err.response;
         toast.error(`${data.detail}`);
@@ -297,6 +368,26 @@ export default function EditProduct(props) {
     [classes.buttonDefault]: defaultButtonEdit
   });
 
+  async function getAllSections() {
+    try {
+      const { data } = await api.get('/prod-groups/sections');
+      setSections(data);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
+    }
+  }
+
+  async function getAllSubgroups() {
+    try {
+      const { data } = await api.get('/prod-groups/groups');
+      setSubGroups(data);
+    } catch (error) {
+      const { data } = error.response;
+      toast.error(`${data.detail}`);
+    }
+  }
+
   const handleChangeTab = (event, newValue) => {
     setValueTab(newValue);
   };
@@ -312,6 +403,133 @@ export default function EditProduct(props) {
   const handleCloseModal = () => {
     setOpenModal(false);
     setDefaultButton(true);
+  };
+
+  function handleOpenModalDeleteImage(id) {
+    setIdPhoto(id);
+    setOpenModalDeleteImage(true);
+  }
+
+  function handleCloseModalDeleteImage() {
+    setIdPhoto(0);
+    setOpenModalDeleteImage(false);
+  }
+
+  function handleOpenModalViewImage(id) {
+    setOpenModalViewImage(true);
+  }
+
+  function handleCloseModalViewImage() {
+    setOpenModalViewImage(false);
+    setNameImage('');
+  }
+
+  function handleClickOpenModalGroup() {
+    setOpenModalGroup(true);
+  };
+
+  function handleCloseModalUnits() {
+    setOpenModalUnits(false);
+  }
+
+  function handleOpenModalUnits() {
+    setOpenModalUnits(true);
+  }
+
+  function handleOpenModalFabricator() {
+    setOpenModalFabricator(true);
+  }
+
+  function handleCloseModalFabricator() {
+    setOpenModalFabricator(false);
+  }
+
+  function handleCreateUnitProgressError() {
+    if (!loadingCreateUnit) {
+      setSuccessCreateUnit(false);
+      setLoadingCreateUnit(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateUnit(true);
+        setLoadingCreateUnit(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateUnitProgress() {
+    if (!loadingCreateUnit) {
+      setSuccessCreateUnit(false);
+      setLoadingCreateUnit(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateUnit(true);
+        setLoadingCreateUnit(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateSectionProgressError() {
+    if (!loadingCreateSection) {
+      setSuccessCreateSection(false);
+      setLoadingCreateSection(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateSection(true);
+        setLoadingCreateSection(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateSectionProgress() {
+    if (!loadingCreateSection) {
+      setSuccessCreateSection(false);
+      setLoadingCreateSection(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateSection(true);
+        setLoadingCreateSection(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateGroupProgressError() {
+    if (!loadingCreateGroup) {
+      setSuccessCreateGroup(false);
+      setLoadingCreateGroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateGroup(true);
+        setLoadingCreateGroup(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateGroupProgress() {
+    if (!loadingCreateGroup) {
+      setSuccessCreateGroup(false);
+      setLoadingCreateGroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateGroup(true);
+        setLoadingCreateGroup(false);
+      }, 2000);
+    }
+  };
+
+  function handleCreateSubgroupProgressError() {
+    if (!loadingCreateSubgroup) {
+      setSuccessCreateSubgroup(false);
+      setLoadingCreateSubgroup(true);
+      timer.current = window.setTimeout(() => {
+        setErrorCreateSubgroup(true);
+        setLoadingCreateSubgroup(false);
+      }, 2000);
+    }
+  }
+
+  function handleCreateSubgroupProgress() {
+    if (!loadingCreateSubgroup) {
+      setSuccessCreateSubgroup(false);
+      setLoadingCreateSubgroup(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessCreateSubgroup(true);
+        setLoadingCreateSubgroup(false);
+      }, 2000);
+    }
   };
 
   function handleButtonClickProgressError() {
@@ -368,6 +586,50 @@ export default function EditProduct(props) {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
+  function handleButtonClickProgressErrorImage() {
+    if (!loadingImage) {
+      setSuccessImage(false);
+      setLoadingImage(true);
+      timer.current = window.setTimeout(() => {
+        setErrorImage(true);
+        setLoadingImage(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressImage() {
+    if (!loadingImage) {
+      setSuccessImage(false);
+      setLoadingImage(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessImage(true);
+        setLoadingImage(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorUploadImage() {
+    if (!loadingUploadImage) {
+      setSuccessUploadImage(false);
+      setLoadingUploadImage(true);
+      timer.current = window.setTimeout(() => {
+        setErrorUploadImage(true);
+        setLoadingUploadImage(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressUploadImage() {
+    if (!loadingUploadImage) {
+      setSuccessUploadImage(false);
+      setLoadingUploadImage(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessUploadImage(true);
+        setLoadingUploadImage(false);
+      }, 2000);
+    }
+  };
+
   async function handleDelete() {
     const csrftoken = getCookie('csrftoken');
 
@@ -402,12 +664,6 @@ export default function EditProduct(props) {
 
       await api.put(`/products/update/${idProduct}`, { ...productData, ...productItemData });
 
-      acceptedFiles.map(async (file) => {
-        let formData = new FormData();
-        formData.append('files', file);
-        await api.post(`/photos/upload/${idProduct}`, formData);
-      });
-
       setTimeout(() => {
         toast.success('Registro do produto atualizado com sucesso!');
       }, 2000);
@@ -424,6 +680,189 @@ export default function EditProduct(props) {
     }
   }
 
+  async function handleUploadImage() {
+    try {
+      handleButtonClickProgressUploadImage();
+      acceptedFiles.map(async (file) => {
+        let formData = new FormData();
+        formData.append('files', file);
+        await api.post(`/photos/upload/${idProduct}`, formData);
+      });
+      setTimeout(() => {
+        toast.success('Upload finalizado com sucesso!');
+        (async () => {
+          const { data } = await api.get(`/photos/${idProduct}`);
+          setPhotos(data);
+        })();
+      }, 2000);
+    } catch (error) {
+      handleButtonClickProgressErrorUploadImage();
+      const { data } = error.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleDeleteImage() {
+    try {
+      handleButtonClickProgressImage();
+
+      await api.delete(`/photos/delete/${idPhoto}`);
+      const newArrayPhotos = photos.filter((photo) => photo.id_foto !== idPhoto);
+      setPhotos(newArrayPhotos);
+      setTimeout(() => {
+        toast.error('Imagem deletada com sucesso.');
+        handleCloseModalDeleteImage();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleButtonClickProgressErrorImage();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  function handleViewImage(name) {
+    setNameImage(name);
+    handleOpenModalViewImage();
+  }
+
+  function handleClickOpenModalGroup() {
+    setOpenModalGroup(true);
+  };
+
+  function handleCloseModalGroup() {
+    setOpenModalGroup(false);
+  };
+
+  async function handleCreateSection() {
+    try {
+      const { data } = await api.post('/prod-groups/create', { nv1: nameSection });
+      handleCreateSectionProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Seção adicionada com sucesso.');
+        setNameSection('');
+        getAllSections();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateSectionProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateGroup() {
+    try {
+      const { data } = await api.post(`/prod-groups/subgroup/1/create/${idSection}`, { nv2: nameGroup });
+      handleCreateGroupProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Grupo cadastrado com sucesso.');
+        setNameGroup('');
+        setIdSection(0);
+        getAllSubgroups();
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateGroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateSubgroup() {
+    try {
+      const { data } = await api.post(`/prod-groups/subgroup/2/create/${idGroup}`, { nv3: nameSubgroup });
+      handleCreateSubgroupProgress();
+      setGroups(data);
+      setTimeout(() => {
+        toast.success('Subgrupo cadastrado com sucesso.');
+        setNameSubgroup('');
+        setIdGroup(0);
+      }, 2000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateSubgroupProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateFabricator() {
+    try {
+      const { data } = await api.post('/fabricator/create', { marca: brandFabricator, fabr: nameFabricator });
+      setFabricators(data);
+      setTimeout(() => {
+        toast.success('Fabricante cadastrado com sucesso!');
+        setBrandFabricator('');
+        setNameFabricator('');
+      }, 2000);
+    } catch (err) {
+      const { data } = err.response;
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleCreateUnits() {
+    try {
+      const { data } = await api.post('/units/create', { und: unitsInitials, descr: unitsDescription, tipo: unitType });
+      handleCreateUnitProgress();
+      setProductsUnits(data);
+      setTimeout(() => {
+        toast.success('Unidade cadastrada com sucesso.');
+      }, 2000);
+
+      setTimeout(() => {
+        setDefaultButtonCreateUnit(true);
+        setUnitsInitials('');
+        setUnitsDescription('');
+        setUnitType(1);
+      }, 3000);
+    } catch (error) {
+      const { data } = error.response;
+      handleCreateUnitProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
+  }
+
+  async function handleSearchFabricators(e) {
+    e.preventDefault();
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      if (fabricatorSearch !== '') {
+        const { data } = await api.get(`/fabricator/brand/${fabricatorSearch}`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setFabricators(data);
+      } else {
+        const { data } = await api.get(`/fabricator`, {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setFabricators(data);
+      }
+    } catch (err) {
+      const { data } = err.response;
+      toast.error(`${data.detail}`);
+    }
+  }
+
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -433,30 +872,68 @@ export default function EditProduct(props) {
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
           <Card>
-            <CardContent>
+            <CardContent
+              style={{ paddingBottom: theme.spacing(2) }}
+            >
               <Box
-                maxWidth={600}
                 display="flex"
-                justifyContent="flex-start"
+                justifyContent="space-between"
               >
-                <Link to="/products" className="link">
-                  <Tooltip title="Voltar" arrow>
-                    <IconButton>
-                      <ArrowBack />
-                    </IconButton>
-                  </Tooltip>
-                </Link>
-
-                {
-                  userPermissions[134] === '1' && (
-                    <Tooltip title="Deletar" arrow>
-                      <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
-                        <Delete style={{ color: red[300] }} />
+                <Box style={{ width: '50%' }}>
+                  <Link to="/products" className="link">
+                    <Tooltip title="Voltar" arrow>
+                      <IconButton>
+                        <ArrowBack />
                       </IconButton>
                     </Tooltip>
-                  )
-                }
+                  </Link>
+
+                  {
+                    userPermissions[134] === '1' && (
+                      <Tooltip title="Deletar" arrow>
+                        <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
+                          <Delete style={{ color: red[300] }} />
+                        </IconButton>
+                      </Tooltip>
+                    )
+                  }
+                </Box>
+
+
+                <Box
+                  style={{ width: '50%', padding: '10px' }}
+                  display="flex"
+                  justifyContent="flex-end"
+                >
+                  <Button
+                    className={classes.groupButton}
+                    onClick={handleOpenModalFabricator}
+                    color="default"
+                    variant="contained"
+                  >
+                    Fabricante
+                  </Button>
+
+                  <Button
+                    className={classes.groupButton}
+                    onClick={handleOpenModalUnits}
+                    color="default"
+                    variant="contained"
+                  >
+                    Unidades
+                  </Button>
+
+                  <Button
+                    className={classes.groupButton}
+                    onClick={handleClickOpenModalGroup}
+                    color="default"
+                    variant="contained"
+                  >
+                    Grupos
+                  </Button>
+                </Box>
               </Box>
+
             </CardContent>
           </Card>
 
@@ -1389,6 +1866,25 @@ export default function EditProduct(props) {
                         </aside>
                       </section>
                     </Grid>
+                    <Grid
+                      item
+                      xl={2}
+                      xs={2}
+                      sm={2}
+                    >
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        color="primary"
+                        component="span"
+                        startIcon={<CloudUploadIcon />}
+                        onClick={handleUploadImage}
+                        disabled={loadingUploadImage}
+                      >
+                        Salvar
+                        {loadingUploadImage && <CircularProgress size={24} className={classes.buttonProgress} />}
+                      </Button>
+                    </Grid>
                   </Grid>
 
                   <Grid
@@ -1432,8 +1928,11 @@ export default function EditProduct(props) {
                               />
                             </CardActionArea>
                             <CardActions>
-                              <IconButton>
+                              <IconButton onClick={() => handleOpenModalDeleteImage(photo.id_foto)}>
                                 <Delete size={8} color="secondary" />
+                              </IconButton>
+                              <IconButton onClick={() => handleViewImage(photo.nome_arquivo)}>
+                                <VisibilityIcon size={8} color="default" />
                               </IconButton>
                             </CardActions>
                           </Card>
@@ -1482,6 +1981,9 @@ export default function EditProduct(props) {
           aria-describedby="alert-dialog-description"
         >
           <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
+            <CloseIcon />
+          </IconButton>
           <Divider />
           <DialogContent className={classes.modalContent}>
             <div className={classes.divIconModal}>
@@ -1508,6 +2010,493 @@ export default function EditProduct(props) {
             </Button>
           </DialogActions>
         </Dialog>
+
+        <Dialog
+          open={openModalDeleteImage}
+          onClose={handleCloseModalDeleteImage}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar imagem</DialogTitle>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalDeleteImage}>
+            <CloseIcon />
+          </IconButton>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <div className={classes.divIconModal}>
+              <DeleteForeverIcon className={classes.modalIcon} />
+            </div>
+            <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+              <p>Você realmente deseja deletar a imagem deste registro? Esta operação não pode ser desfeita.</p>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button
+              onClick={handleDeleteImage}
+              color="secondary"
+              className={buttonClassname}
+              disabled={loadingImage}
+              variant="contained"
+            >
+              Deletar
+              {loadingImage && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+            <Button onClick={handleCloseModalDeleteImage} color="primary" variant="outlined" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* MODAL VIEW IMAGE */}
+        <Dialog
+          open={openModalViewImage}
+          onClose={handleCloseModalViewImage}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar imagem</DialogTitle>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalViewImage}>
+            <CloseIcon />
+          </IconButton>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} />
+          </DialogContent>
+          <Divider />
+        </Dialog>
+
+        {/* MODAL GROUPS */}
+        <Dialog
+          open={openModalGroup}
+          onClose={handleCloseModalGroup}
+          className={classes.groupModal}
+          aria-labelledby="form-dialog-title"
+          maxWidth="lg"
+        >
+          <DialogTitle id="form-dialog-title">
+            <Typography variant="h6" >Grupos de produtos</Typography>
+            <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalGroup}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers style={{ width: '700px' }}>
+            <Box>
+              <FormControl variant="outlined" className={classes.formControl}>
+                <InputLabel>Adicionar Seção</InputLabel>
+                <OutlinedInput
+                  value={nameSection}
+                  onChange={(e) => setNameSection(e.target.value)}
+                  fullWidth
+                  label="Adicionar Seção"
+                  name="addSection"
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <Tooltip title="Adicionar Seção">
+                        <IconButton
+                          aria-label="Adicionar Seção"
+                          edge="end"
+                          type="submit"
+                          onClick={handleCreateSection}
+                          className={buttonClassNameCreateSection}
+                          disabled={loadingCreateSection}
+                        >
+                          <SaveIcon size={8} color="primary" />
+                          {loadingCreateSection && <CircularProgress size={24} className={classes.buttonProgress} />}
+                        </IconButton>
+                      </Tooltip>
+                    </InputAdornment>
+                  }
+                  labelWidth={100}
+                />
+              </FormControl>
+
+              <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={5}
+                  xl={5}
+                  sm={5}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="select-company-type">Seção</InputLabel>
+                    <Select
+                      labelId="select-company-type"
+                      value={idSection}
+                      label="Seção"
+                      name="section"
+                      onChange={(e) => setIdSection(e.target.value)}
+                    >
+                      <MenuItem value={0}>
+                        <em>None</em>
+                      </MenuItem>
+                      {sections.map(section => (
+                        <MenuItem value={section.id}>{section.nv1}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={7}
+                  xl={7}
+                  sm={7}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel>Adicionar Grupo</InputLabel>
+                    <OutlinedInput
+                      value={nameGroup}
+                      onChange={(e) => setNameGroup(e.target.value)}
+                      fullWidth
+                      label="Adicionar Grupo"
+                      name="addGroup"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Tooltip title="Adicionar Grupo">
+                            <IconButton
+                              aria-label="Adicionar Grupo"
+                              edge="end"
+                              type="submit"
+                              onClick={handleCreateGroup}
+                              disabled={loadingCreateGroup}
+                            >
+                              <SaveIcon size={8} color="primary" />
+                              {loadingCreateGroup && <CircularProgress size={24} className={classes.buttonProgress} />}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      }
+                      labelWidth={70}
+                    />
+                  </FormControl>
+                </Grid>
+              </Grid>
+
+              <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={5}
+                  xl={5}
+                  sm={5}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="select-company-type">Grupo</InputLabel>
+                    <Select
+                      labelId="select-company-type"
+                      value={idGroup}
+                      label="Grupo"
+                      name="group"
+                      onChange={(e) => setIdGroup(e.target.value)}
+                    >
+                      <MenuItem value={0}>
+                        <em>None</em>
+                      </MenuItem>
+                      {
+                        subGroups.map(subgroup => (
+                          <MenuItem value={subgroup.id}>{subgroup.nv2}</MenuItem>
+                        ))
+                      }
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={7}
+                  xl={7}
+                  sm={7}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel>Adicionar Subgrupo</InputLabel>
+                    <OutlinedInput
+                      value={nameSubgroup}
+                      onChange={(e) => setNameSubgroup(e.target.value)}
+                      fullWidth
+                      label="Adicionar Grupo"
+                      name="addSubgroup"
+                      endAdornment={
+                        <InputAdornment position="end">
+                          <Tooltip title="Adicionar Subgrupo">
+                            <IconButton
+                              aria-label="Adicionar Subgrupo"
+                              edge="end"
+                              type="submit"
+                              onClick={handleCreateSubgroup}
+                              disabled={loadingCreateSubgroup}
+                            >
+                              <SaveIcon size={8} color="primary" />
+                              {loadingCreateSubgroup && <CircularProgress size={24} className={classes.buttonProgress} />}
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      }
+                      labelWidth={70}
+                    />
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </Box>
+            <Paper className={classes.paper}>
+              <Box>
+                <TableProductGroups groups={groups} />
+              </Box>
+            </Paper>
+          </DialogContent>
+        </Dialog>
+
+        {/* MODAL UNITS */}
+        <Dialog open={openModalUnits} onClose={handleCloseModalUnits} className={classes.unitsModal} aria-labelledby="form-dialog-title">
+          <DialogTitle id="form-dialog-title">
+            <Typography variant="h6" >Unidades de produtos</Typography>
+            <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalUnits}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers>
+            <Box>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={2}
+                  xl={2}
+                  sm={2}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    variant="outlined"
+                    label="Sigla"
+                    value={unitsInitials}
+                    onChange={(e) => setUnitsInitials(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={5}
+                  xl={5}
+                  sm={5}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    variant="outlined"
+                    label="Descrição"
+                    value={unitsDescription}
+                    onChange={(e) => setUnitsDescription(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={5}
+                  xl={5}
+                  sm={5}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="select-company-type">Tipo</InputLabel>
+                    <Select
+                      labelId="select-company-type"
+                      value={unitType}
+                      label="Tipo"
+                      name="unitType"
+                      required
+                      onChange={(e) => setUnitType(e.target.value)}
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value={1}>Todos</MenuItem>
+                      <MenuItem value={2}>Produtos</MenuItem>
+                      <MenuItem value={3}>Serviços</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xs={12}
+                  xl={12}
+                  sm={12}
+                >
+                  <Button
+                    variant="outlined"
+                    type="button"
+                    color="primary"
+                    fullWidth
+                    onClick={handleCreateUnits}
+                    startIcon={<SaveIcon size={8} color="primary" />}
+                    disable={loadingCreateUnit}
+                    className={buttonClassnameCreateUnit}
+                  >
+                    Salvar
+                    {loadingCreateUnit && <CircularProgress size={24} className={classes.buttonProgress} />}
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+            <Box>
+              <Grid
+                container
+              >
+                <Grid
+                  item
+                  xs={12}
+                  xl={12}
+                  sm={12}
+                >
+                  <TableProductUnits units={productsUnits} />
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+        </Dialog>
+
+        {/* MODAL FABRICATORS */}
+        <Dialog open={openModalFabricator} onClose={handleCloseModalFabricator} className={classes.fabricatorModal} aria-labelledby="form-dialog-title">
+          <DialogTitle id="form-dialog-title">
+            <Typography variant="h6" >Fabricante de produtos</Typography>
+            <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalFabricator}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers>
+            <Box>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xs={4}
+                  xl={4}
+                  sm={4}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    size="small"
+                    variant="outlined"
+                    label="Marca"
+                    value={brandFabricator}
+                    onChange={(e) => setBrandFabricator(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={6}
+                  xl={6}
+                  sm={6}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    size="small"
+                    variant="outlined"
+                    label="Nome"
+                    value={nameFabricator}
+                    onChange={(e) => setNameFabricator(e.target.value)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xs={2}
+                  xl={2}
+                  sm={2}
+                >
+                  <Button
+                    variant="outlined"
+                    type="button"
+                    color="primary"
+                    fullWidth
+                    onClick={handleCreateFabricator}
+                  >
+                    <SaveIcon size={8} color="primary" />
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+            <Box>
+              <Grid
+                container
+              >
+                <Grid
+                  item
+                  xs={12}
+                  xl={12}
+                  sm={12}
+                >
+                  <form onSubmit={(e) => handleSearchFabricators(e)}>
+                    <FormControl variant="outlined" fullWidth size="small" >
+                      <InputLabel>Pesquisar por marca</InputLabel>
+                      <OutlinedInput
+                        value={fabricatorSearch}
+                        onChange={(e) => setFabricatorSearch(e.target.value)}
+                        fullWidth
+                        label="Pesquisar por marca"
+                        name="searchFabricator"
+                        endAdornment={
+                          <InputAdornment position="end">
+                            <Tooltip title="Pesquisar">
+                              <IconButton
+                                aria-label="Pesquisar"
+                                edge="end"
+                                type="submit"
+                              >
+                                <SearchIcon size={8} color="primary" />
+                              </IconButton>
+                            </Tooltip>
+                          </InputAdornment>
+                        }
+                        labelWidth={70}
+                      />
+                    </FormControl>
+                  </form>
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
+
+            <Box>
+              <Grid
+                container
+              >
+                <Grid
+                  item
+                  xs={12}
+                  xl={12}
+                  sm={12}
+                >
+                  <TableProductFabricator fabricators={fabricators} />
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+        </Dialog>
+
       </main>
     </div>
   );

@@ -108,7 +108,21 @@ const useStyles = makeStyles((theme) => ({
   },
   modalContentText: {
     textAlign: 'center'
-  }
+  },
+  viewImage: {
+    margin: 'auto',
+    width: '75%',
+    height: '90%'
+  },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+  groupButton: {
+    marginRight: theme.spacing(2)
+  },
 }));
 
 export default useStyles;

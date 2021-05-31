@@ -32,13 +32,18 @@ import {
   DialogActions,
   CircularProgress,
   Button,
-  InputAdornment
+  InputAdornment,
+  CardMedia,
+  CardActions,
+  CardActionArea
 } from '@material-ui/core';
 import {
   ArrowBack,
   Edit,
   Delete,
-  DeleteForever as DeleteForeverIcon
+  DeleteForever as DeleteForeverIcon,
+  Close as CloseIcon,
+  Visibility as VisibilityIcon
 } from '@material-ui/icons';
 import SwipeableViews from 'react-swipeable-views';
 
@@ -159,10 +164,22 @@ export default function DetailsProduct(props) {
   const [groups, setGroups] = useState([]);
   const [institutionSettings, setInstitutionSettings] = useState({});
 
+  const [photos, setPhotos] = useState([{}]);
+  const [nameImage, setNameImage] = useState('');
+  const [openModalViewImage, setOpenModalViewImage] = useState(false);
+
   useEffect(() => {
     return () => {
       clearTimeout(timer.current);
     };
+  }, []);
+
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get(`/photos/${idProduct}`);
+      setPhotos(data);
+    })();
   }, []);
 
   useEffect(() => {
@@ -310,6 +327,20 @@ export default function DetailsProduct(props) {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
+  function handleOpenModalViewImage(id) {
+    setOpenModalViewImage(true);
+  }
+
+  function handleCloseModalViewImage() {
+    setOpenModalViewImage(false);
+    setNameImage('');
+  }
+
+  function handleViewImage(name) {
+    setNameImage(name);
+    handleOpenModalViewImage();
+  }
+
   async function handleDelete() {
     const csrftoken = getCookie('csrftoken');
 
@@ -398,6 +429,7 @@ export default function DetailsProduct(props) {
                 <Tab label="Dados do produto" {...a11yProps(0)} />
                 <Tab label="Estoque" {...a11yProps(1)} />
                 <Tab label="Preços" {...a11yProps(2)} />
+                <Tab label="Fotos" {...a11yProps(3)} />
                 {/*
                 <Tab label="Endereço" {...a11yProps(3)} />
                 <Tab label="Contatos" {...a11yProps(4)} />
@@ -1341,7 +1373,41 @@ export default function DetailsProduct(props) {
                   </Grid>
                 </Grid>
               </TabPanel>
-
+              <TabPanel value={valueTab} index={3}>
+                <Grid
+                  container
+                  spacing={3}
+                  style={{ marginTop: '20px' }}
+                >
+                  {
+                    photos.map((photo) => (
+                      <Grid
+                        item
+                        xl={3}
+                        xs={3}
+                        sm={3}
+                      >
+                        <Card className={classes.cardPhoto}>
+                          <CardActionArea>
+                            <CardMedia
+                              component="img"
+                              alt="Imagem Produto"
+                              height="140"
+                              image={`${process.env.REACT_APP_HOST}${photo.nome_arquivo}`}
+                              title="Imagem Produto"
+                            />
+                          </CardActionArea>
+                          <CardActions>
+                            <IconButton onClick={() => handleViewImage(photo.nome_arquivo)}>
+                              <VisibilityIcon size={8} color="default" />
+                            </IconButton>
+                          </CardActions>
+                        </Card>
+                      </Grid>
+                    ))
+                  }
+                </Grid>
+              </TabPanel>
             </SwipeableViews>
           </div>
         </Container>
@@ -1382,6 +1448,25 @@ export default function DetailsProduct(props) {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* MODAL VIEW IMAGE */}
+        <Dialog
+          open={openModalViewImage}
+          onClose={handleCloseModalViewImage}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Deletar imagem</DialogTitle>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalViewImage}>
+            <CloseIcon />
+          </IconButton>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} />
+          </DialogContent>
+          <Divider />
+        </Dialog>
+
       </main>
     </div>
   );

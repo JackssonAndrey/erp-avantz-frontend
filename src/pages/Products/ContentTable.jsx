@@ -216,6 +216,8 @@ export default function EnhancedTable() {
   const [fabricators, setFabricators] = useState([{}]);
   const [fabricatorSearch, setFabricatorSearch] = useState('');
 
+  const [photos, setPhotos] = useState([{}]);
+
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
@@ -256,6 +258,13 @@ export default function EnhancedTable() {
     return () => {
       clearTimeout(timer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await api.get(`/photos`);
+      setPhotos(data);
+    })();
   }, []);
 
   useEffect(() => {
@@ -901,11 +910,20 @@ export default function EnhancedTable() {
                       key={product.id}
                     >
                       <TableCell padding="checkbox" size="small" align="left">
-                        <Avatar
-                          variant="rounded"
-                          src="./semImagem.png"
-                          style={{ width: '50px', height: '50px' }}
-                        ></Avatar>
+                        {
+                          photos.map((photo) => {
+                            if (photo.id_produto === product.id) {
+                              return (
+                                <Avatar
+                                  variant="rounded"
+                                  src={`${process.env.REACT_APP_HOST}${photo.nome_arquivo}`}
+                                  style={{ width: '50px', height: '50px' }}
+                                ></Avatar>
+                              )
+                            }
+                          })
+                        }
+
                       </TableCell>
                       <TableCell padding="none" align="left">{product.codprod}</TableCell>
                       <TableCell padding="none" align="left">
