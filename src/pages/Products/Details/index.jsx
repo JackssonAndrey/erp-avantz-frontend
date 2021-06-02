@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import moment from 'moment';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { useTheme } from '@material-ui/core/styles';
@@ -180,7 +179,7 @@ export default function DetailsProduct(props) {
       const { data } = await api.get(`/photos/${idProduct}`);
       setPhotos(data);
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     (async () => {
@@ -192,7 +191,7 @@ export default function DetailsProduct(props) {
         toast.error(`${data.detail}`);
       }
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     (async () => {
@@ -204,7 +203,7 @@ export default function DetailsProduct(props) {
         toast.error(`${data.detail}`);
       }
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     (async () => {
@@ -235,7 +234,7 @@ export default function DetailsProduct(props) {
       try {
         const { data } = await api.get('/units');
         setProductsUnits(data);
-      } catch (err) {
+      } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
       }
@@ -1462,7 +1461,7 @@ export default function DetailsProduct(props) {
           </IconButton>
           <Divider />
           <DialogContent className={classes.modalContent}>
-            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} />
+            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} alt="Imagem do produto" />
           </DialogContent>
           <Divider />
         </Dialog>

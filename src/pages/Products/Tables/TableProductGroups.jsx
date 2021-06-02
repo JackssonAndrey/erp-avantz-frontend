@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -11,12 +10,9 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Toolbar,
   Typography,
-  Paper,
   IconButton,
   Tooltip,
-  Avatar,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,38 +20,22 @@ import {
   DialogTitle,
   CircularProgress,
   Button,
-  Badge,
-  Box,
-  Card,
-  CardContent,
-  InputAdornment,
   Grid,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Fade,
-  Menu,
-  MenuItem,
   TextField
 } from '@material-ui/core';
 
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
-  More as DetailIcon,
   DeleteForever as DeleteForeverIcon,
-  Search as SearchIcon,
   Close as CloseIcon,
-  MoreVert as MoreVertIcon
 } from '@material-ui/icons';
 
 import { orange, red } from '@material-ui/core/colors';
 import { toast } from 'react-toastify';
 
 import api from '../../../services/api';
-import history from '../../../services/history';
 import getCookie from '../../../utils/functions';
-import { Context } from '../../../Context/AuthContext';
 import { useStyles } from './styles';
 
 function descendingComparator(a, b, orderBy) {
@@ -149,7 +129,6 @@ const initialDetailGroup = {
 export default function TableProductGroups({ groups }) {
   const classes = useStyles();
   const timer = useRef();
-  const { handleLogout } = useContext(Context);
 
   const [allGroups, setAllGroups] = useState(groups);
   const [groupId, setGroupId] = useState(0);
@@ -322,6 +301,7 @@ export default function TableProductGroups({ groups }) {
         toast.success('Registro atualizado com sucesso.');
         setAllGroups(data);
         handleCloseModalEditGroup();
+        setDefaultButtonEdit(true);
       }, 2000);
     } catch (error) {
       const { data } = error.response;

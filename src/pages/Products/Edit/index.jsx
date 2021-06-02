@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import moment from 'moment';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import { useTheme } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import { orange, red } from '@material-ui/core/colors';
+import { red } from '@material-ui/core/colors';
 import {
   Box,
   Container,
@@ -43,7 +42,6 @@ import {
 } from '@material-ui/core';
 import {
   ArrowBack,
-  Edit,
   Delete,
   DeleteForever as DeleteForeverIcon,
   CloudUpload as CloudUploadIcon,
@@ -165,79 +163,55 @@ export default function EditProduct(props) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
-  const [loadingImage, setLoadingImage] = useState(false);
-  const [successImage, setSuccessImage] = useState(false);
-  const [errorImage, setErrorImage] = useState(false);
-  const [defaultButtonImage, setDefaultButtonImage] = useState(false);
-  const [loadingUploadImage, setLoadingUploadImage] = useState(false);
-  const [successUploadImage, setSuccessUploadImage] = useState(false);
-  const [errorUploadImage, setErrorUploadImage] = useState(false);
-  const [defaultButtonUploadImage, setDefaultButtonUploadImage] = useState(false);
+
   const [loadingEdit, setLoadingEdit] = useState(false);
   const [successEdit, setSuccessEdit] = useState(false);
   const [errorEdit, setErrorEdit] = useState(false);
-  const [defaultButtonEdit, setDefaultButtonEdit] = useState(false);
   const [valueTab, setValueTab] = useState(0);
+  const [openModal, setOpenModal] = useState(false);
+
   const [productData, setProductData] = useState(initialStateProduct);
   const [productItemData, setProductItemData] = useState(initialStateProductItems);
   const [productsUnits, setProductsUnits] = useState([{}]);
-  const [openModal, setOpenModal] = useState(false);
+
   const [userPermissions, setUserPermissions] = useState([]);
-  const [fabricators, setFabricators] = useState([{}]);
-  const [groups, setGroups] = useState([]);
+
   const [institutionSettings, setInstitutionSettings] = useState({});
+
   const [photos, setPhotos] = useState([{}]);
   const [idPhoto, setIdPhoto] = useState(0);
   const [openModalDeleteImage, setOpenModalDeleteImage] = useState(false);
   const [nameImage, setNameImage] = useState('');
   const [openModalViewImage, setOpenModalViewImage] = useState(false);
-  const [openModalFabricator, setOpenModalFabricator] = useState(false);
-  const [nameFabricator, setNameFabricator] = useState('');
-  const [brandFabricator, setBrandFabricator] = useState('');
+  const [loadingImage, setLoadingImage] = useState(false);
+  const [loadingUploadImage, setLoadingUploadImage] = useState(false);
+
   const [openModalUnits, setOpenModalUnits] = useState(false);
   const [unitsInitials, setUnitsInitials] = useState('');
   const [unitsDescription, setUnitsDescription] = useState('');
   const [unitType, setUnitType] = useState(1);
   const [loadingCreateUnit, setLoadingCreateUnit] = useState(false);
-  const [successCreateUnit, setSuccessCreateUnit] = useState(false);
-  const [errorCreateUnit, setErrorCreateUnit] = useState(false);
-  const [defaultButtonCreateUnit, setDefaultButtonCreateUnit] = useState(false);
-  const [subGroups, setSubGroups] = useState([]);
-  const [nameGroup, setNameGroup] = useState('');
+
+  const [groups, setGroups] = useState([]);
   const [idGroup, setIdGroup] = useState(0);
+  const [nameGroup, setNameGroup] = useState('');
   const [loadingCreateGroup, setLoadingCreateGroup] = useState(false);
-  const [successCreateGroup, setSuccessCreateGroup] = useState(false);
-  const [errorCreateGroup, setErrorCreateGroup] = useState(false);
-  const [defaultButtonCreateGroup, setDefaultButtonCreateGroup] = useState(false);
   const [openModalGroup, setOpenModalGroup] = useState(false);
 
+  const [subGroups, setSubGroups] = useState([]);
   const [nameSubgroup, setNameSubgroup] = useState('');
   const [loadingCreateSubgroup, setLoadingCreateSubgroup] = useState(false);
-  const [successCreateSubgroup, setSuccessCreateSubgroup] = useState(false);
-  const [errorCreateSubgroup, setErrorCreateSubgroup] = useState(false);
-  const [defaultButtonCreateSubgroup, setDefaultButtonCreateSubgroup] = useState(false);
 
   const [nameSection, setNameSection] = useState('');
   const [sections, setSections] = useState([]);
   const [idSection, setIdSection] = useState(0);
   const [loadingCreateSection, setLoadingCreateSection] = useState(false);
-  const [successCreateSection, setSuccessCreateSection] = useState(false);
-  const [errorCreateSection, setErrorCreateSection] = useState(false);
-  const [defaultButtonCreateSection, setDefaultButtonCreateSection] = useState(false);
 
+  const [fabricators, setFabricators] = useState([{}]);
   const [fabricatorSearch, setFabricatorSearch] = useState('');
-
-  const buttonClassnameCreateUnit = clsx({
-    [classes.buttonSuccess]: successCreateUnit,
-    [classes.buttonError]: errorCreateUnit,
-    [classes.buttonDefault]: defaultButtonCreateUnit
-  });
-
-  const buttonClassNameCreateSection = clsx({
-    [classes.buttonSuccess]: successCreateSection,
-    [classes.buttonError]: errorCreateSection,
-    [classes.buttonDefault]: defaultButtonCreateSection
-  });
+  const [openModalFabricator, setOpenModalFabricator] = useState(false);
+  const [nameFabricator, setNameFabricator] = useState('');
+  const [brandFabricator, setBrandFabricator] = useState('');
 
   const {
     acceptedFiles,
@@ -251,12 +225,24 @@ export default function EditProduct(props) {
     <ListItem key={file.path} button >{index + 1} - {file.path} - {file.size} bytes</ListItem>
   ));
 
+  const buttonClassname = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+    [classes.buttonDefault]: defaultButton
+  });
+
+  const buttonClassNameEdit = clsx({
+    [classes.buttonSuccess]: successEdit,
+    [classes.buttonError]: errorEdit,
+  });
+
+
   useEffect(() => {
     (async () => {
       const { data } = await api.get(`/photos/${idProduct}`);
       setPhotos(data);
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     return () => {
@@ -274,7 +260,7 @@ export default function EditProduct(props) {
         toast.error(`${data.detail}`);
       }
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     (async () => {
@@ -286,7 +272,7 @@ export default function EditProduct(props) {
         toast.error(`${data.detail}`);
       }
     })();
-  }, []);
+  }, [idProduct]);
 
   useEffect(() => {
     (async () => {
@@ -317,7 +303,7 @@ export default function EditProduct(props) {
       try {
         const { data } = await api.get('/units');
         setProductsUnits(data);
-      } catch (err) {
+      } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
       }
@@ -355,18 +341,6 @@ export default function EditProduct(props) {
       }
     })();
   }, []);
-
-  const buttonClassname = clsx({
-    [classes.buttonSuccess]: success,
-    [classes.buttonError]: error,
-    [classes.buttonDefault]: defaultButton
-  });
-
-  const buttonClassNameEdit = clsx({
-    [classes.buttonSuccess]: successEdit,
-    [classes.buttonError]: errorEdit,
-    [classes.buttonDefault]: defaultButtonEdit
-  });
 
   async function getAllSections() {
     try {
@@ -424,10 +398,6 @@ export default function EditProduct(props) {
     setNameImage('');
   }
 
-  function handleClickOpenModalGroup() {
-    setOpenModalGroup(true);
-  };
-
   function handleCloseModalUnits() {
     setOpenModalUnits(false);
   }
@@ -446,10 +416,8 @@ export default function EditProduct(props) {
 
   function handleCreateUnitProgressError() {
     if (!loadingCreateUnit) {
-      setSuccessCreateUnit(false);
       setLoadingCreateUnit(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateUnit(true);
         setLoadingCreateUnit(false);
       }, 2000);
     }
@@ -457,10 +425,8 @@ export default function EditProduct(props) {
 
   function handleCreateUnitProgress() {
     if (!loadingCreateUnit) {
-      setSuccessCreateUnit(false);
       setLoadingCreateUnit(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateUnit(true);
         setLoadingCreateUnit(false);
       }, 2000);
     }
@@ -468,10 +434,8 @@ export default function EditProduct(props) {
 
   function handleCreateSectionProgressError() {
     if (!loadingCreateSection) {
-      setSuccessCreateSection(false);
       setLoadingCreateSection(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateSection(true);
         setLoadingCreateSection(false);
       }, 2000);
     }
@@ -479,10 +443,8 @@ export default function EditProduct(props) {
 
   function handleCreateSectionProgress() {
     if (!loadingCreateSection) {
-      setSuccessCreateSection(false);
       setLoadingCreateSection(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateSection(true);
         setLoadingCreateSection(false);
       }, 2000);
     }
@@ -490,10 +452,8 @@ export default function EditProduct(props) {
 
   function handleCreateGroupProgressError() {
     if (!loadingCreateGroup) {
-      setSuccessCreateGroup(false);
       setLoadingCreateGroup(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateGroup(true);
         setLoadingCreateGroup(false);
       }, 2000);
     }
@@ -501,10 +461,8 @@ export default function EditProduct(props) {
 
   function handleCreateGroupProgress() {
     if (!loadingCreateGroup) {
-      setSuccessCreateGroup(false);
       setLoadingCreateGroup(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateGroup(true);
         setLoadingCreateGroup(false);
       }, 2000);
     }
@@ -512,10 +470,8 @@ export default function EditProduct(props) {
 
   function handleCreateSubgroupProgressError() {
     if (!loadingCreateSubgroup) {
-      setSuccessCreateSubgroup(false);
       setLoadingCreateSubgroup(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateSubgroup(true);
         setLoadingCreateSubgroup(false);
       }, 2000);
     }
@@ -523,10 +479,8 @@ export default function EditProduct(props) {
 
   function handleCreateSubgroupProgress() {
     if (!loadingCreateSubgroup) {
-      setSuccessCreateSubgroup(false);
       setLoadingCreateSubgroup(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateSubgroup(true);
         setLoadingCreateSubgroup(false);
       }, 2000);
     }
@@ -576,6 +530,42 @@ export default function EditProduct(props) {
     }
   };
 
+  function handleButtonClickProgressErrorImage() {
+    if (!loadingImage) {
+      setLoadingImage(true);
+      timer.current = window.setTimeout(() => {
+        setLoadingImage(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressImage() {
+    if (!loadingImage) {
+      setLoadingImage(true);
+      timer.current = window.setTimeout(() => {
+        setLoadingImage(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonClickProgressErrorUploadImage() {
+    if (!loadingUploadImage) {
+      setLoadingUploadImage(true);
+      timer.current = window.setTimeout(() => {
+        setLoadingUploadImage(false);
+      }, 2000);
+    }
+  }
+
+  function handleButtonClickProgressUploadImage() {
+    if (!loadingUploadImage) {
+      setLoadingUploadImage(true);
+      timer.current = window.setTimeout(() => {
+        setLoadingUploadImage(false);
+      }, 2000);
+    }
+  };
+
   function handleOnChangeInputsProduct(e) {
     const { name, value } = e.target;
     setProductData({ ...productData, [name]: value });
@@ -586,48 +576,17 @@ export default function EditProduct(props) {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
-  function handleButtonClickProgressErrorImage() {
-    if (!loadingImage) {
-      setSuccessImage(false);
-      setLoadingImage(true);
-      timer.current = window.setTimeout(() => {
-        setErrorImage(true);
-        setLoadingImage(false);
-      }, 2000);
-    }
+  function handleViewImage(name) {
+    setNameImage(name);
+    handleOpenModalViewImage();
   }
 
-  function handleButtonClickProgressImage() {
-    if (!loadingImage) {
-      setSuccessImage(false);
-      setLoadingImage(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessImage(true);
-        setLoadingImage(false);
-      }, 2000);
-    }
+  function handleClickOpenModalGroup() {
+    setOpenModalGroup(true);
   };
 
-  function handleButtonClickProgressErrorUploadImage() {
-    if (!loadingUploadImage) {
-      setSuccessUploadImage(false);
-      setLoadingUploadImage(true);
-      timer.current = window.setTimeout(() => {
-        setErrorUploadImage(true);
-        setLoadingUploadImage(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonClickProgressUploadImage() {
-    if (!loadingUploadImage) {
-      setSuccessUploadImage(false);
-      setLoadingUploadImage(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessUploadImage(true);
-        setLoadingUploadImage(false);
-      }, 2000);
-    }
+  function handleCloseModalGroup() {
+    setOpenModalGroup(false);
   };
 
   async function handleDelete() {
@@ -724,19 +683,6 @@ export default function EditProduct(props) {
     }
   }
 
-  function handleViewImage(name) {
-    setNameImage(name);
-    handleOpenModalViewImage();
-  }
-
-  function handleClickOpenModalGroup() {
-    setOpenModalGroup(true);
-  };
-
-  function handleCloseModalGroup() {
-    setOpenModalGroup(false);
-  };
-
   async function handleCreateSection() {
     try {
       const { data } = await api.post('/prod-groups/create', { nv1: nameSection });
@@ -822,7 +768,6 @@ export default function EditProduct(props) {
       }, 2000);
 
       setTimeout(() => {
-        setDefaultButtonCreateUnit(true);
         setUnitsInitials('');
         setUnitsDescription('');
         setUnitType(1);
@@ -862,7 +807,6 @@ export default function EditProduct(props) {
     }
   }
 
-
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -889,7 +833,7 @@ export default function EditProduct(props) {
                   </Link>
 
                   {
-                    userPermissions[134] === '1' && (
+                    userPermissions[141] === '1' && (
                       <Tooltip title="Deletar" arrow>
                         <IconButton onClick={() => handleClickOpenModal()} aria-label="Deletar">
                           <Delete style={{ color: red[300] }} />
@@ -905,32 +849,44 @@ export default function EditProduct(props) {
                   display="flex"
                   justifyContent="flex-end"
                 >
-                  <Button
-                    className={classes.groupButton}
-                    onClick={handleOpenModalFabricator}
-                    color="default"
-                    variant="contained"
-                  >
-                    Fabricante
-                  </Button>
+                  {
+                    userPermissions[138] === '1' && (
+                      <Button
+                        className={classes.groupButton}
+                        onClick={handleOpenModalFabricator}
+                        color="default"
+                        variant="contained"
+                      >
+                        Fabricante
+                      </Button>
+                    )
+                  }
 
-                  <Button
-                    className={classes.groupButton}
-                    onClick={handleOpenModalUnits}
-                    color="default"
-                    variant="contained"
-                  >
-                    Unidades
-                  </Button>
+                  {
+                    userPermissions[147] === '1' && (
+                      <Button
+                        className={classes.groupButton}
+                        onClick={handleOpenModalUnits}
+                        color="default"
+                        variant="contained"
+                      >
+                        Unidades
+                      </Button>
+                    )
+                  }
 
-                  <Button
-                    className={classes.groupButton}
-                    onClick={handleClickOpenModalGroup}
-                    color="default"
-                    variant="contained"
-                  >
-                    Grupos
-                  </Button>
+                  {
+                    userPermissions[144] === '1' && (
+                      <Button
+                        className={classes.groupButton}
+                        onClick={handleClickOpenModalGroup}
+                        color="default"
+                        variant="contained"
+                      >
+                        Grupos
+                      </Button>
+                    )
+                  }
                 </Box>
               </Box>
 
@@ -952,13 +908,6 @@ export default function EditProduct(props) {
                 <Tab label="Estoque" {...a11yProps(1)} />
                 <Tab label="Preços" {...a11yProps(2)} />
                 <Tab label="Fotos" {...a11yProps(3)} />
-                {/*
-                <Tab label="Endereço" {...a11yProps(3)} />
-                <Tab label="Contatos" {...a11yProps(4)} />
-                <Tab label="Referências" {...a11yProps(5)} />
-                <Tab label="Dados bancários" {...a11yProps(6)} />
-                <Tab label="Financeiro" {...a11yProps(7)} />
-                <Tab label="Opções" {...a11yProps(8)} /> */}
               </Tabs>
             </AppBar>
             <form onSubmit={(e) => { handleEdit(e) }}>
@@ -1974,13 +1923,14 @@ export default function EditProduct(props) {
           <Copyright />
         </Box>
 
+        {/* MODAL DELETE PRODUCT */}
         <Dialog
           open={openModal}
           onClose={handleCloseModal}
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">Deletar registro de pessoa</DialogTitle>
+          <DialogTitle id="alert-dialog-title">Deletar registro de produto</DialogTitle>
           <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
             <CloseIcon />
           </IconButton>
@@ -2011,6 +1961,7 @@ export default function EditProduct(props) {
           </DialogActions>
         </Dialog>
 
+        {/* MODAL DELETE IMAGE */}
         <Dialog
           open={openModalDeleteImage}
           onClose={handleCloseModalDeleteImage}
@@ -2061,7 +2012,7 @@ export default function EditProduct(props) {
           </IconButton>
           <Divider />
           <DialogContent className={classes.modalContent}>
-            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} />
+            <img src={`${process.env.REACT_APP_HOST}${nameImage}`} className={classes.viewImage} alt="Imagem do produto" />
           </DialogContent>
           <Divider />
         </Dialog>
@@ -2098,7 +2049,6 @@ export default function EditProduct(props) {
                           edge="end"
                           type="submit"
                           onClick={handleCreateSection}
-                          className={buttonClassNameCreateSection}
                           disabled={loadingCreateSection}
                         >
                           <SaveIcon size={8} color="primary" />
@@ -2341,7 +2291,6 @@ export default function EditProduct(props) {
                     onClick={handleCreateUnits}
                     startIcon={<SaveIcon size={8} color="primary" />}
                     disable={loadingCreateUnit}
-                    className={buttonClassnameCreateUnit}
                   >
                     Salvar
                     {loadingCreateUnit && <CircularProgress size={24} className={classes.buttonProgress} />}

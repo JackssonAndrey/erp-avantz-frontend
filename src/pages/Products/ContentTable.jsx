@@ -161,11 +161,6 @@ export default function EnhancedTable() {
   const [error, setError] = useState(false);
   const [defaultButton, setDefaultButton] = useState(false);
 
-  const [loadingDisableUser, setLoadingDisableUser] = useState(false);
-  const [successDisableUser, setSuccessDisableUser] = useState(false);
-  const [errorDisableUser, setErrorDisableUser] = useState(false);
-  const [defaultButtonDisableUser, setDefaultButtonDisableUser] = useState(false);
-
   const [loadingDisableProduct, setLoadingDisableProduct] = useState(false);
   const [successDisableProduct, setSuccessDisableProduct] = useState(false);
   const [errorDisableProduct, setErrorDisableProduct] = useState(false);
@@ -188,24 +183,15 @@ export default function EnhancedTable() {
   const [sections, setSections] = useState([]);
   const [idSection, setIdSection] = useState(0);
   const [loadingCreateSection, setLoadingCreateSection] = useState(false);
-  const [successCreateSection, setSuccessCreateSection] = useState(false);
-  const [errorCreateSection, setErrorCreateSection] = useState(false);
-  const [defaultButtonCreateSection, setDefaultButtonCreateSection] = useState(false);
 
   const [groups, setGroups] = useState([]);
   const [subGroups, setSubGroups] = useState([]);
   const [nameGroup, setNameGroup] = useState('');
   const [idGroup, setIdGroup] = useState(0);
   const [loadingCreateGroup, setLoadingCreateGroup] = useState(false);
-  const [successCreateGroup, setSuccessCreateGroup] = useState(false);
-  const [errorCreateGroup, setErrorCreateGroup] = useState(false);
-  const [defaultButtonCreateGroup, setDefaultButtonCreateGroup] = useState(false);
 
   const [nameSubgroup, setNameSubgroup] = useState('');
   const [loadingCreateSubgroup, setLoadingCreateSubgroup] = useState(false);
-  const [successCreateSubgroup, setSuccessCreateSubgroup] = useState(false);
-  const [errorCreateSubgroup, setErrorCreateSubgroup] = useState(false);
-  const [defaultButtonCreateSubgroup, setDefaultButtonCreateSubgroup] = useState(false);
 
   const [units, setUnits] = useState([{}]);
   const [openModalUnits, setOpenModalUnits] = useState(false);
@@ -213,9 +199,6 @@ export default function EnhancedTable() {
   const [unitsDescription, setUnitsDescription] = useState('');
   const [unitType, setUnitType] = useState(1);
   const [loadingCreateUnit, setLoadingCreateUnit] = useState(false);
-  const [successCreateUnit, setSuccessCreateUnit] = useState(false);
-  const [errorCreateUnit, setErrorCreateUnit] = useState(false);
-  const [defaultButtonCreateUnit, setDefaultButtonCreateUnit] = useState(false);
 
   const [openModalFabricator, setOpenModalFabricator] = useState(false);
   const [nameFabricator, setNameFabricator] = useState('');
@@ -229,36 +212,6 @@ export default function EnhancedTable() {
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
     [classes.buttonDefault]: defaultButton
-  });
-
-  const buttonClassnameCreateUnit = clsx({
-    [classes.buttonSuccess]: successCreateUnit,
-    [classes.buttonError]: errorCreateUnit,
-    [classes.buttonDefault]: defaultButtonCreateUnit
-  });
-
-  const buttonClassNameCreateSection = clsx({
-    [classes.buttonSuccess]: successCreateSection,
-    [classes.buttonError]: errorCreateSection,
-    [classes.buttonDefault]: defaultButtonCreateSection
-  });
-
-  const buttonClassNameCreateGroup = clsx({
-    [classes.buttonSuccess]: successCreateGroup,
-    [classes.buttonError]: errorCreateGroup,
-    [classes.buttonDefault]: defaultButtonCreateGroup
-  });
-
-  const buttonClassNameCreateSubgroup = clsx({
-    [classes.buttonSuccess]: successCreateSubgroup,
-    [classes.buttonError]: errorCreateSubgroup,
-    [classes.buttonDefault]: defaultButtonCreateSubgroup
-  });
-
-  const buttonClassNameDisableUser = clsx({
-    [classes.buttonSuccess]: successDisableUser,
-    [classes.buttonError]: errorDisableUser,
-    [classes.buttonDefault]: defaultButtonDisableUser
   });
 
   const buttonClassNameDisableProduct = clsx({
@@ -304,6 +257,77 @@ export default function EnhancedTable() {
     })();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      const csrftoken = getCookie('csrftoken');
+      try {
+        const { data } = await api.get('/products', {
+          headers: {
+            'X-CSRFToken': csrftoken
+          }
+        });
+        setProducts(data);
+      } catch (error) {
+        const { data, status } = error.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 5000);
+        }
+      }
+    })();
+  }, [handleLogout]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/users/access');
+        setUserPermissions(data.acess.split(''));
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(data.detail);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/units');
+        setProductsUnits(data);
+      } catch (error) {
+        const { data, status } = error.response;
+        toast.error(`${data.detail}`);
+        if (status === 401) {
+          setTimeout(() => {
+            handleLogout();
+          }, 5000);
+        }
+      }
+    })();
+  }, [handleLogout]);
+
+  useEffect(() => {
+    const csrfToken = getCookie('csrftoken');
+
+    (async () => {
+      try {
+        const { data } = await api.get('/prod-groups', {
+          headers: {
+            'X-CSRFToken': csrfToken
+          }
+        });
+        setGroups(data);
+        getAllSections();
+        getAllSubgroups();
+      } catch (err) {
+        const { data } = err.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
+  }, []);
+
   const handleClickOpenModal = (id) => {
     setProductId(id);
     setOpenModal(true);
@@ -322,10 +346,6 @@ export default function EnhancedTable() {
   const handleCloseModalDisableProduct = () => {
     setProductId(0);
     setOpenModalDisableProduct(false);
-  };
-
-  function handleClickOpenModalGroup() {
-    setOpenModalGroup(true);
   };
 
   function handleCloseModalUnits() {
@@ -366,34 +386,10 @@ export default function EnhancedTable() {
     }
   };
 
-  function handleButtonDisableUserProgressError() {
-    if (!loadingDisableUser) {
-      setSuccessDisableUser(false);
-      setLoadingDisableUser(true);
-      timer.current = window.setTimeout(() => {
-        setErrorDisableUser(true);
-        setLoadingDisableUser(false);
-      }, 2000);
-    }
-  }
-
-  function handleButtonDisableUserProgress() {
-    if (!loadingDisableUser) {
-      setSuccessDisableUser(false);
-      setLoadingDisableUser(true);
-      timer.current = window.setTimeout(() => {
-        setSuccessDisableUser(true);
-        setLoadingDisableUser(false);
-      }, 2000);
-    }
-  };
-
   function handleCreateUnitProgressError() {
     if (!loadingCreateUnit) {
-      setSuccessCreateUnit(false);
       setLoadingCreateUnit(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateUnit(true);
         setLoadingCreateUnit(false);
       }, 2000);
     }
@@ -401,10 +397,8 @@ export default function EnhancedTable() {
 
   function handleCreateUnitProgress() {
     if (!loadingCreateUnit) {
-      setSuccessCreateUnit(false);
       setLoadingCreateUnit(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateUnit(true);
         setLoadingCreateUnit(false);
       }, 2000);
     }
@@ -412,10 +406,8 @@ export default function EnhancedTable() {
 
   function handleCreateSectionProgressError() {
     if (!loadingCreateSection) {
-      setSuccessCreateSection(false);
       setLoadingCreateSection(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateSection(true);
         setLoadingCreateSection(false);
       }, 2000);
     }
@@ -423,10 +415,8 @@ export default function EnhancedTable() {
 
   function handleCreateSectionProgress() {
     if (!loadingCreateSection) {
-      setSuccessCreateSection(false);
       setLoadingCreateSection(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateSection(true);
         setLoadingCreateSection(false);
       }, 2000);
     }
@@ -434,10 +424,8 @@ export default function EnhancedTable() {
 
   function handleCreateGroupProgressError() {
     if (!loadingCreateGroup) {
-      setSuccessCreateGroup(false);
       setLoadingCreateGroup(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateGroup(true);
         setLoadingCreateGroup(false);
       }, 2000);
     }
@@ -445,10 +433,8 @@ export default function EnhancedTable() {
 
   function handleCreateGroupProgress() {
     if (!loadingCreateGroup) {
-      setSuccessCreateGroup(false);
       setLoadingCreateGroup(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateGroup(true);
         setLoadingCreateGroup(false);
       }, 2000);
     }
@@ -456,10 +442,8 @@ export default function EnhancedTable() {
 
   function handleCreateSubgroupProgressError() {
     if (!loadingCreateSubgroup) {
-      setSuccessCreateSubgroup(false);
       setLoadingCreateSubgroup(true);
       timer.current = window.setTimeout(() => {
-        setErrorCreateSubgroup(true);
         setLoadingCreateSubgroup(false);
       }, 2000);
     }
@@ -467,10 +451,8 @@ export default function EnhancedTable() {
 
   function handleCreateSubgroupProgress() {
     if (!loadingCreateSubgroup) {
-      setSuccessCreateSubgroup(false);
       setLoadingCreateSubgroup(true);
       timer.current = window.setTimeout(() => {
-        setSuccessCreateSubgroup(true);
         setLoadingCreateSubgroup(false);
       }, 2000);
     }
@@ -497,77 +479,6 @@ export default function EnhancedTable() {
       }, 2000);
     }
   };
-
-  useEffect(() => {
-    (async () => {
-      const csrftoken = getCookie('csrftoken');
-      try {
-        const { data } = await api.get('/products', {
-          headers: {
-            'X-CSRFToken': csrftoken
-          }
-        });
-        setProducts(data);
-      } catch (error) {
-        const { data, status } = error.response;
-        toast.error(`${data.detail}`);
-        if (status === 401) {
-          setTimeout(() => {
-            handleLogout();
-          }, 5000);
-        }
-      }
-    })();
-  }, [handleLogout]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/users/access');
-        setUserPermissions(data.acess.split(''));
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(data.detail);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/units');
-        setProductsUnits(data);
-      } catch (err) {
-        const { data, status } = error.response;
-        toast.error(`${data.detail}`);
-        if (status === 401) {
-          setTimeout(() => {
-            handleLogout();
-          }, 5000);
-        }
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    const csrfToken = getCookie('csrftoken');
-
-    (async () => {
-      try {
-        const { data } = await api.get('/prod-groups', {
-          headers: {
-            'X-CSRFToken': csrfToken
-          }
-        });
-        setGroups(data);
-        getAllSections();
-        getAllSubgroups();
-      } catch (err) {
-        const { data } = err.response;
-        toast.error(`${data.detail}`);
-      }
-    })();
-  }, []);
 
   async function getAllSections() {
     try {
@@ -788,7 +699,6 @@ export default function EnhancedTable() {
       }, 2000);
 
       setTimeout(() => {
-        setDefaultButtonCreateUnit(true);
         setUnitsInitials('');
         setUnitsDescription('');
         setUnitType(1);
@@ -975,6 +885,7 @@ export default function EnhancedTable() {
                                 ></Avatar>
                               )
                             }
+                            return true;
                           })
                         }
 
@@ -1176,7 +1087,6 @@ export default function EnhancedTable() {
                             edge="end"
                             type="submit"
                             onClick={handleCreateSection}
-                            className={buttonClassNameCreateSection}
                             disabled={loadingCreateSection}
                           >
                             <SaveIcon size={8} color="primary" />
@@ -1425,7 +1335,6 @@ export default function EnhancedTable() {
                         onClick={handleCreateUnits}
                         startIcon={<SaveIcon size={8} color="primary" />}
                         disable={loadingCreateUnit}
-                        className={buttonClassnameCreateUnit}
                       >
                         Salvar
                         {loadingCreateUnit && <CircularProgress size={24} className={classes.buttonProgress} />}

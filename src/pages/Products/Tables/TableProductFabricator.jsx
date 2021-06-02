@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -12,50 +11,31 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Toolbar,
   Typography,
-  Paper,
   IconButton,
   Tooltip,
-  Avatar,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   CircularProgress,
   Button,
-  Badge,
   Box,
-  Card,
-  CardContent,
-  InputAdornment,
   Grid,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
   TextField,
   Divider,
-  Select,
-  MenuItem
 } from '@material-ui/core';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
-  More as DetailIcon,
-  DeleteForever as DeleteForeverIcon,
-  Search as SearchIcon,
   Close as CloseIcon,
   Save as SaveIcon
 } from '@material-ui/icons';
 
-import { orange, lightBlue, red } from '@material-ui/core/colors';
+import { orange, red } from '@material-ui/core/colors';
 
 import api from '../../../services/api';
-import getCookie from '../../../utils/functions';
-import { Context } from '../../../Context/AuthContext';
 import { toast } from 'react-toastify';
-import history from '../../../services/history';
 import { useStyles } from './styles';
 
 function descendingComparator(a, b, orderBy) {
@@ -134,7 +114,6 @@ TableFabricatorHead.propTypes = {
 };
 
 export default function TableProductFabricator({ fabricators }) {
-  const { handleLogout } = useContext(Context);
   const classes = useStyles();
   const timer = useRef();
   const [order, setOrder] = useState('asc');
@@ -144,7 +123,6 @@ export default function TableProductFabricator({ fabricators }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-  const [defaultButton, setDefaultButton] = useState(false);
   const [loadingRemoveFabricator, setLoadingRemoveFabricator] = useState(false);
   const [successRemoveFabricator, setSuccessRemoveFabricator] = useState(false);
   const [errorRemoveFabricator, setErrorRemoveFabricator] = useState(false);
@@ -155,6 +133,17 @@ export default function TableProductFabricator({ fabricators }) {
   const [brandFabricator, setBrandFabricator] = useState('');
   const [idFabricator, setIdFabricator] = useState('');
   const [allFabricators, setAllFabricators] = useState(fabricators);
+
+  const buttonClassName = clsx({
+    [classes.buttonSuccess]: success,
+    [classes.buttonError]: error,
+  });
+
+  const buttonClassnameRemoveFabricator = clsx({
+    [classes.buttonSuccess]: successRemoveFabricator,
+    [classes.buttonError]: errorRemoveFabricator,
+    [classes.buttonDefault]: defaultButtonRemoveFabricator
+  });
 
   useEffect(() => {
     return () => {
@@ -234,18 +223,6 @@ export default function TableProductFabricator({ fabricators }) {
       }, 2000);
     }
   }
-
-  const buttonClassName = clsx({
-    [classes.buttonSuccess]: success,
-    [classes.buttonError]: error,
-    [classes.buttonDefault]: defaultButton
-  });
-
-  const buttonClassnameRemoveFabricator = clsx({
-    [classes.buttonSuccess]: successRemoveFabricator,
-    [classes.buttonError]: errorRemoveFabricator,
-    [classes.buttonDefault]: defaultButtonRemoveFabricator
-  });
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
