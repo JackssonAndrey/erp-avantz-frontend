@@ -118,7 +118,10 @@ const useStyles = makeStyles((theme) => ({
     padding: '20px',
     color: grey[700],
     textAlign: 'center'
-  }
+  },
+  groupButton: {
+    marginRight: theme.spacing(2)
+  },
 }));
 
 export default useStyles;

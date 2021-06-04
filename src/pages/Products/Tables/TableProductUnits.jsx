@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {
@@ -12,28 +11,19 @@ import {
   TablePagination,
   TableRow,
   TableSortLabel,
-  Toolbar,
   Typography,
-  Paper,
   IconButton,
   Tooltip,
-  Avatar,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   CircularProgress,
   Button,
-  Badge,
   Box,
-  Card,
-  CardContent,
-  InputAdornment,
   Grid,
   FormControl,
   InputLabel,
-  OutlinedInput,
   TextField,
   Divider,
   Select,
@@ -42,20 +32,14 @@ import {
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
-  More as DetailIcon,
-  DeleteForever as DeleteForeverIcon,
-  Search as SearchIcon,
   Close as CloseIcon,
   Save as SaveIcon
 } from '@material-ui/icons';
 
-import { orange, lightBlue, red } from '@material-ui/core/colors';
+import { orange, red } from '@material-ui/core/colors';
 
 import api from '../../../services/api';
-import getCookie from '../../../utils/functions';
-import { Context } from '../../../Context/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
-import history from '../../../services/history';
+import { toast } from 'react-toastify';
 import { useStyles } from './styles';
 
 function descendingComparator(a, b, orderBy) {
@@ -135,7 +119,6 @@ TableUnitsHead.propTypes = {
 };
 
 export default function TableProductUnits({ units }) {
-  const { handleLogout } = useContext(Context);
   const classes = useStyles();
   const timer = useRef();
   const [order, setOrder] = useState('asc');
@@ -145,7 +128,6 @@ export default function TableProductUnits({ units }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
-  const [defaultButton, setDefaultButton] = useState(false);
 
   const [loadingRemove, setLoadingRemove] = useState(false);
   const [successRemove, setSuccessRemove] = useState(false);
@@ -173,7 +155,6 @@ export default function TableProductUnits({ units }) {
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
-    [classes.buttonDefault]: defaultButton
   });
 
   const buttonClassnameRemove = clsx({
