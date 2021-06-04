@@ -434,57 +434,86 @@ export default function RegisterProduct() {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
+  function mascaraMoeda(e) {
+    const onlyDigits = e.target.value
+      .split("")
+      .filter(s => /\d/.test(s))
+      .join("")
+      .padStart(3, "0")
+    const digitsFloat = onlyDigits.slice(0, -2) + "." + onlyDigits.slice(-2)
+    e.target.value = maskCurrency(digitsFloat)
+  }
+
+  function maskCurrency(valor, locale = 'pt-BR', currency = 'BRL') {
+    return new Intl.NumberFormat(locale).format(valor)
+  }
+
+  function currency(e) {
+    let value = e.target.value;
+    value = value.replace(/\D/g, "");
+    value = value.replace(/(\d)(\d{2})$/, "$1,$2");
+    value = value.replace(/(?=(\d{3})+(\D))\B/g, ".");
+
+    e.target.value = value;
+  }
+
+  function numberToFloat(num) {
+    num = num.toString().replace(".", "");
+    num = num.toString().replace(",", ".");
+    return parseFloat(num);
+  }
+
   function calculateProfit() {
-    let profit = parseFloat(productItemData.custo) * (parseFloat(institutionSettings.cfg22) / 100);
-    setProductItemData({ ...productItemData, lucro: profit.toFixed(2) });
+    let profit = numberToFloat(productItemData.custo) * (parseFloat(institutionSettings.cfg22) / 100);
+    setProductItemData({ ...productItemData, lucro: maskCurrency(profit) });
   }
 
   function calculateNewProfit() {
-    let profit = parseFloat(productItemData.prvenda1) - parseFloat(productItemData.custo);
+    let profit = numberToFloat(productItemData.prvenda1) - numberToFloat(productItemData.custo);
     if (profit < 0) profit = 0;
-    setProductItemData({ ...productItemData, lucro: profit.toFixed(2) });
+    setProductItemData({ ...productItemData, lucro: maskCurrency(profit) });
   }
 
   function totalCost() {
-    let cost = parseFloat(productItemData.compra) + parseFloat(productItemData.frete);
-    setProductItemData({ ...productItemData, custo: cost.toFixed(2) });
+    let cost = numberToFloat(productItemData.compra) + numberToFloat(productItemData.frete);
+    setProductItemData({ ...productItemData, custo: maskCurrency(cost) });
   }
 
   function calculatePriceTable1() {
-    let total = parseFloat(productItemData.lucro) + parseFloat(productItemData.custo);
-    setProductItemData({ ...productItemData, prvenda1: total.toFixed(2) });
+    let total = numberToFloat(productItemData.lucro) + numberToFloat(productItemData.custo);
+    setProductItemData({ ...productItemData, prvenda1: maskCurrency(total) });
   }
 
   function calculatePriceTable2() {
     // ACRESCIMO
     if (institutionSettings.cfg23 === '1') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
-      let newValue = parseFloat(productItemData.prvenda1) + percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
+      let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg24) / 100);
+      let newValue = numberToFloat(productItemData.prvenda1) + percentage;
+      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue) });
       // DESCONTO
     } else if (institutionSettings.cfg23 === '2') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
-      let newValue = parseFloat(productItemData.prvenda1) - percentage;
-      setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
+      let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg24) / 100);
+      let newValue = numberToFloat(productItemData.prvenda1) - percentage;
+      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue) });
     }
   }
 
   // function calculatePriceTable2Inverse() {
-  //   let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg24) / 100);
-  //   let newValue = parseFloat(productItemData.prvenda2) - percentage;
+  //   let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg24) / 100);
+  //   let newValue = numberToFloat(productItemData.prvenda2) - percentage;
   //   setProductItemData({ ...productItemData, prvenda2: newValue.toFixed(2) });
   // }
 
   function calculatePriceTable3() {
     // ACRESCIMO
     if (institutionSettings.cfg25 === '1') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
-      let newValue = parseFloat(productItemData.prvenda1) + percentage;
+      let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg26) / 100);
+      let newValue = numberToFloat(productItemData.prvenda1) + percentage;
       setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
       // DESCONTO
     } else if (institutionSettings.cfg25 === '2') {
-      let percentage = parseFloat(productItemData.prvenda1) * (parseFloat(institutionSettings.cfg26) / 100);
-      let newValue = parseFloat(productItemData.prvenda1) - percentage;
+      let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg26) / 100);
+      let newValue = numberToFloat(productItemData.prvenda1) - percentage;
       setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
     }
   }
@@ -492,35 +521,35 @@ export default function RegisterProduct() {
   async function handleCreate(e) {
     e.preventDefault();
     const csrftoken = getCookie('csrftoken');
+    console.log(productItemData);
+    // try {
+    //   handleButtonClickProgress();
 
-    try {
-      handleButtonClickProgress();
+    //   const { data } = await api.post('/products/create/', { ...productData, ...productItemData }, {
+    //     headers: {
+    //       'X-CSRFToken': csrftoken
+    //     }
+    //   });
 
-      const { data } = await api.post('/products/create/', { ...productData, ...productItemData }, {
-        headers: {
-          'X-CSRFToken': csrftoken
-        }
-      });
+    //   acceptedFiles.map(async (file) => {
+    //     let formData = new FormData();
+    //     formData.append('files', file);
+    //     await api.post(`/photos/upload/${data.product_id}`, formData);
+    //   });
 
-      acceptedFiles.map(async (file) => {
-        let formData = new FormData();
-        formData.append('files', file);
-        await api.post(`/photos/upload/${data.product_id}`, formData);
-      });
-
-      setTimeout(() => {
-        toast.success('Registro do produto criado com sucesso!');
-      }, 3000);
-      setTimeout(() => {
-        history.push(`/products/details/${data.product_id}`);
-      }, 4000);
-    } catch (err) {
-      const { data } = err.response;
-      handleButtonClickProgressError();
-      setTimeout(() => {
-        toast.error(`${data.detail}`);
-      }, 2000);
-    }
+    //   setTimeout(() => {
+    //     toast.success('Registro do produto criado com sucesso!');
+    //   }, 3000);
+    //   setTimeout(() => {
+    //     history.push(`/products/details/${data.product_id}`);
+    //   }, 4000);
+    // } catch (err) {
+    //   const { data } = err.response;
+    //   handleButtonClickProgressError();
+    //   setTimeout(() => {
+    //     toast.error(`${data.detail}`);
+    //   }, 2000);
+    // }
   }
 
   async function handleCreateSection() {
@@ -1265,6 +1294,7 @@ export default function RegisterProduct() {
                         name="compra"
                         variant="outlined"
                         value={productItemData.compra}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -1285,6 +1315,7 @@ export default function RegisterProduct() {
                         name="frete"
                         variant="outlined"
                         value={productItemData.frete}
+                        onInput={(e) => currency(e)}
                         onKeyUp={totalCost}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
@@ -1306,6 +1337,7 @@ export default function RegisterProduct() {
                         name="custo"
                         variant="outlined"
                         value={productItemData.custo}
+                        onInput={(e) => currency(e)}
                         onKeyUp={calculateProfit}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
@@ -1327,6 +1359,7 @@ export default function RegisterProduct() {
                         name="lucro"
                         variant="outlined"
                         value={productItemData.lucro}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -1352,6 +1385,7 @@ export default function RegisterProduct() {
                         name="prvenda1"
                         variant="outlined"
                         value={productItemData.prvenda1}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         onFocus={calculatePriceTable1}
                         onKeyUp={calculateNewProfit}
@@ -1374,6 +1408,7 @@ export default function RegisterProduct() {
                         name="prvenda2"
                         variant="outlined"
                         value={productItemData.prvenda2}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         onFocus={calculatePriceTable2}
                         InputProps={{
@@ -1395,6 +1430,7 @@ export default function RegisterProduct() {
                         name="prvenda3"
                         variant="outlined"
                         value={productItemData.prvenda3}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         onFocus={calculatePriceTable3}
                         InputProps={{
@@ -1441,6 +1477,7 @@ export default function RegisterProduct() {
                         name="prloc"
                         variant="outlined"
                         value={productItemData.prloc}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -1506,6 +1543,7 @@ export default function RegisterProduct() {
                         name="pratac"
                         variant="outlined"
                         value={productItemData.pratac}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
@@ -1530,6 +1568,7 @@ export default function RegisterProduct() {
                         name="ipi"
                         variant="outlined"
                         value={productItemData.ipi}
+                        onInput={(e) => currency(e)}
                         onChange={(e) => handleOnChangeInputsProductItems(e)}
                         InputProps={{
                           startAdornment: <InputAdornment position="start">R$</InputAdornment>,
