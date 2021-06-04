@@ -36,7 +36,8 @@ import {
   TextField,
   Divider,
   Select,
-  MenuItem
+  MenuItem,
+  LinearProgress
 } from '@material-ui/core';
 import {
   Delete as DeleteIcon,
@@ -90,7 +91,7 @@ function stableSort(array, comparator) {
 const headCells = [
   { id: 'foto', numeric: false, disablePadding: false, label: 'Foto' },
   { id: 'codigo', numeric: false, disablePadding: true, label: 'Código' },
-  { id: 'ativo', numeric: false, disablePadding: true, label: 'ativo' },
+  { id: 'ativo', numeric: false, disablePadding: true, label: 'Ativo' },
   { id: 'descricao', numeric: false, disablePadding: true, label: 'Descrição' },
   { id: 'unidade', numeric: false, disablePadding: true, label: 'Unidade' },
   { id: 'actions', numeric: false, disablePadding: true, label: '' },
@@ -178,6 +179,7 @@ export default function EnhancedTable() {
   const [productSearch, setProductSearch] = useState('');
   const [productsUnits, setProductsUnits] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
+  const [dataFetched, setDataFetched] = useState(false);
 
   const [nameSection, setNameSection] = useState('');
   const [sections, setSections] = useState([]);
@@ -267,6 +269,7 @@ export default function EnhancedTable() {
           }
         });
         setProducts(data);
+        setDataFetched(true);
       } catch (error) {
         const { data, status } = error.response;
         toast.error(`${data.detail}`);
@@ -861,107 +864,119 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
               rowCount={products.length}
             />
-            <TableBody>
-              {stableSort(products, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((product, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+            {
+              !dataFetched ? (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={12} style={{ padding: '30px' }}>
+                      <LinearProgress />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {stableSort(products, getComparator(order, orderBy))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((product, index) => {
+                      const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      tabIndex={-1}
-                      key={product.id}
-                    >
-                      <TableCell padding="checkbox" size="small" align="left">
-                        {
-                          photos.map((photo) => {
-                            if (photo.id_produto === product.id) {
-                              return (
-                                <Avatar
-                                  variant="rounded"
-                                  src={`${process.env.REACT_APP_HOST}${photo.nome_arquivo}`}
-                                  style={{ width: '50px', height: '50px' }}
-                                ></Avatar>
+                      return (
+                        <TableRow
+                          hover
+                          tabIndex={-1}
+                          key={product.id}
+                        >
+                          <TableCell padding="checkbox" size="small" align="left">
+                            {
+                              photos.map((photo) => {
+                                if (photo.id_produto === product.id) {
+                                  return (
+                                    <Avatar
+                                      variant="rounded"
+                                      src={`${process.env.REACT_APP_HOST}${photo.nome_arquivo}`}
+                                      style={{ width: '50px', height: '50px' }}
+                                    ></Avatar>
+                                  )
+                                }
+                                return true;
+                              })
+                            }
+
+                          </TableCell>
+                          <TableCell padding="none" align="left">{product.codprod}</TableCell>
+                          <TableCell padding="none" align="left">
+                            {
+                              product.ativo === 2 ? (
+                                <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                              ) : (
+                                <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
                               )
                             }
-                            return true;
-                          })
-                        }
-
-                      </TableCell>
-                      <TableCell padding="none" align="left">{product.codprod}</TableCell>
-                      <TableCell padding="none" align="left">
-                        {
-                          product.ativo === 2 ? (
-                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
-                          ) : (
-                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
-                          )
-                        }
-                      </TableCell>
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
-                        {product.descr}
-                      </TableCell>
-                      <TableCell padding="none" align="left">
-                        {
-                          productsUnits.map((unit) => {
-                            if (unit.id === product.und) {
-                              return `${unit.descr} (${unit.und})`;
+                          </TableCell>
+                          <TableCell component="th" id={labelId} scope="row" padding="none">
+                            {product.descr}
+                          </TableCell>
+                          <TableCell padding="none" align="left">
+                            {
+                              productsUnits.map((unit) => {
+                                if (unit.id === product.und) {
+                                  return `${unit.descr} (${unit.und})`;
+                                }
+                                return null;
+                              })
                             }
-                            return null;
-                          })
-                        }
-                      </TableCell>
-                      <TableCell padding="default" align="right">
-                        {
-                          userPermissions[143] === '1' && (
-                            <Tooltip title="Editar">
-                              <IconButton onClick={() => handleEdit(product.id)} aria-label="Editar">
-                                <EditIcon size={8} style={{ color: orange[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
-                        {
-                          userPermissions[151] === '1' && (
-                            <Tooltip title="Detalhes">
-                              <IconButton onClick={() => handleDetails(product.id)} aria-label="Detalhes">
-                                <DetailIcon size={8} style={{ color: lightBlue[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
+                          </TableCell>
+                          <TableCell padding="default" align="right">
+                            {
+                              userPermissions[143] === '1' && (
+                                <Tooltip title="Editar">
+                                  <IconButton onClick={() => handleEdit(product.id)} aria-label="Editar">
+                                    <EditIcon size={8} style={{ color: orange[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
+                            {
+                              userPermissions[151] === '1' && (
+                                <Tooltip title="Detalhes">
+                                  <IconButton onClick={() => handleDetails(product.id)} aria-label="Detalhes">
+                                    <DetailIcon size={8} style={{ color: lightBlue[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
 
-                        {
-                          userPermissions[142] === '1' && (
-                            <Tooltip title="Desativar">
-                              <IconButton onClick={() => handleClickOpenModalDisableProduct(product.id)} aria-label="Desativar">
-                                <BlockIcon size={8} style={{ color: red[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
+                            {
+                              userPermissions[142] === '1' && (
+                                <Tooltip title="Desativar">
+                                  <IconButton onClick={() => handleClickOpenModalDisableProduct(product.id)} aria-label="Desativar">
+                                    <BlockIcon size={8} style={{ color: red[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
 
-                        {
-                          userPermissions[141] === '1' && (
-                            <Tooltip title="Deletar">
-                              <IconButton onClick={() => handleClickOpenModal(product.id)} aria-label="Deletar">
-                                <DeleteIcon size={8} style={{ color: red[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
-                      </TableCell>
+                            {
+                              userPermissions[141] === '1' && (
+                                <Tooltip title="Deletar">
+                                  <IconButton onClick={() => handleClickOpenModal(product.id)} aria-label="Deletar">
+                                    <DeleteIcon size={8} style={{ color: red[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 33 * emptyRows }}>
+                      <TableCell colSpan={6} />
                     </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 33 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
+                  )}
+                </TableBody>
+              )
+            }
           </Table>
         </TableContainer>
         <TablePagination

@@ -16,12 +16,14 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  Typography
+  Typography,
+
 } from '@material-ui/core';
 import {
   Search as SearchIcon,
   Close as CloseIcon
 } from '@material-ui/icons';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 import CardProviders from '../../components/CardProviders';
 import CardTotalUsers from '../../components/CardTotalUsers';
@@ -125,68 +127,127 @@ export default function Dashboard() {
               lg={5}
             >
               {
-                userPermissions[109] === '1' && (
-                  <Paper>
-                    <form onSubmit={(e) => handleSearchProducts(e)}>
-                      <FormControl variant="outlined" fullWidth size="small" >
-                        <InputLabel>Pesquisa rápida de produtos</InputLabel>
-                        <OutlinedInput
-                          value={productName}
-                          onChange={(e) => setProductName(e.target.value)}
-                          fullWidth
-                          label="Pesquisa rápida de produtos"
-                          name="searchPerson"
-                          endAdornment={
-                            <InputAdornment position="end">
-                              <Tooltip title="Pesquisar">
-                                <IconButton
-                                  aria-label="Pesquisar"
-                                  edge="end"
-                                  type="submit"
-                                >
-                                  <SearchIcon size={8} color="primary" />
-                                </IconButton>
-                              </Tooltip>
-                            </InputAdornment>
-                          }
-                          labelWidth={70}
-                        />
-                      </FormControl>
-                    </form>
-                  </Paper>
+                userPermissions.length !== 0 ? (
+                  <div>
+                    {
+                      userPermissions[109] === '1' && (
+                        <Paper>
+                          <form onSubmit={(e) => handleSearchProducts(e)}>
+                            <FormControl variant="outlined" fullWidth size="small" >
+                              <InputLabel>Pesquisa rápida de produtos</InputLabel>
+                              <OutlinedInput
+                                value={productName}
+                                onChange={(e) => setProductName(e.target.value)}
+                                fullWidth
+                                label="Pesquisa rápida de produtos"
+                                name="searchPerson"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Pesquisar">
+                                      <IconButton
+                                        aria-label="Pesquisar"
+                                        edge="end"
+                                        type="submit"
+                                      >
+                                        <SearchIcon size={8} color="primary" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
+                                labelWidth={70}
+                              />
+                            </FormControl>
+                          </form>
+                        </Paper>
+                      )
+                    }
+                  </div>
+                ) : (
+                  <Skeleton variant="rect" width="100%" height={40} />
                 )
               }
             </Grid>
-            {/* CardProviders */}
-            {
-              userPermissions[40] === '1' && (
-                <Grid item xs={12} md={8} lg={9}>
-                  <Paper className={fixedHeightPaper}>
-                    <CardProviders />
-                  </Paper>
-                </Grid>
-              )
-            }
-            {/* CardTotalUsers */}
-            {
-              userPermissions[49] === '1' && (
-                <Grid item xs={12} md={4} lg={3}>
-                  <Paper className={fixedHeightPaper}>
-                    <CardTotalUsers />
-                  </Paper>
-                </Grid>
-              )
-            }
-            {/* CardPhysicalPerson */}
-            {
-              userPermissions[39] === '1' && (
-                <Grid item xs={12}>
-                  <Paper className={classes.paper}>
-                    <CardPhysicalPerson />
-                  </Paper>
-                </Grid>
-              )
-            }
+          </Grid>
+          <Grid
+            container
+            spacing={3}
+          >
+            <Grid
+              item
+              xs={9}
+              xl={9}
+              md={9}
+              sm={9}
+              lg={9}
+            >
+              {/* CardProviders */}
+              {
+                userPermissions.length !== 0 ? (
+                  <div>
+                    {
+                      userPermissions[40] === '1' && (
+                        <Paper className={fixedHeightPaper}>
+                          <CardProviders />
+                        </Paper>
+                      )
+                    }
+                  </div>
+                ) : (
+                  <Skeleton width="100%" height={200} />
+                )
+              }
+
+            </Grid>
+            <Grid
+              item
+              xs={3}
+              xl={3}
+              md={3}
+              sm={3}
+              lg={3}
+            >
+              {/* CardTotalUsers */}
+              {
+                userPermissions.length !== 0 ? (
+                  <div>
+                    {
+                      userPermissions[49] === '1' && (
+                        <Paper className={fixedHeightPaper}>
+                          <CardTotalUsers />
+                        </Paper>
+                      )
+                    }
+                  </div>
+                ) : (
+                  <Skeleton width="100%" height={200} />
+                )
+              }
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              xl={12}
+              md={12}
+              sm={12}
+              lg={12}
+            >
+              {/* CardPhysicalPerson */}
+              {
+                userPermissions.length !== 0 ? (
+                  <div>
+                    {
+                      userPermissions[39] === '1' && (
+                        <Paper className={classes.paper}>
+                          <CardPhysicalPerson />
+                        </Paper>
+                      )
+                    }
+                  </div>
+                ) : (
+                  <Skeleton width="100%" height={200} />
+                )
+              }
+            </Grid>
           </Grid>
           <Box pt={4}>
             <Copyright />

@@ -30,7 +30,8 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
-  Divider
+  Divider,
+  LinearProgress
 } from '@material-ui/core';
 
 import {
@@ -156,6 +157,7 @@ export default function EnhancedTable() {
   const [openModal, setOpenModal] = useState(false);
   const [defaultButton, setDefaultButton] = useState(true);
   const [institutionSearch, setInstitutionSearch] = useState('');
+  const [dataFetched, setDataFetched] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -214,6 +216,7 @@ export default function EnhancedTable() {
         });
 
         setInstitutions(data);
+        setDataFetched(true);
       } catch (err) {
         const { data, status } = err.response;
         toast.error(`${data.detail}`);
@@ -389,61 +392,73 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
               rowCount={institutions.length}
             />
-            <TableBody>
-              {stableSort(institutions, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((institution, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+            {
+              !dataFetched ? (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={12} style={{ padding: '30px' }}>
+                      <LinearProgress />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {stableSort(institutions, getComparator(order, orderBy))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((institution, index) => {
+                      const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      tabIndex={-1}
-                      key={institution.id_instituicao}
-                    >
-                      <TableCell component="th" id={labelId} scope="row">
-                        {institution.razsoc}
-                      </TableCell>
-                      <TableCell padding="none" align="left">{institution.cnpj}</TableCell>
-                      <TableCell padding="none" align="left">{institution.mail1}</TableCell>
-                      <TableCell padding="none" align="left">{institution.tel1}</TableCell>
-                      <TableCell padding="none" align="center">
-                        {
-                          institution.ativo === 1 ? (
-                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
-                          ) : (
-                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
-                          )
-                        }
-                      </TableCell>
-                      <TableCell padding="default" align="right">
-                        <Tooltip title="Editar" arrow>
-                          <IconButton onClick={() => handleEdit(institution.id_instituicao)} aria-label="Editar">
-                            <EditIcon size={8} style={{ color: orange[300] }} />
-                          </IconButton>
-                        </Tooltip>
+                      return (
+                        <TableRow
+                          hover
+                          tabIndex={-1}
+                          key={institution.id_instituicao}
+                        >
+                          <TableCell component="th" id={labelId} scope="row">
+                            {institution.razsoc}
+                          </TableCell>
+                          <TableCell padding="none" align="left">{institution.cnpj}</TableCell>
+                          <TableCell padding="none" align="left">{institution.mail1}</TableCell>
+                          <TableCell padding="none" align="left">{institution.tel1}</TableCell>
+                          <TableCell padding="none" align="center">
+                            {
+                              institution.ativo === 1 ? (
+                                <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                              ) : (
+                                <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                              )
+                            }
+                          </TableCell>
+                          <TableCell padding="default" align="right">
+                            <Tooltip title="Editar" arrow>
+                              <IconButton onClick={() => handleEdit(institution.id_instituicao)} aria-label="Editar">
+                                <EditIcon size={8} style={{ color: orange[300] }} />
+                              </IconButton>
+                            </Tooltip>
 
-                        <Tooltip title="Detalhes" arrow>
-                          <IconButton onClick={() => handleDetails(institution.id_instituicao)} aria-label="Detalhes">
-                            <DetailIcon size={8} style={{ color: lightBlue[600] }} />
-                          </IconButton>
-                        </Tooltip>
+                            <Tooltip title="Detalhes" arrow>
+                              <IconButton onClick={() => handleDetails(institution.id_instituicao)} aria-label="Detalhes">
+                                <DetailIcon size={8} style={{ color: lightBlue[600] }} />
+                              </IconButton>
+                            </Tooltip>
 
-                        <Tooltip title="Deletar" arrow>
-                          <IconButton onClick={() => handleClickOpenModal(institution.id_instituicao)} aria-label="Deletar">
-                            <DeleteIcon size={8} style={{ color: red[200] }} />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
+                            <Tooltip title="Deletar" arrow>
+                              <IconButton onClick={() => handleClickOpenModal(institution.id_instituicao)} aria-label="Deletar">
+                                <DeleteIcon size={8} style={{ color: red[200] }} />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 33 * emptyRows }}>
+                      <TableCell colSpan={6} />
                     </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 33 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
+                  )}
+                </TableBody>
+              )
+            }
           </Table>
         </TableContainer>
         <TablePagination

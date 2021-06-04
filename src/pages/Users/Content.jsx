@@ -36,7 +36,8 @@ import {
   Grid,
   FormControl,
   InputLabel,
-  OutlinedInput
+  OutlinedInput,
+  LinearProgress
 } from '@material-ui/core';
 import {
   Delete as DeleteIcon,
@@ -177,6 +178,7 @@ export default function EnhancedTable() {
   const [groupId, setGroupId] = useState(0);
   const [userSearch, setUserSearch] = useState('');
   const [userPermissions, setUserPermissions] = useState([]);
+  const [dataFetched, setDataFetched] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
@@ -332,6 +334,7 @@ export default function EnhancedTable() {
           }
         });
         setUsers(data.users);
+        setDataFetched(true);
       } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
@@ -638,73 +641,85 @@ export default function EnhancedTable() {
               onRequestSort={handleRequestSort}
               rowCount={users.length}
             />
-            <TableBody>
-              {stableSort(users, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((user, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+            {
+              !dataFetched ? (
+                <TableBody>
+                  <TableRow>
+                    <TableCell colSpan={12} style={{ padding: '30px' }}>
+                      <LinearProgress />
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {stableSort(users, getComparator(order, orderBy))
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((user, index) => {
+                      const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow
-                      hover
-                      tabIndex={-1}
-                      key={user.username}
-                    >
-                      <TableCell padding="checkbox" size="small" align="left">
-                        <Avatar>A</Avatar>
-                      </TableCell>
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
-                        {user.first_name}
-                      </TableCell>
-                      <TableCell padding="none" align="left">{user.username}</TableCell>
-                      <TableCell padding="none" align="left">{user.email}</TableCell>
-                      <TableCell padding="none" align="left">
-                        {
-                          user.is_active === true ? (
-                            <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
-                          ) : (
-                            <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
-                          )
-                        }
-                      </TableCell>
-                      <TableCell padding="default" align="right">
-                        {
-                          userPermissions[131] === '1' && (
-                            <Tooltip title="Editar">
-                              <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
-                                <EditIcon size={8} style={{ color: orange[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
-                        {
-                          userPermissions[133] === '1' && (
-                            <Tooltip title="Detalhes">
-                              <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
-                                <DetailIcon size={8} style={{ color: lightBlue[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
-                        {
-                          userPermissions[132] === '1' && (
-                            <Tooltip title="Deletar">
-                              <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
-                                <DeleteIcon size={8} style={{ color: red[300] }} />
-                              </IconButton>
-                            </Tooltip>
-                          )
-                        }
-                      </TableCell>
+                      return (
+                        <TableRow
+                          hover
+                          tabIndex={-1}
+                          key={user.username}
+                        >
+                          <TableCell padding="checkbox" size="small" align="left">
+                            <Avatar>A</Avatar>
+                          </TableCell>
+                          <TableCell component="th" id={labelId} scope="row" padding="none">
+                            {user.first_name}
+                          </TableCell>
+                          <TableCell padding="none" align="left">{user.username}</TableCell>
+                          <TableCell padding="none" align="left">{user.email}</TableCell>
+                          <TableCell padding="none" align="left">
+                            {
+                              user.is_active === true ? (
+                                <Badge color="primary" badgeContent="Sim" overlap="rectangle" />
+                              ) : (
+                                <Badge color="secondary" badgeContent="Não" overlap="rectangle" />
+                              )
+                            }
+                          </TableCell>
+                          <TableCell padding="default" align="right">
+                            {
+                              userPermissions[131] === '1' && (
+                                <Tooltip title="Editar">
+                                  <IconButton onClick={() => handleEditUser(user.id)} aria-label="Editar">
+                                    <EditIcon size={8} style={{ color: orange[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
+                            {
+                              userPermissions[133] === '1' && (
+                                <Tooltip title="Detalhes">
+                                  <IconButton onClick={() => handleDetailsUser(user.id)} aria-label="Detalhes">
+                                    <DetailIcon size={8} style={{ color: lightBlue[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
+                            {
+                              userPermissions[132] === '1' && (
+                                <Tooltip title="Deletar">
+                                  <IconButton onClick={() => handleClickOpenModal(user.id)} aria-label="Deletar">
+                                    <DeleteIcon size={8} style={{ color: red[300] }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )
+                            }
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  {emptyRows > 0 && (
+                    <TableRow style={{ height: 33 * emptyRows }}>
+                      <TableCell colSpan={6} />
                     </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 33 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
+                  )}
+                </TableBody>
+              )
+            }
           </Table>
         </TableContainer>
         <TablePagination
