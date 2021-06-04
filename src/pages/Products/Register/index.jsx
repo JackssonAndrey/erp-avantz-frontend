@@ -1863,6 +1863,7 @@ export default function RegisterProduct() {
                 </Grid>
               </Grid>
             </Box>
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
             <Paper className={classes.paper}>
               <Box>
                 <TableProductGroups groups={groups} />

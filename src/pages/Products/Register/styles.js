@@ -18,11 +18,7 @@ const useStyles = makeStyles((theme) => ({
     paddingBottom: theme.spacing(4),
   },
   paper: {
-    padding: theme.spacing(2),
-    display: 'flex',
-    overflow: 'auto',
-    flexDirection: 'column',
-    alignItems: 'center'
+    width: '100%'
   },
   input: {
     display: 'none',
@@ -122,6 +118,15 @@ const useStyles = makeStyles((theme) => ({
   groupButton: {
     marginRight: theme.spacing(2)
   },
+  closeButton: {
+    position: 'absolute',
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+  table: {
+    width: '100%'
+  }
 }));
 
 export default useStyles;

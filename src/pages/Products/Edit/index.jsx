@@ -2006,7 +2006,7 @@ export default function EditProduct(props) {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">Deletar imagem</DialogTitle>
+          <DialogTitle id="alert-dialog-title">Imagem do produto</DialogTitle>
           <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalViewImage}>
             <CloseIcon />
           </IconButton>
@@ -2197,6 +2197,7 @@ export default function EditProduct(props) {
                 </Grid>
               </Grid>
             </Box>
+            <Divider style={{ marginTop: '10px', marginBottom: '10px' }} />
             <Paper className={classes.paper}>
               <Box>
                 <TableProductGroups groups={groups} />

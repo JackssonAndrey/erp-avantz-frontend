@@ -1455,7 +1455,7 @@ export default function DetailsProduct(props) {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
         >
-          <DialogTitle id="alert-dialog-title">Deletar imagem</DialogTitle>
+          <DialogTitle id="alert-dialog-title">Imagem do produto</DialogTitle>
           <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModalViewImage}>
             <CloseIcon />
           </IconButton>
