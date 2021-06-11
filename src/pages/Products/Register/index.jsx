@@ -122,10 +122,10 @@ const initialStateProductItems = {
   est_dep1: 0,
   est_dep2: 0,
   est_dep3: 0,
-  compra: 0,
-  frete: 0,
   ipi: 0,
   aliq: 0,
+  compra: 0,
+  frete: 0,
   custo: 0,
   lucro: 0,
   prvenda1: 0,
@@ -187,6 +187,8 @@ export default function RegisterProduct() {
   const [nameFabricator, setNameFabricator] = useState('');
   const [brandFabricator, setBrandFabricator] = useState('');
 
+  const [aliquots, setAliquots] = useState([{}]);
+
   const {
     acceptedFiles,
     getRootProps,
@@ -203,6 +205,18 @@ export default function RegisterProduct() {
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
   });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/aliquot/');
+        setAliquots(data);
+      } catch (error) {
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -434,16 +448,6 @@ export default function RegisterProduct() {
     setProductItemData({ ...productItemData, [name]: value });
   }
 
-  function mascaraMoeda(e) {
-    const onlyDigits = e.target.value
-      .split("")
-      .filter(s => /\d/.test(s))
-      .join("")
-      .padStart(3, "0")
-    const digitsFloat = onlyDigits.slice(0, -2) + "." + onlyDigits.slice(-2)
-    e.target.value = maskCurrency(digitsFloat)
-  }
-
   function maskCurrency(valor, locale = 'pt-BR', currency = 'BRL') {
     return new Intl.NumberFormat(locale).format(valor)
   }
@@ -458,30 +462,30 @@ export default function RegisterProduct() {
   }
 
   function numberToFloat(num) {
-    num = num.toString().replace(".", "");
+    // num = num.toString().replace(".", "");
     num = num.toString().replace(",", ".");
     return parseFloat(num);
   }
 
   function calculateProfit() {
     let profit = numberToFloat(productItemData.custo) * (parseFloat(institutionSettings.cfg22) / 100);
-    setProductItemData({ ...productItemData, lucro: maskCurrency(profit) });
+    setProductItemData({ ...productItemData, lucro: maskCurrency(profit.toFixed(2)) });
   }
 
   function calculateNewProfit() {
     let profit = numberToFloat(productItemData.prvenda1) - numberToFloat(productItemData.custo);
     if (profit < 0) profit = 0;
-    setProductItemData({ ...productItemData, lucro: maskCurrency(profit) });
+    setProductItemData({ ...productItemData, lucro: maskCurrency(profit.toFixed(2)) });
   }
 
   function totalCost() {
     let cost = numberToFloat(productItemData.compra) + numberToFloat(productItemData.frete);
-    setProductItemData({ ...productItemData, custo: maskCurrency(cost) });
+    setProductItemData({ ...productItemData, custo: maskCurrency(cost.toFixed(2)) });
   }
 
   function calculatePriceTable1() {
     let total = numberToFloat(productItemData.lucro) + numberToFloat(productItemData.custo);
-    setProductItemData({ ...productItemData, prvenda1: maskCurrency(total) });
+    setProductItemData({ ...productItemData, prvenda1: maskCurrency(total.toFixed(2)) });
   }
 
   function calculatePriceTable2() {
@@ -489,12 +493,12 @@ export default function RegisterProduct() {
     if (institutionSettings.cfg23 === '1') {
       let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg24) / 100);
       let newValue = numberToFloat(productItemData.prvenda1) + percentage;
-      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue) });
+      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue.toFixed(2)) });
       // DESCONTO
     } else if (institutionSettings.cfg23 === '2') {
       let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg24) / 100);
       let newValue = numberToFloat(productItemData.prvenda1) - percentage;
-      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue) });
+      setProductItemData({ ...productItemData, prvenda2: maskCurrency(newValue.toFixed(2)) });
     }
   }
 
@@ -509,47 +513,61 @@ export default function RegisterProduct() {
     if (institutionSettings.cfg25 === '1') {
       let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg26) / 100);
       let newValue = numberToFloat(productItemData.prvenda1) + percentage;
-      setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
+      setProductItemData({ ...productItemData, prvenda3: maskCurrency(newValue.toFixed(2)) });
       // DESCONTO
     } else if (institutionSettings.cfg25 === '2') {
       let percentage = numberToFloat(productItemData.prvenda1) * (numberToFloat(institutionSettings.cfg26) / 100);
       let newValue = numberToFloat(productItemData.prvenda1) - percentage;
-      setProductItemData({ ...productItemData, prvenda3: newValue.toFixed(2) });
+      setProductItemData({ ...productItemData, prvenda3: maskCurrency(newValue.toFixed(2)) });
     }
   }
 
   async function handleCreate(e) {
     e.preventDefault();
     const csrftoken = getCookie('csrftoken');
-    console.log(productItemData);
-    // try {
-    //   handleButtonClickProgress();
 
-    //   const { data } = await api.post('/products/create/', { ...productData, ...productItemData }, {
-    //     headers: {
-    //       'X-CSRFToken': csrftoken
-    //     }
-    //   });
+    const productItemDataFormated = {
+      ...productItemData,
+      compra: numberToFloat(productItemData.compra),
+      frete: numberToFloat(productItemData.frete),
+      custo: numberToFloat(productItemData.custo),
+      lucro: numberToFloat(productItemData.lucro),
+      prvenda1: numberToFloat(productItemData.prvenda1),
+      prvenda2: numberToFloat(productItemData.prvenda2),
+      prvenda3: numberToFloat(productItemData.prvenda3),
+      prloc: numberToFloat(productItemData.prloc),
+      pratac: numberToFloat(productItemData.pratac),
+      comissao_val: numberToFloat(productItemData.comissao_val)
+    }
 
-    //   acceptedFiles.map(async (file) => {
-    //     let formData = new FormData();
-    //     formData.append('files', file);
-    //     await api.post(`/photos/upload/${data.product_id}`, formData);
-    //   });
+    try {
+      handleButtonClickProgress();
 
-    //   setTimeout(() => {
-    //     toast.success('Registro do produto criado com sucesso!');
-    //   }, 3000);
-    //   setTimeout(() => {
-    //     history.push(`/products/details/${data.product_id}`);
-    //   }, 4000);
-    // } catch (err) {
-    //   const { data } = err.response;
-    //   handleButtonClickProgressError();
-    //   setTimeout(() => {
-    //     toast.error(`${data.detail}`);
-    //   }, 2000);
-    // }
+      const { data } = await api.post('/products/create/', { ...productData, ...productItemDataFormated }, {
+        headers: {
+          'X-CSRFToken': csrftoken
+        }
+      });
+
+      acceptedFiles.map(async (file) => {
+        let formData = new FormData();
+        formData.append('files', file);
+        await api.post(`/photos/upload/${data.product_id}`, formData);
+      });
+
+      setTimeout(() => {
+        toast.success('Registro do produto criado com sucesso!');
+      }, 3000);
+      setTimeout(() => {
+        history.push(`/products/details/${data.product_id}`);
+      }, 4000);
+    } catch (err) {
+      const { data } = err.response;
+      handleButtonClickProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+    }
   }
 
   async function handleCreateSection() {
@@ -1473,6 +1491,7 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
+                        disabled={productItemData.locavel === 2 ? true : false}
                         label="Preço Locação"
                         name="prloc"
                         variant="outlined"
@@ -1523,6 +1542,7 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
+                        disabled={productItemData.vdatac === 0 ? true : false}
                         label="Quantidade Atacado"
                         name="qtdatac"
                         variant="outlined"
@@ -1539,6 +1559,7 @@ export default function RegisterProduct() {
                     >
                       <TextField
                         fullWidth
+                        disabled={productItemData.vdatac === 0 ? true : false}
                         label="Preço Atacado"
                         name="pratac"
                         variant="outlined"
@@ -1593,11 +1614,14 @@ export default function RegisterProduct() {
                           label="Alíquota"
                           name="aliq"
                         >
-                          <MenuItem value={2}>
+                          <MenuItem value={0}>
                             <em>None</em>
                           </MenuItem>
-                          <MenuItem value={1}>Sim</MenuItem>
-                          <MenuItem value={0}>Não</MenuItem>
+                          {
+                            aliquots.map((aliquot => (
+                              <MenuItem value={aliquot.id}>{aliquot.descr}</MenuItem>
+                            )))
+                          }
                         </Select>
                       </FormControl>
                     </Grid>
