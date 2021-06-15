@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import clsx from 'clsx';
 import { toast, ToastContainer } from 'react-toastify';
+import { useTheme } from '@material-ui/core/styles';
 import {
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  Close as CloseIcon
 } from '@material-ui/icons';
 import {
   Box,
@@ -21,7 +23,15 @@ import {
   InputLabel,
   OutlinedInput,
   InputAdornment,
-  Grid
+  Grid,
+  TextField,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@material-ui/core';
 import { red } from '@material-ui/core/colors';
 
@@ -34,10 +44,47 @@ import useStyles from './styles';
 
 import 'react-toastify/dist/ReactToastify.css';
 
+const initialStateSettings = {
+  id: 0,
+  cfg1: "",
+  cfg2: "",
+  cfg3: "",
+  cfg4: "",
+  cfg5: "",
+  cfg6: "",
+  cfg7: "",
+  cfg8: "",
+  cfg9: "",
+  cfg10: "",
+  cfg11: "",
+  cfg12: "",
+  cfg13: "",
+  cfg14: "",
+  cfg15: "",
+  cfg16: "",
+  cfg17: "",
+  cfg18: "",
+  cfg19: "",
+  cfg20: "",
+  cfg21: "",
+  cfg22: "",
+  cfg23: "",
+  cfg24: "",
+  cfg25: "",
+  cfg26: "",
+  cfg27: "",
+  cfg28: "",
+  cfg29: "",
+  cfg30: "",
+  cfg31: "",
+  cfg32: ""
+}
+
 export default function Settings() {
   const classes = useStyles();
   const { handleLogout } = useContext(Context);
   const timer = useRef();
+  const theme = useTheme();
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,10 +95,20 @@ export default function Settings() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [passwordNotIsEquals, setPasswordNotIsEquals] = useState(false);
+  const [settings, setSettings] = useState(initialStateSettings);
+  const [loadingSettings, setLoadingSettings] = useState(false);
+  const [errorSettings, setErrorSettings] = useState(false);
+  const [successSettings, setSuccessSettings] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
     [classes.buttonError]: error,
+  });
+
+  const buttonClassNameSettings = clsx({
+    [classes.buttonSuccess]: successSettings,
+    [classes.buttonError]: errorSettings,
   });
 
   useEffect(() => {
@@ -73,6 +130,18 @@ export default function Settings() {
     return () => {
       clearTimeout(timer.current);
     };
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/settings');
+        setSettings(data);
+      } catch (error) {
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
   }, []);
 
   function handleClickShowPassword() {
@@ -117,6 +186,41 @@ export default function Settings() {
     }
   }
 
+  function handleButtonSettingsProgress() {
+    if (!loadingSettings) {
+      setSuccessSettings(false);
+      setLoadingSettings(true);
+      timer.current = window.setTimeout(() => {
+        setSuccessSettings(true);
+        setLoadingSettings(false);
+      }, 2000);
+    }
+  };
+
+  function handleButtonSettingsProgressError() {
+    if (!loadingSettings) {
+      setSuccessSettings(false);
+      setLoadingSettings(true);
+      timer.current = window.setTimeout(() => {
+        setErrorSettings(true);
+        setLoadingSettings(false);
+      }, 2000);
+    }
+  }
+
+  function handleChangeInputs(e) {
+    const { name, value } = e.target;
+    setSettings({ ...settings, [name]: value });
+  }
+
+  const handleClickOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   async function handleChangePassword(e) {
     e.preventDefault();
 
@@ -153,6 +257,35 @@ export default function Settings() {
     }
   }
 
+  async function handleUpdateSystemSettings() {
+    const csrfToken = getCookie('csrftoken');
+
+    try {
+      handleButtonSettingsProgress();
+
+      await api.put('/settings/update/', settings, {
+        headers: {
+          'X-CSRFToken': csrfToken
+        }
+      });
+      setTimeout(() => {
+        toast.success('Configurações alteradas com sucesso!');
+        handleCloseModal();
+      }, 2000);
+    } catch (error) {
+      const { data, status } = error.response;
+      handleButtonSettingsProgressError();
+      setTimeout(() => {
+        toast.error(`${data.detail}`);
+      }, 2000);
+      setTimeout(() => {
+        if (status === 401) {
+          handleLogout();
+        }
+      }, 7000);
+    }
+  }
+
   return (
     <div className={classes.root}>
       <ToastContainer />
@@ -161,12 +294,239 @@ export default function Settings() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container className={classes.container} maxWidth="lg">
-          <form
-            onSubmit={(e) => handleChangePassword(e)}
+          <Card
+            style={{
+              marginBottom: theme.spacing(3)
+            }}
           >
-            <Card>
+            <CardHeader
+              subheader="Atualize as configurações do sistema."
+              title="Configurações do Sistema"
+            />
+            <Divider />
+            <CardContent>
+              <Grid
+                container
+                spacing={3}
+                style={{
+                  marginBottom: theme.spacing(2)
+                }}
+              >
+                <Grid
+                  item
+                  xl={4}
+                  xs={4}
+                  sm={4}
+                >
+                  <TextField
+                    fullWidth
+                    label="Site"
+                    name="cfg8"
+                    required
+                    variant="outlined"
+                    value={settings.cfg8}
+                    onChange={(e) => handleChangeInputs(e)}
+                  />
+                </Grid>
+              </Grid>
+              <Grid
+                container
+                spacing={3}
+              >
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    label="Nome Tabela de Preços 1"
+                    name="cfg19"
+                    required
+                    variant="outlined"
+                    value={settings.cfg19}
+                    onChange={(e) => handleChangeInputs(e)}
+                  />
+                </Grid>
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    label="Nome Tabela de Preços 2"
+                    name="cfg20"
+                    required
+                    variant="outlined"
+                    value={settings.cfg20}
+                    onChange={(e) => handleChangeInputs(e)}
+                  />
+                </Grid>
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    label="Nome Tabela de Preços 3"
+                    name="cfg21"
+                    required
+                    variant="outlined"
+                    value={settings.cfg21}
+                    onChange={(e) => handleChangeInputs(e)}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Percentual Lucro Padrão"
+                    name="cfg22"
+                    variant="outlined"
+                    value={settings.cfg22}
+                    onChange={(e) => handleChangeInputs(e)}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="select-option2-label">Opção Tabela 2</InputLabel>
+                    <Select
+                      fullWidth
+                      labelId="select-option2-label"
+                      id="select-option2"
+                      value={settings.cfg23}
+                      onChange={(e) => handleChangeInputs(e)}
+                      label="Opção Tabela 2"
+                      name="cfg23"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="1">
+                        Acréscimo
+                      </MenuItem>
+                      <MenuItem value="2">
+                        Desconto
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Percentual Tab. 2 sobre 1"
+                    name="cfg24"
+                    variant="outlined"
+                    value={settings.cfg24}
+                    onChange={(e) => handleChangeInputs(e)}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
+                  />
+                </Grid>
+
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <FormControl variant="outlined" className={classes.formControl}>
+                    <InputLabel id="select-option3-label">Opção Tabela 3</InputLabel>
+                    <Select
+                      fullWidth
+                      labelId="select-option3-label"
+                      id="select-option3"
+                      value={settings.cfg25}
+                      onChange={(e) => handleChangeInputs(e)}
+                      label="Opção Tabela 3"
+                      name="cfg25"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="1">
+                        Acréscimo
+                      </MenuItem>
+                      <MenuItem value="2">
+                        Desconto
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid
+                  item
+                  xl={3}
+                  xs={3}
+                  sm={3}
+                >
+                  <TextField
+                    fullWidth
+                    required
+                    label="Percentual Tab. 3 sobre 1"
+                    name="cfg26"
+                    variant="outlined"
+                    value={settings.cfg26}
+                    onChange={(e) => handleChangeInputs(e)}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">%</InputAdornment>,
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+            <Divider />
+            <Box
+              display="flex"
+              justifyContent="flex-end"
+              p={2}
+            >
+              <Button
+                type="submit"
+                color="primary"
+                variant="contained"
+                onClick={handleClickOpenModal}
+              >
+                Salvar alterações
+                {loadingSettings && <CircularProgress size={24} className={classes.buttonProgress} />}
+              </Button>
+            </Box>
+          </Card>
+
+          <Card>
+            <form
+              onSubmit={(e) => handleChangePassword(e)}
+            >
               <CardHeader
-                subheader="Atualize sua senha"
+                subheader="Atualize sua senha."
                 title="Senha"
               />
               <Divider />
@@ -285,13 +645,47 @@ export default function Settings() {
                   {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
                 </Button>
               </Box>
-            </Card>
-          </form>
+            </form>
+          </Card>
 
           <Box pt={4}>
             <Copyright />
           </Box>
         </Container>
+
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Atualizar configurações</DialogTitle>
+          <IconButton aria-label="close" className={classes.closeButton} onClick={handleCloseModal}>
+            <CloseIcon />
+          </IconButton>
+          <Divider />
+          <DialogContent className={classes.modalContent}>
+            <DialogContentText id="alert-dialog-description" className={classes.modalContentText}>
+              <p>Você deseja realmente atualizar as configurações do sistema? Esta operação não pode ser desfeita.</p>
+            </DialogContentText>
+          </DialogContent>
+          <Divider />
+          <DialogActions>
+            <Button
+              onClick={() => handleUpdateSystemSettings()}
+              color="primary"
+              className={buttonClassNameSettings}
+              disabled={loadingSettings}
+              variant="contained"
+            >
+              Sim
+              {loadingSettings && <CircularProgress size={24} className={classes.buttonProgress} />}
+            </Button>
+            <Button onClick={handleCloseModal} color="secondary" variant="contained" autoFocus>
+              Cancelar
+            </Button>
+          </DialogActions>
+        </Dialog>
       </main>
     </div>
   );
