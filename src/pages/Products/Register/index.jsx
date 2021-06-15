@@ -189,6 +189,8 @@ export default function RegisterProduct() {
 
   const [aliquots, setAliquots] = useState([{}]);
 
+  const [providers, setProviders] = useState([{}]);
+
   const {
     acceptedFiles,
     getRootProps,
@@ -211,6 +213,18 @@ export default function RegisterProduct() {
       try {
         const { data } = await api.get('/aliquot/');
         setAliquots(data);
+      } catch (error) {
+        const { data } = error.response;
+        toast.error(`${data.detail}`);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/persons/providers');
+        setProviders(data);
       } catch (error) {
         const { data } = error.response;
         toast.error(`${data.detail}`);
@@ -934,6 +948,13 @@ export default function RegisterProduct() {
                             <em>None</em>
                           </MenuItem>
 
+                          {
+                            providers.map((provider) => (
+                              <MenuItem value={provider.id_pessoa_cod} key={provider.id_pessoa_cod}>
+                                {provider.nomeorrazaosocial}
+                              </MenuItem>
+                            ))
+                          }
                         </Select>
                       </FormControl>
                     </Grid>

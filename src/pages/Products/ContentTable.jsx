@@ -601,7 +601,7 @@ export default function EnhancedTable() {
             'X-CSRFToken': csrftoken
           }
         });
-        setProducts(data.produtos);
+        setProducts(data);
       }
     } catch (err) {
       const { data } = err.response;
